@@ -31,39 +31,57 @@ State Installed
 	EndEvent
 
 	Int Function GetCumAmount()
-		int rank =(FhuInflateQuest as sr_inflateQuest).GetInflationPercentage(playerRef) as int
-		if rank < 0
-			rank = 0
-		elseif rank > 101
-			rank = 101
-		endIf
-	
-		If rank < 10
-			return 0
-		ElseIf rank < 20
-			return 1
-		ElseIf rank < 30
-			return 2
-		ElseIf rank < 40
-			return 3
-		ElseIf rank < 60
-			return 4
-		ElseIf rank < 80
-			return 5
-		ElseIf rank < 90
-			return 6
-		ElseIf rank < 100
-			return 7
-		Else
-			return 8
-		EndIf
+		int percentage =(FhuInflateQuest as sr_inflateQuest).GetInflationPercentage(playerRef) as int
+		return _percentToState(percentage)
 	EndFunction
 
+	Int Function GetCumAmountAnal()
+		int percentage =(FhuInflateQuest as sr_inflateQuest).GetAnalPercentage(playerRef) as int
+		return _percentToState(percentage)
+	EndFunction
+
+	Int Function GetCumAmountVag()
+		int percentage =(FhuInflateQuest as sr_inflateQuest).GetVaginalPercentage(playerRef) as int
+		return _percentToState(percentage)
+	EndFunction
 
 EndState
 
 Int Function GetCumAmount()
 	Return 0
 EndFunction
-	
+Int Function GetCumAmountAnal()
+	Return 0
+EndFunction
+Int Function GetCumAmountVag()
+	Return 0
+EndFunction
+
+Int Function _percentToState(int percent)
+	if percent < 0
+		percent = 0
+	elseif percent > 101
+		percent = 101
+	endIf
+
+	If percent < 10
+		return 0
+	ElseIf percent < 20
+		return 1
+	ElseIf percent < 30
+		return 2
+	ElseIf percent < 40
+		return 3
+	ElseIf percent < 60
+		return 4
+	ElseIf percent < 80
+		return 5
+	ElseIf percent < 90
+		return 6
+	ElseIf percent < 100
+		return 7
+	Else
+		return 8
+	EndIf
+EndFunction			
 

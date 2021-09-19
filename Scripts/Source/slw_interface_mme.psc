@@ -26,7 +26,7 @@ EndFunction
 
 State Installed
 	Event OnBeginState()
-		slw_log.WriteLog("MilkModNEW.esm ready")		
+		slw_log.WriteLog("MilkModNEW.esp ready")		
 	EndEvent
 
 	Int Function getMilkLevel()
