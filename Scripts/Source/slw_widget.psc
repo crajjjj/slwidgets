@@ -32,7 +32,7 @@ String PREGNANCY_STATE = "Pregnancy"
 
 Bool _loaded=false
 
-; Assumed timeline: OnInit()-> OniWantStatusBarsReady->||_loaded||-> UIUpdate (updateInterfaces) -> updatestatus
+; Assumed lifecycle: OnInit() -> OniWantStatusBarsReady -> ||_loaded|| -> updateInterfaces() -> UIUpdate () -> updatestatus
 Event OnInit()
 	slw_log.WriteLog("Registering event handlers")
 	RegisterForModEvent("iWantStatusBarsReady", "OniWantStatusBarsReady")
@@ -43,6 +43,9 @@ EndEvent
 Function loadSetup()
 	RegisterForSingleUpdate(1)
 	slw_log.WriteLog("loading setup")
+	if _loaded
+		updateInterfaces()
+	endif
 EndFunction
 
 Function updateInterfaces()
@@ -74,6 +77,7 @@ Event OniWantStatusBarsReady(String eventName, String strArg, Float numArg, Form
 			;give some time to init
 			Utility.Wait(3)
 			_loaded = true
+			updateInterfaces()
 			UIUpdate()
 		endif
 	EndIf
@@ -129,7 +133,6 @@ Function UIUpdate()
 		slw_log.WriteLog("iBars not loaded yet. UIUpdate failed", 2)
 		Return
 	endIf
-	updateInterfaces()
 	slw_log.WriteLog("UIUpdate: updating widgets")
 	if(mcm.arousal && slax.isInterfaceActive())
 		_loadArousedIcons()
