@@ -58,18 +58,3 @@ Supported icon format is .dds. To convert you can use Gimp (pick bc3 compressio
 Notes on LE compatibility:
 LE version of the iWant Status Bars/iWant Widgets is included in the fomod of the SE version. 
 
-Changelog
---------------------------
-Version 3 (13092021)
-MME - milk and lactacid
-Pregnancy icons
-Initialising optimisations
-Some color changes
---------------------------
-Version 2 (07092021)
-FHU - cum icon added
---------------------------
-Version 1 (06092021)
-initial version 
-SLA SE (SexLab Aroused eXtended/SLAM) - Arousal and exposure icons
-Apropos2 - w&t icons
