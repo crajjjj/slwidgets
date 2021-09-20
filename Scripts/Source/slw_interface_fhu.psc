@@ -36,13 +36,13 @@ State Installed
 	EndFunction
 
 	Int Function GetCumAmountAnal()
-		int percentage =(FhuInflateQuest as sr_inflateQuest).GetAnalPercentage(playerRef) as int
-		return _percentToState(percentage)
+		float percentage =(FhuInflateQuest as sr_inflateQuest).GetAnalPercentage(playerRef) * 100.0 
+		return _percentToState(percentage as int)
 	EndFunction
 
 	Int Function GetCumAmountVag()
-		int percentage =(FhuInflateQuest as sr_inflateQuest).GetVaginalPercentage(playerRef) as int
-		return _percentToState(percentage)
+		float percentage =(FhuInflateQuest as sr_inflateQuest).GetVaginalPercentage(playerRef) * 100.0 
+		return _percentToState(percentage as int)
 	EndFunction
 
 EndState

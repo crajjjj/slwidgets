@@ -50,6 +50,10 @@ Function loadSetup()
 	endif
 EndFunction
 
+bool Function isLoaded()
+	return _loaded
+EndFunction
+
 Function updateInterfaces()
 	slw_log.WriteLog("updating interfaces")
 	slax.initInterface()

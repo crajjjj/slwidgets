@@ -112,15 +112,16 @@ Function Debug()
 	AddHeaderOption("SL Widgets. Version: " + GetVersionString())
 	AddEmptyOption()
 	AddHeaderOption("Dependency check")
-	AddTextOptionST("CheckSLA", "Sexlab Aroused(SexLabAroused.esm)", StringIfElse(slax.isInterfaceActive() , "INSTALLED", "NOT INSTALLED"), OPTION_FLAG_DISABLED)
-	AddTextOptionST("CheckApropos2", "Apropos 2 (Apropos2.esp)", StringIfElse(apropos2.isInterfaceActive() , "INSTALLED", "NOT INSTALLED"), OPTION_FLAG_DISABLED)
-	AddTextOptionST("CheckFHU", "Fill Her Up(sr_FillHerUp.esp)", StringIfElse(fhu.isInterfaceActive() , "INSTALLED", "NOT INSTALLED"), OPTION_FLAG_DISABLED)
-	AddTextOptionST("CheckMME", "Milk Mod Economy (MilkModNEW.esp)", StringIfElse(mme.isInterfaceActive() , "INSTALLED", "NOT INSTALLED"), OPTION_FLAG_DISABLED)
-	AddTextOptionST("CheckPreg", "Pregnancy deps", StringIfElse(pregnancy.isInterfaceActive() , "INSTALLED", "NOT INSTALLED"), OPTION_FLAG_DISABLED)
-	AddTextOptionST("CheckSLP", "Sexlab parasites(SexLab-Parasites.esp)", StringIfElse(slp.isInterfaceActive() , "INSTALLED", "NOT INSTALLED"), OPTION_FLAG_DISABLED)
+	AddTextOptionST("CheckIWantStatusBars", "iWant Status Bars ready", StringIfElse(widget.isLoaded() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddTextOptionST("CheckSLA", "Sexlab Aroused(SexLabAroused.esm)", StringIfElse(slax.isInterfaceActive() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddTextOptionST("CheckApropos2", "Apropos 2 (Apropos2.esp)", StringIfElse(apropos2.isInterfaceActive() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddTextOptionST("CheckFHU", "Fill Her Up(sr_FillHerUp.esp)", StringIfElse(fhu.isInterfaceActive() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddTextOptionST("CheckMME", "Milk Mod Economy (MilkModNEW.esp)", StringIfElse(mme.isInterfaceActive() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddTextOptionST("CheckPreg", "Pregnancy deps", StringIfElse(pregnancy.isInterfaceActive() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddTextOptionST("CheckSLP", "Sexlab parasites(SexLab-Parasites.esp)", StringIfElse(slp.isInterfaceActive() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
 	AddEmptyOption()
 
-	AddTextOptionST("UpdateDeps","Reload dependencies","ClickHere", OPTION_FLAG_NONE)
+	AddTextOptionST("UpdateDeps","Reload dependencies","GO", OPTION_FLAG_NONE)
 EndFunction
 
 function syncInterfaces()
@@ -155,7 +156,7 @@ endFunction
 
 Event onOptionHighlight(int mcm_option)
 	If (mcm_option == _updateIntervalSlider)
-		SetInfoText("Set the update interval of the widget.")
+		SetInfoText("Set the update interval of the widget")
 	ElseIf (mcm_option == _arousalToggle)
 		SetInfoText("Toggle arousal icon")
 	ElseIf (mcm_option == _exposureToggle)
@@ -235,9 +236,8 @@ State UpdateDeps
         SetTextOptionValueST("Working...")
 		
 		widget.updateInterfaces()
-        Utility.Wait(2)
 
-		SetTextOptionValueST("ClickHere")
+		SetTextOptionValueST("GO")
         SetOptionFlagsST(OPTION_FLAG_NONE)
         ForcePageReset()
     EndEvent
