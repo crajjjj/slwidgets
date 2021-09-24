@@ -11,6 +11,7 @@ slw_interface_fhu property fhu auto
 slw_interface_mme property mme auto
 slw_interface_pregnancy property pregnancy auto
 slw_module_slp property slp auto
+slw_module_pregnancy property preg_module Auto
 
 int _updateIntervalSlider
 int _arousalToggle
@@ -23,6 +24,7 @@ int _milkToggle
 int _lactacidToggle
 int _pregnancyToggle
 int _slpToggle
+int _pregnancyModToggle
 
 Int property updateInterval = 5 auto hidden
 Bool property arousal = True auto hidden
@@ -35,7 +37,7 @@ Bool property milk = True auto hidden
 Bool property lactacid = True auto hidden
 Bool property isPregnant = True auto hidden
 Bool property isSLP = True auto hidden
-
+Bool property pregnancy_module_enabled = True auto hidden
 
 ; SCRIPT VERSION
 ; https://github.com/schlangster/skyui/wiki/MCM-Advanced-Features#incremental-upgrading
@@ -102,26 +104,34 @@ EndFunction
 Function Toggles()
     SetCursorFillMode(TOP_TO_BOTTOM)
     SetCursorPosition(0)
-	AddHeaderOption("SexLab Parasites")
+	AddHeaderOption("SexLab Parasites Module")
 	_slpToggle = addToggleOption("Parasites Icon Enabled", isSLP)
+	AddHeaderOption("Pregnancy Module")
+	_pregnancyModToggle = addToggleOption("Pregnancy Icon Enabled", pregnancy_module_enabled)
 EndFunction
 
 Function Debug()
-    SetCursorFillMode(TOP_TO_BOTTOM)
+	SetCursorFillMode(TOP_TO_BOTTOM)
 	SetCursorPosition(0)
 	AddHeaderOption("SL Widgets. Version: " + GetVersionString())
 	AddEmptyOption()
-	AddHeaderOption("Dependency check")
-	AddTextOptionST("CheckIWantStatusBars", "iWant Status Bars ready", StringIfElse(widget.isLoaded() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOptionST("CheckSLA", "Sexlab Aroused(SexLabAroused.esm)", StringIfElse(slax.isInterfaceActive() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOptionST("CheckApropos2", "Apropos 2 (Apropos2.esp)", StringIfElse(apropos2.isInterfaceActive() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOptionST("CheckFHU", "Fill Her Up(sr_FillHerUp.esp)", StringIfElse(fhu.isInterfaceActive() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOptionST("CheckMME", "Milk Mod Economy (MilkModNEW.esp)", StringIfElse(mme.isInterfaceActive() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOptionST("CheckPreg", "Pregnancy deps", StringIfElse(pregnancy.isInterfaceActive() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOptionST("CheckSLP", "Sexlab parasites(SexLab-Parasites.esp)", StringIfElse(slp.isInterfaceActive() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddEmptyOption()
-
-	AddTextOptionST("UpdateDeps","Reload dependencies","GO", OPTION_FLAG_NONE)
+	AddTextOptionST("UpdateDeps","Recheck dependencies","GO", OPTION_FLAG_NONE)
+	AddTextOptionST("AddEmptyIcon","Add empty icon placeholder(for toggles arrangement)","ADD", OPTION_FLAG_NONE)
+	AddHeaderOption("Dependency check: general")
+	AddTextOption("iWant Status Bars ready", StringIfElse( widget.isLoaded() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddTextOption("Sexlab Aroused(SexLabAroused.esm)", StringIfElse( isSLAReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddTextOption("Apropos 2 (Apropos2.esp)", StringIfElse( isAprReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddTextOption("Fill Her Up(sr_FillHerUp.esp)", StringIfElse( isFHUReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddTextOption("Milk Mod Economy (MilkModNEW.esp)", StringIfElse( isMMEReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddHeaderOption("Dependency check: toggles")
+	AddTextOption("Sexlab parasites(SexLab-Parasites.esp)", StringIfElse( isSLPReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddTextOption("Hentai Pregnancy", StringIfElse( isHPReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddTextOption("FertilityMode3", StringIfElse( isFM3Ready() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddTextOption("BeeingFemale", StringIfElse( isBFReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddTextOption("EggFactory", StringIfElse( isEFReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddTextOption("EstrusChaurus", StringIfElse( isECReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddTextOption("EstrusSpider", StringIfElse( isESReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddTextOption("EstrusDwemer", StringIfElse( isEDReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
 EndFunction
 
 function syncInterfaces()
@@ -152,6 +162,11 @@ function syncInterfaces()
 	if !slp.isInterfaceActive()
 		isSLP = false
 	endIf
+
+	if !preg_module.isInterfaceActive()
+		pregnancy_module_enabled = false
+	endIf
+	
 endFunction
 
 Event onOptionHighlight(int mcm_option)
@@ -177,6 +192,8 @@ Event onOptionHighlight(int mcm_option)
 		SetInfoText("Toggle pregnancy icons")
 	ElseIf (mcm_option == _slpToggle)
 		SetInfoText("Toggle parasites icons")
+	ElseIf (mcm_option == _pregnancyModToggle)
+		SetInfoText("Toggle pregnancy module icons")
 	endIf
 endEvent
 
@@ -211,6 +228,9 @@ Event onOptionSelect(int mcm_option)
 	elseIf(mcm_option == _slpToggle)
 		isSLP = !isSLP
 		setToggleOptionValue(mcm_option, isSLP)
+	elseIf(mcm_option == _pregnancyModToggle)
+		pregnancy_module_enabled = !pregnancy_module_enabled
+		setToggleOptionValue(mcm_option, pregnancy_module_enabled)
 	endIf
 endEvent
 
@@ -240,5 +260,17 @@ State UpdateDeps
 		SetTextOptionValueST("GO")
         SetOptionFlagsST(OPTION_FLAG_NONE)
         ForcePageReset()
+    EndEvent
+EndState
+
+State AddEmptyIcon
+    Event OnSelectST()
+        SetOptionFlagsST(OPTION_FLAG_DISABLED)
+        SetTextOptionValueST("Working...")
+		
+		widget.LoadEmptyIcon()
+
+		SetTextOptionValueST("ADD")
+        SetOptionFlagsST(OPTION_FLAG_NONE)
     EndEvent
 EndState

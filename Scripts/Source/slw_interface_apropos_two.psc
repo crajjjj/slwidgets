@@ -1,6 +1,7 @@
 
 Scriptname slw_interface_apropos_two extends Quest  
-
+import slw_log
+import slw_util
 Int Property aproposVersion = -1 Auto Hidden
 
 Quest ActorsQuest
@@ -11,7 +12,7 @@ Actor Property PlayerRef Auto
 		Return 
 	EndIf
 	
-	If Game.GetModByName("Apropos2.esp") != 255
+	If isAprReady()
 		slw_log.WriteLog("Apropos2.esp found")
 		ActorsQuest = Game.GetFormFromFile(0x02902C, "Apropos2.esp") as Quest
 		if GetAproposAlias(PlayerRef, ActorsQuest) == None

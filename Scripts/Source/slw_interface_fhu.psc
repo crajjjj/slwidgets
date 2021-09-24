@@ -1,5 +1,6 @@
 Scriptname slw_interface_fhu extends Quest  
-
+import slw_log
+import slw_util
 Quest FhuInflateQuest
 Actor Property playerRef Auto
 
@@ -8,7 +9,7 @@ Function initInterface()
 	If isInterfaceActive()
 		Return 
 	EndIf
-	If Game.GetModByName("sr_FillHerUp.esp") != 255
+	If isFHUReady()
 			slw_log.WriteLog("sr_FillHerUp.esp found")
 			FhuInflateQuest = Game.GetFormFromFile(0x000D63,"sr_FillHerUp.esp") as Quest
 			GoToState("Installed")

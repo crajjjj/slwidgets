@@ -1,5 +1,6 @@
 Scriptname slw_interface_mme extends Quest  
-
+import slw_log
+import slw_util
 Actor Property playerRef Auto
 
 Function initInterface()
@@ -7,7 +8,7 @@ Function initInterface()
 		Return 
 	EndIf
 
-	If Game.GetModByName("MilkModNEW.esp") != 255
+	If isMMEReady()
 			slw_log.WriteLog("MilkModNEW.esp found")
 			
 			GoToState("Installed")

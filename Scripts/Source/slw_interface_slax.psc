@@ -1,6 +1,7 @@
 
 Scriptname slw_interface_slax extends Quest  
-
+import slw_log
+import slw_util
 Quest SlaConfigQuest
 slaFrameworkScr sla
 Actor Property playerRef Auto
@@ -10,7 +11,7 @@ Function initInterface()
 	If isInterfaceActive()
 		Return 
 	EndIf
-	If Game.GetModByName("SexLabAroused.esm") != 255
+	If isSLAReady()
 			slw_log.WriteLog("SexLabAroused.esm found")
 			sla = Game.GetFormFromFile(0x4290F, "SexLabAroused.esm") As slaFrameworkScr
 			GoToState("Installed")

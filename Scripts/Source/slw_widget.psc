@@ -1,5 +1,5 @@
 Scriptname slw_widget Extends Quest
-
+import slw_util
 slw_mcm Property mcm Auto
 slw_interface_slax Property slax Auto
 slw_interface_apropos_two  property apropos2 auto
@@ -9,6 +9,7 @@ slw_interface_pregnancy Property pregnancy Auto
 
 ;Toggle icons
 slw_module_slp Property slp Auto
+slw_module_pregnancy Property pregnancy_module Auto
 
 iWant_Status_Bars Property iBars Auto
 
@@ -31,10 +32,19 @@ String LACTACID_STATE = "MMELactacid"
 ;Pregnancy
 String PREGNANCY_STATE = "Pregnancy"
 
+String EMPTY_STATE = "PLACEHOLDER"
 
 Bool _loaded=false
 
-; Assumed lifecycle: OnInit() -> OniWantStatusBarsReady -> ||_loaded|| -> updateInterfaces() -> UIUpdate () -> updatestatus
+int _emptyIconIndex = 0
+String[] s
+String[] d
+Int[] r
+Int[] g
+Int[] b
+Int[] a
+
+; Assumed lifecycle: OnInit() -> OniWantStatusBarsReady -> ||_loaded|| -> updateInterfaces() -> UIUpdate () -> updatestatus -> UpdateToggleIcons
 Event OnInit()
 	slw_log.WriteLog("Registering event handlers")
 	RegisterForModEvent("iWantStatusBarsReady", "OniWantStatusBarsReady")
@@ -62,6 +72,7 @@ Function updateInterfaces()
 	mme.initInterface()
 	pregnancy.initInterface()
 	slp.initInterface()
+	pregnancy_module.initInterface()
 EndFunction
 
 
@@ -136,6 +147,9 @@ Function UpdateToggleIcons()
 	if (mcm.isSLP && slp.isInterfaceActive())
 		slp.reloadParasiteIcons(iBars)
 	endIf
+	if (mcm.pregnancy_module_enabled && pregnancy_module.isInterfaceActive())
+		pregnancy_module.reloadPregnancyIcons(iBars)
+	endIf
 EndFunction	
 
 ;ON mcm update and init
@@ -207,18 +221,40 @@ Function UIUpdate()
 		slp.releaseParasiteIcons(iBars)
 	endif
 
+	if(!mcm.pregnancy_module_enabled || !pregnancy_module.isInterfaceActive())
+		pregnancy_module.releasePregnancyIcons(iBars)
+	endif
+
 	UpdateStatus()
+	UpdateToggleIcons()
+endFunction
+
+;Debug function to arrange iwant status bars icons better - fill empty spaces in the main bar to load/release toggles in a secondary bar
+Function LoadEmptyIcon()
+	s = new String[1]
+	d = new String[1]
+	r = new Int[1]
+	g = new Int[1]
+	b = new Int[1]
+	a = new Int[1]
+	string iconbasepath = "widgets/iwant/widgets/library/misc/"
+	s[0] = "placeholder.dds"
+	d[0] = EMPTY_STATE + _emptyIconIndex
+	r[0] = 255
+	g[0] = 255
+	b[0] = 255
+	a[0] = 0
+	
+	; This will fail silently if the icon is already loaded
+	int res = iBars.loadIcon(slwGetModName(), EMPTY_STATE + _emptyIconIndex, d, s, r, g, b, a)
+	; returns -1 on no spots available
+	if res != -1
+		_emptyIconIndex += 1
+	endif
 	
 endFunction
 
-
 Function _loadArousedIcons()
-	String[] s
-	String[] d
-	Int[] r
-	Int[] g
-	Int[] b
-	Int[] a
 	s = new String[9]
 	d = new String[9]
 	r = new Int[9]
@@ -296,12 +332,6 @@ Function _loadArousedIcons()
 EndFunction
 
 Function _loadExposureIcons()
-	String[] s
-	String[] d
-	Int[] r
-	Int[] g
-	Int[] b
-	Int[] a
 	s = new String[9]
 	d = new String[9]
 	r = new Int[9]
@@ -379,12 +409,6 @@ Function _loadExposureIcons()
 EndFunction
 
 Function _loadApropos2Oral()
-	String[] s
-	String[] d
-	Int[] r
-	Int[] g
-	Int[] b
-	Int[] a
 	s = new String[9]
 	d = new String[9]
 	r = new Int[9]
@@ -463,12 +487,6 @@ Function _loadApropos2Oral()
 EndFunction
 
 Function _loadApropos2Anal()
-	String[] s
-	String[] d
-	Int[] r
-	Int[] g
-	Int[] b
-	Int[] a
 	s = new String[9]
 	d = new String[9]
 	r = new Int[9]
@@ -548,12 +566,7 @@ Function _loadApropos2Anal()
 EndFunction
 
 Function _loadApropos2Vag()
-	String[] s
-	String[] d
-	Int[] r
-	Int[] g
-	Int[] b
-	Int[] a
+
 	s = new String[9]
 	d = new String[9]
 	r = new Int[9]
@@ -632,12 +645,6 @@ Function _loadApropos2Vag()
 EndFunction
 
 Function _loadCumIcons()
-	String[] s
-	String[] d
-	Int[] r
-	Int[] g
-	Int[] b
-	Int[] a
 	s = new String[9]
 	d = new String[9]
 	r = new Int[9]
@@ -715,12 +722,6 @@ Function _loadCumIcons()
 EndFunction
 
 Function _loadCumAnalIcons()
-	String[] s
-	String[] d
-	Int[] r
-	Int[] g
-	Int[] b
-	Int[] a
 	s = new String[9]
 	d = new String[9]
 	r = new Int[9]
@@ -798,12 +799,6 @@ Function _loadCumAnalIcons()
 EndFunction
 
 Function _loadCumVaginalIcons()
-	String[] s
-	String[] d
-	Int[] r
-	Int[] g
-	Int[] b
-	Int[] a
 	s = new String[9]
 	d = new String[9]
 	r = new Int[9]
@@ -881,12 +876,6 @@ Function _loadCumVaginalIcons()
 EndFunction
 
 Function _loadMilkIcons()
-	String[] s
-	String[] d
-	Int[] r
-	Int[] g
-	Int[] b
-	Int[] a
 	s = new String[9]
 	d = new String[9]
 	r = new Int[9]
@@ -965,12 +954,6 @@ Function _loadMilkIcons()
 EndFunction
 
 Function _loadLactacidIcons()
-	String[] s
-	String[] d
-	Int[] r
-	Int[] g
-	Int[] b
-	Int[] a
 	s = new String[9]
 	d = new String[9]
 	r = new Int[9]
@@ -1049,12 +1032,6 @@ Function _loadLactacidIcons()
 EndFunction
 
 Function _loadPregnancyIcons()
-	String[] s
-	String[] d
-	Int[] r
-	Int[] g
-	Int[] b
-	Int[] a
 	s = new String[7]
 	d = new String[7]
 	r = new Int[7]

@@ -25,7 +25,7 @@ Int[] a
 Function initInterface()
 	slw_log.WriteLog("SLP dlc recheck")
 	
-	If (!Plugin_SLP && Game.GetModbyName("SexLab-Parasites.esp") != 255)
+	If (!Plugin_SLP && isSLPReady())
 		WriteLog("SexLab-Parasites.esp found")
 		Plugin_SLP = true
 		slp = Game.GetFormFromFile(0x000D62, "SexLab-Parasites.esp") As SLP_fcts_parasites
