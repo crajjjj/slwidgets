@@ -1,26 +1,32 @@
 SexLab Widgets SSE
 =======================
 
-A  plugin for iWant Status Bars to add sexlab related widgets to Skyrim. Icons added have 9 stages and change dynamically. 
-79 icons included.
+A  plugin for iWant Status Bars to add sexlab related widgets to Skyrim. Supports 2 mechanics
+- Icons that have 9 stages and change dynamically
+- Icons that are appear/dissapear on condition
+102 icons included.
 
 
 Currently supported plugins: 
-
+Stages:
 - vSLA SE (SexLab Aroused eXtended/SLAM) - Arousal and exposure icons
 - vApropos2 - w&t icons
 - vFill her up - cum icon
 - MME - milk and lactacid
-- HentaiPregnancy, BeeingFemale, EggFactory, SexLab-Parasite, EstrusChaurus, EstrusSpider, EstrusDwemer - pregnancy icons (basic/spider/chaurus)
+Toggles:
+- SexLab-Parasite
+- Pregnancy: HentaiPregnancy, BeeingFemale, EggFactory, EstrusChaurus, EstrusSpider, EstrusDwemer, FM3 -  
 
 
 Installation
 
-- Install as any other mod.
+- Install as any other mod. SE version is esl based. (LE version - esp works for SE as well)
 
-- (Optional) Disable icons you don't want to see in SLWidgets MCM 
+- (Optional) Disable icons you don't want to see in SLWidgets MCM 
 
-- (Optional) Configure icon placement in iWant Status Bars MCM
+- (Optional) Configure icon placement/color/size in iWant Status Bars MCM. You can use multiple bars as well
+
+- (Optional) Use custom icons packs from download section. Just install as any other mode (dds icons only)
 
 
 
@@ -42,12 +48,12 @@ SexLab-Parasite
 EstrusChaurus
 EstrusSpider
 EstrusDwemer
+Fertility Mode 3
 
 
 Incompatible mods:
 
-Affected indirectly by mods that impact iWant Widgets.  Mods significantly altering hudmenu.gfx directly or via a hudmenu.swf file may prevent image display.  SkyHUD has been confirmed to cause this behavior.
-
+Affected indirectly by mods that impact iWant Widgets.  Mods significantly altering hudmenu.gfx directly or via a hudmenu.swf file may prevent image display.
 
 Customization:
 
