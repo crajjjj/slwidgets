@@ -70,7 +70,6 @@ Function updateInterfaces()
 	apropos2.initInterface()
 	fhu.initInterface()
 	mme.initInterface()
-	pregnancy.initInterface()
 	slp.initInterface()
 	pregnancy_module.initInterface()
 EndFunction
@@ -134,9 +133,6 @@ Function UpdateStatus()
 		iBars.setIconStatus(MODNAME, LACTACID_STATE, mme.getLactacidLevel())
 	endIf
 	
-	if (mcm.isPregnant && pregnancy.isInterfaceActive())
-		iBars.setIconStatus(MODNAME, PREGNANCY_STATE, pregnancy.getPregnancyCode())
-	endIf
 EndFunction
 
 Function UpdateToggleIcons()
@@ -210,11 +206,6 @@ Function UIUpdate()
 		iBars.releaseIcon(MODNAME,LACTACID_STATE)
 	endif
 	;----------------------------------	
-	if(mcm.isPregnant && pregnancy.isInterfaceActive())
-		_loadPregnancyIcons()
-	else
-		iBars.releaseIcon(MODNAME, PREGNANCY_STATE)
-	endif
 
  	;Toggle icons ----------------------------------
 	if(!mcm.isSLP || !slp.isInterfaceActive())
@@ -1032,66 +1023,6 @@ Function _loadLactacidIcons()
 EndFunction
 
 Function _loadPregnancyIcons()
-	s = new String[7]
-	d = new String[7]
-	r = new Int[7]
-	g = new Int[7]
-	b = new Int[7]
-	a = new Int[7]
-	string iconbasepath = "widgets/iwant/widgets/library/pregnancy/preg"
-	
-	; Empty
-	s[0] = iconbasepath + "0.dds"
-	d[0] = "Empty"
-	r[0] = 255
-	g[0] = 255
-	b[0] = 255
-	a[0] = 33
-	; HentaiPregnant
-	s[1] = iconbasepath + "1.dds"
-	d[1] = "HentaiPregnant"
-	r[1] = 255
-	g[1] = 255
-	b[1] = 255
-	a[1] = 75
-	; BeeingFemale
-	s[2] = iconbasepath + "2.dds"
-	d[2] = "BeeingFemale"
-	r[2] = 255
-	g[2] = 255
-	b[2] = 255
-	a[2] = 100
-	; EggFactory
-	s[3] = iconbasepath + "3.dds"
-	d[3] = "EggFactory"
-	r[3] = 255
-	g[3] = 142
-	b[3] = 142
-	a[3] = 100
-	; EstrusChaurus
-	s[4] = iconbasepath + "4.dds"
-	d[4] = "EstrusChaurus"
-	r[4] = 255
-	g[4] = 142
-	b[4] = 142
-	a[4] = 100
-	; EstrusSpider
-	s[5] = iconbasepath + "5.dds"
-	d[5] = "EstrusSpider" 
-	r[5] = 255 
-	g[5] = 142
-	b[5] = 142
-	a[5] = 100
-	; EstrusDwemer
-	s[6] = iconbasepath + "6.dds"
-	d[6] = "EstrusDwemer"
-	r[6] = 255
-	g[6] = 142
-	b[6] = 142
-	a[6] = 100
-	
-	; This will fail silently if the icon is already loaded
-	iBars.loadIcon(MODNAME, PREGNANCY_STATE, d, s, r, g, b, a)
-
+	;DEPRECATED
 EndFunction
 

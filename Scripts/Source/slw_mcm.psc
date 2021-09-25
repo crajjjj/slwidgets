@@ -50,6 +50,16 @@ event OnConfigInit()
 	Notification("MCM menu initialized.")
 endEvent
 
+event OnVersionUpdate(int a_version)
+	; a_version is the new version, CurrentVersion is the old version
+	;1.1.0
+	if (a_version >= 10100 && CurrentVersion < 10100)
+		WriteLog(self + ": Updating script to version 1.1.0")
+		isPregnant = false
+	endIf
+
+endEvent
+
 Event OnConfigClose()
 	widget.UIUpdate()
 endEvent
@@ -96,8 +106,8 @@ Function General()
 	_milkToggle = addToggleOption("MME Milk Icon Enabled", milk)
 	_lactacidToggle = addToggleOption("MME Lactacid Icon Enabled", lactacid)
 	
-	AddHeaderOption("Pregnancy")
-	_pregnancyToggle = addToggleOption("Pregnancy Icon Enabled", isPregnant)
+	;AddHeaderOption("Pregnancy")
+	;_pregnancyToggle = addToggleOption("Pregnancy Icon Enabled", isPregnant)
 	
 EndFunction
 
@@ -155,9 +165,9 @@ function syncInterfaces()
 		lactacid = false
 	endIf
 
-	if !pregnancy.isInterfaceActive()
-		isPregnant = false
-	endIf
+	;if !pregnancy.isInterfaceActive()
+	;	isPregnant = false
+	;endIf
 
 	if !slp.isInterfaceActive()
 		isSLP = false
@@ -222,9 +232,9 @@ Event onOptionSelect(int mcm_option)
 	elseIf(mcm_option == _lactacidToggle)
 		lactacid = !lactacid
 		setToggleOptionValue(mcm_option, lactacid)
-	elseIf(mcm_option == _pregnancyToggle)
-		isPregnant = !isPregnant
-		setToggleOptionValue(mcm_option, isPregnant)
+	;elseIf(mcm_option == _pregnancyToggle)
+		;isPregnant = !isPregnant
+		;setToggleOptionValue(mcm_option, isPregnant)
 	elseIf(mcm_option == _slpToggle)
 		isSLP = !isSLP
 		setToggleOptionValue(mcm_option, isSLP)
