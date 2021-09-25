@@ -56,6 +56,7 @@ event OnVersionUpdate(int a_version)
 	if (a_version >= 10100 && CurrentVersion < 10100)
 		WriteLog(self + ": Updating script to version 1.1.0")
 		isPregnant = false
+		widget.updateTo110()
 	endIf
 
 endEvent
@@ -165,10 +166,6 @@ function syncInterfaces()
 		lactacid = false
 	endIf
 
-	;if !pregnancy.isInterfaceActive()
-	;	isPregnant = false
-	;endIf
-
 	if !slp.isInterfaceActive()
 		isSLP = false
 	endIf
@@ -232,9 +229,6 @@ Event onOptionSelect(int mcm_option)
 	elseIf(mcm_option == _lactacidToggle)
 		lactacid = !lactacid
 		setToggleOptionValue(mcm_option, lactacid)
-	;elseIf(mcm_option == _pregnancyToggle)
-		;isPregnant = !isPregnant
-		;setToggleOptionValue(mcm_option, isPregnant)
 	elseIf(mcm_option == _slpToggle)
 		isSLP = !isSLP
 		setToggleOptionValue(mcm_option, isSLP)

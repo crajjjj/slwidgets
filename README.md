@@ -15,7 +15,7 @@ Stages:
 - MME - milk and lactacid
 Toggles:
 - SexLab-Parasite
-- Pregnancy: HentaiPregnancy, BeeingFemale, EggFactory, EstrusChaurus, EstrusSpider, EstrusDwemer, FM3 -  
+- Pregnancy: HentaiPregnancy, BeeingFemale, EggFactory, EstrusChaurus, EstrusSpider, EstrusDwemer, FM3 
 
 
 Installation

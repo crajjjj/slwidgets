@@ -29,7 +29,7 @@ String CUM_VAGINAL_STATE = "FHUCumVaginal"
 ;MME
 String MILK_STATE = "MMEMilk"
 String LACTACID_STATE = "MMELactacid"
-;Pregnancy
+;Pregnancy Deprecated
 String PREGNANCY_STATE = "Pregnancy"
 
 String EMPTY_STATE = "PLACEHOLDER"
@@ -1026,3 +1026,10 @@ Function _loadPregnancyIcons()
 	;DEPRECATED
 EndFunction
 
+Function updateTo110()
+	If !_loaded
+		slw_log.WriteLog("iBars not loaded yet. removing old pregnancy icons failed", 2)
+		Return
+	endIf
+	iBars.releaseIcon(MODNAME,PREGNANCY_STATE)
+EndFunction
