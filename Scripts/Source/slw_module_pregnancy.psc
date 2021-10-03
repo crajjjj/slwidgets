@@ -1,8 +1,9 @@
-Scriptname slw_module_pregnancy extends Quest  
+Scriptname slw_module_pregnancy extends slw_base_module  
 import slw_log
 import slw_util
 
-Actor Property playerRef Auto
+slw_config Property config Auto
+Actor Property PlayerRef Auto
 
 Bool Property Plugin_EstrusChaurus = false auto hidden
 Bool Property Plugin_EstrusSpider = false auto hidden
@@ -40,12 +41,6 @@ String Pregnancy_Dwemer_Spheres = "Pregnancy_Dwemer_Spheres"
 String akActorName
 
 string iconbasepath = "widgets/iwant/widgets/library/pregnancymod/"
-String[] s
-String[] d
-Int[] r
-Int[] g
-Int[] b
-Int[] a
 
 
 Function initInterface()
@@ -128,12 +123,23 @@ Function initInterface()
 	endif
 EndFunction
 
-
 Bool Function isInterfaceActive()
 	Return (Plugin_EstrusSpider || 	Plugin_EstrusChaurus || Plugin_EstrusDwemer || Plugin_BeeingFemale || Plugin_HentaiPregnancy || Plugin_EggFactory || Plugin_FertilityMode3)
 EndFunction
 
-Function releasePregnancyIcons(iWant_Status_Bars iBars)
+Event onWidgetReload(iWant_Status_Bars iBars)
+	if(!config.module_pregnancy_enabled || !isInterfaceActive())
+		_releasePregnancyIcons(iBars)
+	endif
+EndEvent
+
+Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
+	if (config.module_pregnancy_enabled && isInterfaceActive())
+		_reloadPregnancyIcons(iBars)
+	endIf
+EndEvent
+
+Function _releasePregnancyIcons(iWant_Status_Bars iBars)
 	if !isInterfaceActive()
 		return
 	endif
@@ -148,7 +154,7 @@ Function releasePregnancyIcons(iWant_Status_Bars iBars)
 EndFunction
 
 
- Function reloadPregnancyIcons(iWant_Status_Bars iBars)
+ Function _reloadPregnancyIcons(iWant_Status_Bars iBars)
 	if !isInterfaceActive()
 		return
 	endif
@@ -163,7 +169,7 @@ EndFunction
 
 	;BeeingFemale
 	if Plugin_BeeingFemale
-		if playerRef.HasSpell(_BFStatePregnant) ;_BFStatePregnant spell
+		if PlayerRef.HasSpell(_BFStatePregnant) ;_BFStatePregnant spell
 			_loadBasicIcon(iBars)
 		Else
 			iBars.releaseIcon(slwGetModName(),Pregnancy_Basic)
@@ -172,7 +178,7 @@ EndFunction
 	
 	;EggFactory
 	If Plugin_EggFactory
-		if playerRef.isInFaction(_EggFactoryPregnantFaction ) ;EggFactoryPregCheck Faction
+		if PlayerRef.isInFaction(_EggFactoryPregnantFaction ) ;EggFactoryPregCheck Faction
 			_loadEggsIcon(iBars)
 		else
 			iBars.releaseIcon(slwGetModName(),Pregnancy_Eggs)
@@ -181,7 +187,7 @@ EndFunction
 
 	;Estrus Chaurus+
 	if Plugin_EstrusChaurus
-		if playerRef.HasSpell(_ChaurusBreederSpell) || playerRef.WornHasKeyword(_zzEstrusParasiteKeyword)  
+		if PlayerRef.HasSpell(_ChaurusBreederSpell) || PlayerRef.WornHasKeyword(_zzEstrusParasiteKeyword)  
 			_loadChaurusEggsIcon(iBars)
 		Else
 			iBars.releaseIcon(slwGetModName(),Pregnancy_Chaurus_Eggs)
@@ -190,7 +196,7 @@ EndFunction
 	
 	;Estrus Spider+
 	if Plugin_EstrusSpider
-		if playerRef.HasSpell( _SpiderBreederSpell) || playerRef.WornHasKeyword(_zzEstrusSpiderParasiteKWD) ;SpiderBreeder spell
+		if PlayerRef.HasSpell( _SpiderBreederSpell) || PlayerRef.WornHasKeyword(_zzEstrusSpiderParasiteKWD) ;SpiderBreeder spell
 			_loadSpiderEggsIcon(iBars)
 		else
 			iBars.releaseIcon(slwGetModName(),Pregnancy_Spider_Eggs)
@@ -199,7 +205,7 @@ EndFunction
 	
 	;Estrus Dwemer+
 	if Plugin_EstrusDwemer
-		if playerRef.HasSpell(_DwemerBreederSpell) || playerRef.WornHasKeyword(_zzEstrusDwemerParasiteKWD)  ;DwemerBreeder spell
+		if PlayerRef.HasSpell(_DwemerBreederSpell) || PlayerRef.WornHasKeyword(_zzEstrusDwemerParasiteKWD)  ;DwemerBreeder spell
 			_loadSphereIcon(iBars)
 		else
 			iBars.releaseIcon(slwGetModName(),Pregnancy_Dwemer_Spheres)
@@ -233,7 +239,7 @@ EndFunction
 ;Hentai pregnancy LE/SE
 	;You can check pregnancy through "HentaiPregnantFaction" its ranks are: 1- actor is cuminflated 2- actor is cuminflated and will be pregnant 3- actor is pregnant
 Function handleHentaiPregnancy(iWant_Status_Bars iBars)
-	int _HentaiPregnantFactionRank = playerRef.GetFactionRank(_HentaiPregnantFaction)
+	int _HentaiPregnantFactionRank = PlayerRef.GetFactionRank(_HentaiPregnantFaction)
 	if _HentaiPregnantFactionRank == 1 
 			_loadCumInflationIcon(iBars)
 			iBars.releaseIcon(slwGetModName(),Pregnancy_Fetus)
@@ -254,12 +260,12 @@ Function handleHentaiPregnancy(iWant_Status_Bars iBars)
 EndFunction
 
 Function _loadBasicIcon(iWant_Status_Bars iBars)
-	s = new String[1]
-	d = new String[1]
-	r = new Int[1]
-	g = new Int[1]
-	b = new Int[1]
-	a = new Int[1]
+	String[] s = new String[1]
+	String[] d = new String[1]
+	Int[] r = new Int[1]
+	Int[] g = new Int[1]
+	Int[] b = new Int[1]
+	Int[] a = new Int[1]
 	
 	; HentaiPregnant
 	s[0] = iconbasepath + "basic.dds"
@@ -274,12 +280,12 @@ Function _loadBasicIcon(iWant_Status_Bars iBars)
 EndFunction	
 
 Function _loadEggsIcon(iWant_Status_Bars iBars)
-	s = new String[1]
-	d = new String[1]
-	r = new Int[1]
-	g = new Int[1]
-	b = new Int[1]
-	a = new Int[1]
+	String[] s = new String[1]
+	String[] d = new String[1]
+	Int[] r = new Int[1]
+	Int[] g = new Int[1]
+	Int[] b = new Int[1]
+	Int[] a = new Int[1]
 	
 	; HentaiPregnant
 	s[0] = iconbasepath + "eggs.dds"
@@ -294,12 +300,12 @@ Function _loadEggsIcon(iWant_Status_Bars iBars)
 EndFunction	
 
 Function _loadFetusIcon(iWant_Status_Bars iBars)
-	s = new String[1]
-	d = new String[1]
-	r = new Int[1]
-	g = new Int[1]
-	b = new Int[1]
-	a = new Int[1]
+	String[] s = new String[1]
+	String[] d = new String[1]
+	Int[] r = new Int[1]
+	Int[] g = new Int[1]
+	Int[] b = new Int[1]
+	Int[] a = new Int[1]
 	
 	; HentaiPregnant
 	s[0] = iconbasepath + "fetus.dds"
@@ -314,12 +320,12 @@ Function _loadFetusIcon(iWant_Status_Bars iBars)
 EndFunction	
 
 Function _loadChaurusEggsIcon(iWant_Status_Bars iBars)
-	s = new String[1]
-	d = new String[1]
-	r = new Int[1]
-	g = new Int[1]
-	b = new Int[1]
-	a = new Int[1]
+	String[] s = new String[1]
+	String[] d = new String[1]
+	Int[] r = new Int[1]
+	Int[] g = new Int[1]
+	Int[] b = new Int[1]
+	Int[] a = new Int[1]
 	
 	; HentaiPregnant
 	s[0] = iconbasepath + "chaurusEggs.dds"
@@ -334,12 +340,12 @@ Function _loadChaurusEggsIcon(iWant_Status_Bars iBars)
 EndFunction	
 
 Function _loadSpiderEggsIcon(iWant_Status_Bars iBars)
-	s = new String[1]
-	d = new String[1]
-	r = new Int[1]
-	g = new Int[1]
-	b = new Int[1]
-	a = new Int[1]
+	String[] s = new String[1]
+	String[] d = new String[1]
+	Int[] r = new Int[1]
+	Int[] g = new Int[1]
+	Int[] b = new Int[1]
+	Int[] a = new Int[1]
 	
 	; HentaiPregnant
 	s[0] = iconbasepath + "spiderEggs.dds"
@@ -354,12 +360,12 @@ Function _loadSpiderEggsIcon(iWant_Status_Bars iBars)
 EndFunction	
 
 Function _loadSphereIcon(iWant_Status_Bars iBars)
-	s = new String[1]
-	d = new String[1]
-	r = new Int[1]
-	g = new Int[1]
-	b = new Int[1]
-	a = new Int[1]
+	String[] s = new String[1]
+	String[] d = new String[1]
+	Int[] r = new Int[1]
+	Int[] g = new Int[1]
+	Int[] b = new Int[1]
+	Int[] a = new Int[1]
 	
 	; HentaiPregnant
 	s[0] = iconbasepath + "spheres.dds"
@@ -374,12 +380,12 @@ Function _loadSphereIcon(iWant_Status_Bars iBars)
 EndFunction	
 
 Function _loadCumInflationIcon(iWant_Status_Bars iBars)
-	s = new String[1]
-	d = new String[1]
-	r = new Int[1]
-	g = new Int[1]
-	b = new Int[1]
-	a = new Int[1]
+	String[] s = new String[1]
+	String[] d = new String[1]
+	Int[] r = new Int[1]
+	Int[] g = new Int[1]
+	Int[] b = new Int[1]
+	Int[] a = new Int[1]
 	
 	; HentaiPregnant
 	s[0] = iconbasepath + "cum.dds"
@@ -394,12 +400,12 @@ Function _loadCumInflationIcon(iWant_Status_Bars iBars)
 EndFunction	
 
 Function _loadOvulationIcon(iWant_Status_Bars iBars)
-	s = new String[1]
-	d = new String[1]
-	r = new Int[1]
-	g = new Int[1]
-	b = new Int[1]
-	a = new Int[1]
+	String[] s = new String[1]
+	String[] d = new String[1]
+	Int[] r = new Int[1]
+	Int[] g = new Int[1]
+	Int[] b = new Int[1]
+	Int[] a = new Int[1]
 	
 	; HentaiPregnant
 	s[0] = iconbasepath + "ovulation.dds"
