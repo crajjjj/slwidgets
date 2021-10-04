@@ -3,7 +3,7 @@ import slw_log
 import slw_util
 
 
-Function setupModule()
+Function moduleSetup()
 	initInterface()
 EndFunction
 

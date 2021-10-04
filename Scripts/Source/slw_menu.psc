@@ -27,13 +27,14 @@ endFunction
 
 Event OnConfigInit()
 	ModName = slwGetModName()
-	config.setupModules()
+	WriteLog("MCM: Initialising modules")
+	config.moduleSetup()
 	config.SetDefaults()
 	Notification("MCM menu initialized.")
 EndEvent
 
 Event OnConfigClose()
-	widget_controller.UpdateIcons()
+	widget_controller.reloadWidgets()
 EndEvent
 
 Event OnConfigOpen()
@@ -44,7 +45,7 @@ Event OnConfigOpen()
 EndEvent
 
 Event OnPageReset(string page)
-	config.syncModules()
+	config.moduleSyncConfig()
 
 	if (page == "General")
 		General()
@@ -85,10 +86,10 @@ EndFunction
 Function Toggles()
     SetCursorFillMode(TOP_TO_BOTTOM)
     SetCursorPosition(0)
-	AddHeaderOption("SexLab Parasites Module")
+	AddHeaderOption("SexLab Parasites")
 	Int slpFlag = _getFlag(config.module_slp.isInterfaceActive()) 
 	_parasites_mod_Toggle = addToggleOption("Parasites Icon Enabled", config.module_parasites_enabled, slpFlag)
-	AddHeaderOption("Pregnancy Module")
+	AddHeaderOption("Pregnancy")
 	Int pregFlag = _getFlag(config.module_pregnancy.isInterfaceActive())
 	_pregnancy_mod_Toggle = addToggleOption("Pregnancy Icon Enabled", config.module_pregnancy_enabled, pregFlag)
 EndFunction
@@ -200,7 +201,7 @@ State UpdateDeps
         SetOptionFlagsST(OPTION_FLAG_DISABLED)
         SetTextOptionValueST("Working...")
 		
-		config.setupModules()
+		config.moduleSetup()
 
 		SetTextOptionValueST("GO")
         SetOptionFlagsST(OPTION_FLAG_NONE)

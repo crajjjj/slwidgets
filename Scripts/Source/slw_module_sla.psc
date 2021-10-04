@@ -20,12 +20,12 @@ EndFunction
 
 Function initInterface()
 	If (!Module_Ready && isSLAReady())
-		slw_log.WriteLog("SexLabAroused.esm found")
+		slw_log.WriteLog("ModuleSLA: SexLabAroused.esm found")
 		sla = Game.GetFormFromFile(0x4290F, "SexLabAroused.esm") As slaFrameworkScr
 		if sla	
 			Module_Ready = true 
 		else
-			slw_log.WriteLog("slaFrameworkScr not found", 2)
+			slw_log.WriteLog("ModuleSLA: slaFrameworkScr not found", 2)
 		endif
 	endif
 EndFunction

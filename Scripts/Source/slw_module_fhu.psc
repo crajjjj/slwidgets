@@ -20,7 +20,7 @@ EndFunction
 
 Function initInterface()
 	If (!Module_Ready && isFHUReady())
-		slw_log.WriteLog("sr_FillHerUp.esp found")
+		slw_log.WriteLog("ModuleFHU: sr_FillHerUp.esp found")
 		FhuInflateQuest = Game.GetFormFromFile(0x000D63,"sr_FillHerUp.esp") as Quest
 		if FhuInflateQuest	
 			Module_Ready = true 

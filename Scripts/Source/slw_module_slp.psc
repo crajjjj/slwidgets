@@ -21,14 +21,13 @@ Bool Function isInterfaceActive()
 EndFunction
 
 Function initInterface()
-	slw_log.WriteLog("SLP dlc recheck")
 	If (!Module_Ready && isSLPReady())
-		WriteLog("SexLab-Parasites.esp found")
+		WriteLog("ModuleSLP: SexLab-Parasites.esp found")
 		Module_Ready = true
 		slp = Game.GetFormFromFile(0x000D62, "SexLab-Parasites.esp") As SLP_fcts_parasites
 		akActorName = playerRef.GetLeveledActorBase().GetName()
 		if !slp
-			WriteLog("SLP: SLP_fcts_parasites not found", 2)
+			WriteLog("ModuleSLP:: SLP_fcts_parasites not found", 2)
 		endif
 	endif
 EndFunction

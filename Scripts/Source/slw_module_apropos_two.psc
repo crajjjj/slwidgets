@@ -13,26 +13,19 @@ String VAG_STATE = "AP2Vaginal"
 String ANAL_STATE = "AP2Anal"
 String ORAL_STATE = "AP2Oral"
 
-String[] s
-String[] d
-Int[] r
-Int[] g
-Int[] b
-Int[] a
-
 Bool Function isInterfaceActive()
 	Return Module_Ready
 EndFunction
 
 Function initInterface()
 	If (!Module_Ready && isAprReady())
-		slw_log.WriteLog("Apropos2.esp found")
+		slw_log.WriteLog("ModuleAPR: Apropos2.esp found")
+		Module_Ready = true 
 		ActorsQuest = Game.GetFormFromFile(0x02902C, "Apropos2.esp") as Quest
 		if GetAproposAlias(PlayerRef, ActorsQuest) == None
 			String akActorName = playerRef.GetLeveledActorBase().GetName()
 			slw_log.WriteLog("Actor "+ akActorName + " is not yet registered in Apropos2")
 		EndIf
-		Module_Ready = true 
 	endif
 EndFunction
 
@@ -117,12 +110,12 @@ Int Function GetWearStateOral()
 EndFunction
 
 Function _loadApropos2Oral(iWant_Status_Bars iBars)
-	s = new String[9]
-	d = new String[9]
-	r = new Int[9]
-	g = new Int[9]
-	b = new Int[9]
-	a = new Int[9]
+	String[] s = new String[9]
+	String[] d = new String[9]
+	Int[] r = new Int[9]
+	Int[] g = new Int[9]
+	Int[] b = new Int[9]
+	Int[] a = new Int[9]
 	string iconbasepath = "widgets/iwant/widgets/library/apropos2/oral/oral"
 	; Oral
 	; Not Damaged
@@ -195,12 +188,12 @@ Function _loadApropos2Oral(iWant_Status_Bars iBars)
 EndFunction
 
 Function _loadApropos2Anal(iWant_Status_Bars iBars)
-	s = new String[9]
-	d = new String[9]
-	r = new Int[9]
-	g = new Int[9]
-	b = new Int[9]
-	a = new Int[9]
+	String[] s = new String[9]
+	String[] d = new String[9]
+	Int[] r = new Int[9]
+	Int[] g = new Int[9]
+	Int[] b = new Int[9]
+	Int[] a = new Int[9]
 	string iconbasepath = "widgets/iwant/widgets/library/apropos2/anal/ass"
 	; Anal
 	; Not Damaged
@@ -274,14 +267,12 @@ Function _loadApropos2Anal(iWant_Status_Bars iBars)
 EndFunction
 
 Function _loadApropos2Vag(iWant_Status_Bars iBars)
-
-	s = new String[9]
-	d = new String[9]
-	r = new Int[9]
-	g = new Int[9]
-	b = new Int[9]
-	a = new Int[9]
-
+	String[] s = new String[9]
+	String[] d = new String[9]
+	Int[] r = new Int[9]
+	Int[] g = new Int[9]
+	Int[] b = new Int[9]
+	Int[] a = new Int[9]
 	string iconbasepath = "widgets/iwant/widgets/library/apropos2/vaginal/vag"
    ; Vaginal
 	; Not Damaged

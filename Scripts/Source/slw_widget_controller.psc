@@ -7,44 +7,34 @@ slw_config Property config Auto
 Bool property controller_initialised = False auto hidden
 
 String EMPTY_STATE = "PLACEHOLDER"
+String STATUS_BARS_EVENT_NAME = "iWantStatusBarsReady"
 
 int _emptyIconIndex = 0
-
-
-; Assumed lifecycle: OnInit() -> setup() (Modules initialisation) -> OniWantStatusBarsReady -> UpdateIcons() -> ||controller_initialised|| -> UpdateIconStateStatus(in a loop)
-
-Event OnInit()
-	WriteLog("Initialising plugin")
-	setup()
-EndEvent
-
-;on game reload
-Function setup()
-	WriteLog(" widget_controller setup")
-	RegisterForModEvent("iWantStatusBarsReady", "OniWantStatusBarsReady")
-	config.setupModules()
-	RegisterForSingleUpdate(1)
-EndFunction
 
 bool Function isLoaded()
 	return controller_initialised
 EndFunction
 
-Event OnUpdate()
-    if(controller_initialised)
-		UpdateIconStateStatus()
-		RegisterForSingleUpdate(config.updateInterval)
-	else
-		RegisterForSingleUpdate(1)
-	endIf
+; Assumed lifecycle: OnInit() -> setup() (Modules initialisation) -> OniWantStatusBarsReady -> UpdateIcons() -> ||controller_initialised|| -> UpdateIconStateStatus(in a loop)
+Event OnInit()
+	WriteLog("WidgetController: Initialising modules")
+	setup()
 EndEvent
 
+;on game reload
+Function setup()
+	WriteLog("WidgetController module setup")
+	config.moduleSetup()
+	RegisterForModEvent(STATUS_BARS_EVENT_NAME, "OniWantStatusBarsReady")
+	RegisterForSingleUpdate(1)
+EndFunction
+
 Event OniWantStatusBarsReady(String eventName, String strArg, Float numArg, Form sender)
-	If eventName == "iWantStatusBarsReady"
+	If eventName == STATUS_BARS_EVENT_NAME
 		iBars = sender As iWant_Status_Bars
 		if (!controller_initialised)
-			WriteLog("iWantStatusBars loaded")
-			_updateIcons()
+			WriteLog("WidgetController: iWantStatusBars loaded")
+			_reloadWidgets()
 			;give some time to load all icons
 			Utility.Wait(5)
 			controller_initialised = true
@@ -53,31 +43,31 @@ Event OniWantStatusBarsReady(String eventName, String strArg, Float numArg, Form
 EndEvent
 
 ;Main update function
-Function UpdateIconStateStatus()
-	If !controller_initialised
-		WriteLog("UpdateIconStateStatus: iBars not loaded yet", 2)
-		Return
+Event OnUpdate()
+    if(controller_initialised)
+		config.moduleWidgetStateUpdate(iBars)
+		RegisterForSingleUpdate(config.updateInterval)
+	else
+		RegisterForSingleUpdate(1)
 	endIf
-	config.stateStatusUpdate(iBars)
-EndFunction
-
+EndEvent
 
 ;ON mcm update and init
-Function UpdateIcons()
+Function reloadWidgets()
 	If !controller_initialised
-		WriteLog("iBars not loaded yet. UpdateIcons failed", 2)
+		WriteLog("iBars not loaded yet. Reloading widgets failed", 2)
 		Return
 	endIf
-	_updateIcons()
+	_reloadWidgets()
 endFunction
 
-Function _updateIcons()
-	WriteLog("UpdateIcons: updating widgets")
-	config.widgetReload(iBars)
+Function _reloadWidgets()
+	WriteLog("WidgetController: reloading widgets")
+	config.moduleWidgetReload(iBars)
 endFunction
 
 ;Debug function to arrange iwant status bars icons better - fill empty spaces in the main bar to load/release toggles in a secondary bar
-Function LoadEmptyIcon()
+Function loadEmptyIcon()
 	String[] s = new String[1]
 	String[] d = new String[1]
 	Int[] r = new Int[1]

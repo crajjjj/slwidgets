@@ -17,7 +17,7 @@ EndFunction
 
 Function initInterface()
 	If (!Module_Ready && isMMEReady())
-		slw_log.WriteLog("MilkModNEW.esp found")
+		slw_log.WriteLog("ModuleMME: MilkModNEW.esp found")
 		Module_Ready = true 
 	endif
 EndFunction

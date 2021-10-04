@@ -44,81 +44,80 @@ string iconbasepath = "widgets/iwant/widgets/library/pregnancymod/"
 
 
 Function initInterface()
-	slw_log.WriteLog("Pregnancy dlc recheck")
 	akActorName = playerRef.GetLeveledActorBase().GetName()
 	
 	If (!Plugin_EstrusChaurus && isECReady())
-		slw_log.WriteLog("EstrusChaurus.esp found")
+		WriteLog("ModulePregnancy: EstrusChaurus.esp found")
 		Plugin_EstrusChaurus = true
 		_ChaurusBreederSpell = Game.GetFormFromFile(0x19121, "EstrusChaurus.esp") as Spell
 		if !_ChaurusBreederSpell
-			slw_log.WriteLog("EstrusChaurus: _ChaurusBreederSpell not found", 2)
+			WriteLog("ModulePregnancy: _ChaurusBreederSpell not found", 2)
 		endif
 		_zzEstrusParasiteKeyword = Game.GetFormFromFile(0x160A8, "EstrusChaurus.esp") as Keyword
 		if !_zzEstrusParasiteKeyword
-			slw_log.WriteLog("EstrusChaurus: _zzEstrusParasiteKeyword not found", 2)
+			WriteLog("ModulePregnancy: _zzEstrusParasiteKeyword not found", 2)
 		endif
 	endif
 	
 	If (!Plugin_EstrusSpider && isESReady())
-		slw_log.WriteLog("EstrusSpider.esp found")
+		WriteLog("ModulePregnancy: EstrusSpider.esp found")
 		Plugin_EstrusSpider = true
 		_SpiderBreederSpell = Game.GetFormFromFile(0x4e255, "EstrusSpider.esp") as Spell
 		if !_SpiderBreederSpell
-			slw_log.WriteLog("EstrusSpider: _SpiderBreederSpell not found", 2)
+			WriteLog("ModulePregnancy: _SpiderBreederSpell not found", 2)
 		endif
 		_zzEstrusSpiderParasiteKWD = Game.GetFormFromFile(0x4F2A3, "EstrusSpider.esp") as Keyword
 		if !_SpiderBreederSpell
-			slw_log.WriteLog("EstrusSpider: _zzEstrusSpiderParasiteKWD not found", 2)
+			WriteLog("ModulePregnancy: _zzEstrusSpiderParasiteKWD not found", 2)
 		endif
 	endif
 	
 	If (!Plugin_EstrusDwemer && isEDReady())
-		slw_log.WriteLog("EstrusDwemer.esp found")
+		WriteLog("ModulePregnancy: EstrusDwemer.esp found")
 		Plugin_EstrusDwemer = true
 		_DwemerBreederSpell = Game.GetFormFromFile(0x4e255, "EstrusDwemer.esp") as Spell 
 		if !_DwemerBreederSpell
-			slw_log.WriteLog("EstrusDwemer: _DwemerBreederSpell not found", 2)
+			WriteLog("ModulePregnancy: _DwemerBreederSpell not found", 2)
 		endif
 		_zzEstrusDwemerParasiteKWD = Game.GetFormFromFile(0x4F2A3, "EstrusDwemer.esp") as Keyword
 		if !_zzEstrusDwemerParasiteKWD
-			slw_log.WriteLog("EstrusDwemer: _zzEstrusDwemerParasiteKWD not found", 2)
+			WriteLog("ModulePregnancy: _zzEstrusDwemerParasiteKWD not found", 2)
 		endif
 	endif
 	
 	If (!Plugin_BeeingFemale && isBFReady())
-		slw_log.WriteLog("BeeingFemale.esm found")
+		WriteLog("ModulePregnancy: BeeingFemale.esm found")
 		Plugin_BeeingFemale = true
 		_BFStatePregnant = Game.GetFormFromFile(0x28a0, "BeeingFemale.esm") as Spell
 		if !_BFStatePregnant
-			slw_log.WriteLog("BeeingFemale: _BFStatePregnant not found", 2)
+			WriteLog("ModulePregnancy: _BFStatePregnant not found", 2)
 		endif
 	endif
 	
 	If (!Plugin_HentaiPregnancy && isHPReady())
-		slw_log.WriteLog("HentaiPregnancy.esm found")
+		WriteLog("ModulePregnancy: HentaiPregnancy.esm found")
 		Plugin_HentaiPregnancy = true
 		_HentaiPregnantFaction = ( Game.GetFormFromFile(0x12085, "HentaiPregnancy.esm") as Faction )
 		if !_HentaiPregnantFaction
-			slw_log.WriteLog("HentaiPregnancy: _HentaiPregnantFaction not found", 2)
+			WriteLog("ModulePregnancy: _HentaiPregnantFaction not found", 2)
 		endif
 	endif
 
 	If (!Plugin_EggFactory && isEFReady())
-		slw_log.WriteLog("EggFactory found")
+		WriteLog("ModulePregnancy: EggFactory found")
 		Plugin_EggFactory = true
 		_EggFactoryPregnantFaction = Game.GetFormFromFile(0x2943C, "EggFactory.esp") as Faction 
 		if !_EggFactoryPregnantFaction
-			slw_log.WriteLog("EggFactory: _EggFactoryPregnantFaction not found", 2)
+			WriteLog("ModulePregnancy: _EggFactoryPregnantFaction not found", 2)
 		endif
 	endif
 
 	If (!Plugin_FertilityMode3 && isFM3Ready())
-		slw_log.WriteLog("Fertility Mode found")
+		WriteLog("ModulePregnancy: Fertility Mode found")
 		Plugin_FertilityMode3 = true
 		_FMStorage = Game.GetFormFromFile(0x000D62,"Fertility Mode.esm") as _JSW_BB_Storage
 		if !_FMStorage
-			slw_log.WriteLog("Fertility Mode: _JSW_BB_Storage not found", 2)
+			WriteLog("ModulePregnancy: _JSW_BB_Storage not found", 2)
 		endif
 	endif
 EndFunction

@@ -26,19 +26,17 @@ Bool property module_mme_lactacid = True auto hidden
 Bool property module_parasites_enabled = True auto hidden
 Bool property module_pregnancy_enabled = True auto hidden
 
-Function setupModules()
-	WriteLog("Setting up modules")
-	module_sla.setupModule()
-	module_apropos_two.setupModule()
-	module_fhu.setupModule()
-	module_mme.setupModule()
-	module_slp.setupModule()
-	module_pregnancy.setupModule()
+Function moduleSetup()
+	module_sla.moduleSetup()
+	module_apropos_two.moduleSetup()
+	module_fhu.moduleSetup()
+	module_mme.moduleSetup()
+	module_slp.moduleSetup()
+	module_pregnancy.moduleSetup()
 EndFunction
 
 ;doesn't work async with ibars
-Function widgetReload(iWant_Status_Bars iBars)
-	WriteLog("Widget reload triggered")
+Function moduleWidgetReload(iWant_Status_Bars iBars)
 	module_sla.onWidgetReload(iBars)
 	module_apropos_two.onWidgetReload(iBars)
 	module_fhu.onWidgetReload(iBars)
@@ -48,7 +46,7 @@ Function widgetReload(iWant_Status_Bars iBars)
 EndFunction
 
 ;doesn't work async with ibars
-Function stateStatusUpdate(iWant_Status_Bars iBars)
+Function moduleWidgetStateUpdate(iWant_Status_Bars iBars)
 	module_sla.onWidgetStatusUpdate(iBars)
 	module_apropos_two.onWidgetStatusUpdate(iBars)
 	module_fhu.onWidgetStatusUpdate(iBars)
@@ -58,7 +56,7 @@ Function stateStatusUpdate(iWant_Status_Bars iBars)
 EndFunction
 
 ;disable toggles if module is not ready because of dependency check
-Function syncModules()
+Function moduleSyncConfig()
 	if !module_sla.isInterfaceActive() 
 		module_sla_arousal = false
 		module_sla_exposure = false
