@@ -58,14 +58,24 @@ Int Function getPeeLevel()
 	if !isInterfaceActive()
 		return 0
 	endif
-	return paf.PeeState
+	int pafstate = paf.PeeState
+	if pafstate >= 4
+		return  4
+	Else
+		return pafstate
+	endif 
 EndFunction
 ;states 0-4
 Int Function getPoopLevel()
 	if !isInterfaceActive()
 		return 0
 	endif
-	return paf.PoopState
+	int pafstate = paf.PoopState
+	if pafstate >= 4
+		return  4
+	Else
+		return pafstate
+	endif 
 EndFunction
 	
 

@@ -13,6 +13,7 @@ slw_module_pregnancy property module_pregnancy auto
 slw_module_paf property module_paf auto
 
 Int property updateInterval = 5 auto hidden
+Bool property slw_stopped = False auto hidden
 
 Bool property module_sla_arousal = True auto hidden
 Bool property module_sla_exposure = True auto hidden
@@ -99,6 +100,7 @@ EndFunction
 ;to deal with upgrades later
 Function SetDefaults()
 	WriteLog("Setting Defaults")
+	slw_stopped = False
     updateInterval = 5
 
 	module_sla_arousal = True
@@ -109,10 +111,27 @@ Function SetDefaults()
 	module_fhu_cum_vaginal = True
 	module_mme_milk = True
 	module_mme_lactacid = True
-
 	module_parasites_enabled = True
 	module_pregnancy_enabled = True
-
 	module_paf_pee = True
 	module_paf_poo = True
+EndFunction
+
+Function DisableWidgets()
+	WriteLog("Disabling widgets")
+	slw_stopped = True
+	updateInterval = 5
+
+	module_sla_arousal = false
+    module_sla_exposure = false
+	module_apropos_two_wt = false
+	module_fhu_cum = false
+	module_fhu_cum_anal = false
+	module_fhu_cum_vaginal = false
+	module_mme_milk = false
+	module_mme_lactacid = false
+	module_parasites_enabled = false
+	module_pregnancy_enabled = false
+	module_paf_pee = false
+	module_paf_poo = false
 EndFunction

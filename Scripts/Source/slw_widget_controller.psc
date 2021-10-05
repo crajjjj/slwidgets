@@ -6,6 +6,7 @@ slw_config Property config Auto
 
 Bool property controller_initialised = False auto hidden
 
+
 String EMPTY_STATE = "PLACEHOLDER"
 String STATUS_BARS_EVENT_NAME = "iWantStatusBarsReady"
 
@@ -44,6 +45,9 @@ EndEvent
 
 ;Main update function
 Event OnUpdate()
+	if config.slw_stopped
+		return
+	endif
     if(controller_initialised)
 		config.moduleWidgetStateUpdate(iBars)
 		RegisterForSingleUpdate(config.updateInterval)

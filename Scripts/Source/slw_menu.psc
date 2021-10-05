@@ -59,7 +59,8 @@ EndEvent
 Function General()
     SetCursorFillMode(TOP_TO_BOTTOM)
 	AddHeaderOption("General")
-	_update_interval_slider = AddSliderOption("Update interval", 5, "{0}")
+	Int sliderFlag = _getFlag()
+	_update_interval_slider = AddSliderOption("Update interval", config.updateInterval, "{0}", sliderFlag)
 	AddEmptyOption()
 	
 	AddHeaderOption("Sexlab Aroused")
@@ -106,6 +107,7 @@ Function Debug()
 	AddEmptyOption()
 	AddTextOptionST("UpdateDeps","Recheck dependencies","GO", OPTION_FLAG_NONE)
 	AddTextOptionST("AddEmptyIcon","Add empty icon placeholder(for toggles arrangement)","ADD", OPTION_FLAG_NONE)
+	AddTextOptionST("ToggleMod","Disable/Enable mod", StringIfElse( config.slw_stopped , "Enable", "Disable"), OPTION_FLAG_NONE)
 	AddHeaderOption("Dependency check:")
 	AddTextOption("iWant Status Bars ready", StringIfElse( widget_controller.isLoaded() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
 	AddTextOption("Sexlab Aroused(SexLabAroused.esm)", StringIfElse( isSLAReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
@@ -189,7 +191,7 @@ EndEvent
 Event OnOptionSliderOpen(Int mcm_option)
 	If (mcm_option == _update_interval_slider)
 		SetSliderDialogStartValue(config.updateInterval)
-		SetSliderDialogRange(0, 60)
+		SetSliderDialogRange(1, 60)
 		SetSliderDialogInterval(1.00)
 		SetSliderDialogDefaultValue(5)
 	endIf
@@ -213,6 +215,10 @@ State UpdateDeps
         SetOptionFlagsST(OPTION_FLAG_NONE)
         ForcePageReset()
     EndEvent
+
+	Event OnHighlightST()
+        SetInfoText("Recheck dependencies. This will reinit all the modules")
+    EndEvent   
 EndState
 
 State AddEmptyIcon
@@ -227,10 +233,34 @@ State AddEmptyIcon
     EndEvent
 EndState
 
-int Function _getFlag(Bool cond)
+State ToggleMod
+    Event OnSelectST()
+        SetOptionFlagsST(OPTION_FLAG_DISABLED)
+        SetTextOptionValueST("Working...")
+		config.slw_stopped = !config.slw_stopped
+		if config.slw_stopped
+			config.DisableWidgets()
+			SetTextOptionValueST("Enable")
+		Else
+			config.SetDefaults()
+			widget_controller.setup()
+			SetTextOptionValueST("Disable")
+		endif
+        SetOptionFlagsST(OPTION_FLAG_NONE)
+    EndEvent
+
+	Event OnHighlightST()
+        SetInfoText("Start/Stop the mod - update script will be stopped and all the icons removed")
+    EndEvent
+EndState
+
+int Function _getFlag(Bool cond = true)
+	if config.slw_stopped
+		return OPTION_FLAG_DISABLED
+	endif
 	If  !cond 	
    		return OPTION_FLAG_DISABLED  
 	Else
-   		return  OPTION_FLAG_NONE
+   		return OPTION_FLAG_NONE
 	EndIf  
 EndFunction
