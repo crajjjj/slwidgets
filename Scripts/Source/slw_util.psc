@@ -76,6 +76,10 @@ Bool Function isEFReady() Global
 	Return isDependencyReady("EggFactory.esp")
 EndFunction
 
+Bool Function isPAFReady() Global
+	Return  isDependencyReady("PeeAndFart.esp")
+EndFunction
+
 Bool Function isDependencyReady(String modname) Global
 	Return Game.GetModbyName(modname) != 255
 EndFunction

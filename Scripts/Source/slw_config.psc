@@ -10,7 +10,7 @@ slw_module_fhu property module_fhu auto
 slw_module_mme property module_mme auto
 slw_module_slp property module_slp auto
 slw_module_pregnancy property module_pregnancy auto
-
+slw_module_paf property module_paf auto
 
 Int property updateInterval = 5 auto hidden
 
@@ -22,9 +22,10 @@ Bool property module_fhu_cum_anal = True auto hidden
 Bool property module_fhu_cum_vaginal = True auto hidden
 Bool property module_mme_milk = True auto hidden
 Bool property module_mme_lactacid = True auto hidden
-
 Bool property module_parasites_enabled = True auto hidden
 Bool property module_pregnancy_enabled = True auto hidden
+Bool property module_paf_pee = True auto hidden
+Bool property module_paf_poo = True auto hidden
 
 Function moduleSetup()
 	module_sla.moduleSetup()
@@ -33,6 +34,7 @@ Function moduleSetup()
 	module_mme.moduleSetup()
 	module_slp.moduleSetup()
 	module_pregnancy.moduleSetup()
+	module_paf.moduleSetup()
 EndFunction
 
 ;doesn't work async with ibars
@@ -43,6 +45,7 @@ Function moduleWidgetReload(iWant_Status_Bars iBars)
 	module_mme.onWidgetReload(iBars)
 	module_slp.onWidgetReload(iBars)
 	module_pregnancy.onWidgetReload(iBars)
+	module_paf.onWidgetReload(iBars)
 EndFunction
 
 ;doesn't work async with ibars
@@ -53,6 +56,7 @@ Function moduleWidgetStateUpdate(iWant_Status_Bars iBars)
 	module_mme.onWidgetStatusUpdate(iBars)
 	module_slp.onWidgetStatusUpdate(iBars)
 	module_pregnancy.onWidgetStatusUpdate(iBars)
+	module_paf.onWidgetStatusUpdate(iBars)
 EndFunction
 
 ;disable toggles if module is not ready because of dependency check
@@ -84,6 +88,11 @@ Function moduleSyncConfig()
 	if !module_pregnancy.isInterfaceActive()
 		module_pregnancy_enabled = false
 	endIf
+
+	if !module_paf.isInterfaceActive()
+		module_paf_pee = false
+		module_paf_poo = false
+	endIf
 	
 EndFunction
 
@@ -103,4 +112,7 @@ Function SetDefaults()
 
 	module_parasites_enabled = True
 	module_pregnancy_enabled = True
+
+	module_paf_pee = True
+	module_paf_poo = True
 EndFunction
