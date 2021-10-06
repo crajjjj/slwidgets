@@ -241,10 +241,12 @@ State ToggleMod
 		if config.slw_stopped
 			config.DisableWidgets()
 			SetTextOptionValueST("Enable")
+			Notification("Mod disabled")
 		Else
 			config.SetDefaults()
 			widget_controller.setup()
 			SetTextOptionValueST("Disable")
+			Notification("Mod enabled")
 		endif
         SetOptionFlagsST(OPTION_FLAG_NONE)
     EndEvent
