@@ -53,7 +53,7 @@ Int Function getMilkLevel()
 			milkMax = 1
 		endif
 		Int milkLevel = ((milkCur / milkMax) * 100) as Int
-		return _percentToState(milkLevel)
+		return _percentToState9(milkLevel)
 EndFunction
 
 Int Function getLactacidLevel()
@@ -63,7 +63,7 @@ Int Function getLactacidLevel()
 			lactMax = 1
 		endif
 		Int lactacidLevel = ((lactCur / lactMax) * 100) as Int
-		return _percentToState(lactacidLevel)
+		return _percentToState9(lactacidLevel)
 EndFunction
 
 

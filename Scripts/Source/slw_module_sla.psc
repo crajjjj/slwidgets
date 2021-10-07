@@ -59,7 +59,7 @@ Int Function getArousalLevel()
 		return 0
 	endif
 	Int arousal = sla.GetActorArousal(playerRef)
-	return _percentToState(arousal)
+	return _percentToState9(arousal)
 EndFunction
 
 Int Function getExposureLevel()
@@ -67,7 +67,7 @@ Int Function getExposureLevel()
 		return 0
 	endif
 	Int exposure = sla.GetActorExposure(playerRef)
-	return _percentToState(exposure)
+	return _percentToState9(exposure)
 EndFunction
 	
 

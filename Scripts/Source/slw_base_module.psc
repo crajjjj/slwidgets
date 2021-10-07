@@ -22,30 +22,50 @@ Function initInterface()
 	WriteLog("slw_base_module initInterface() not overriden", 2)
 EndFunction	
 
-Int Function _percentToState(int percent)
+Int Function _percentToState9(int percent)
 	if percent < 0
 		percent = 0
-	elseif percent > 101
-		percent = 101
+	elseif percent > 100
+		percent = 100
 	endIf
 
-	If percent < 10
+	If percent == 0
 		return 0
-	ElseIf percent < 20
+	ElseIf percent < 10
 		return 1
-	ElseIf percent < 30
+	ElseIf percent < 25
 		return 2
 	ElseIf percent < 40
 		return 3
-	ElseIf percent < 60
+	ElseIf percent < 55
 		return 4
-	ElseIf percent < 80
+	ElseIf percent < 70
 		return 5
-	ElseIf percent < 90
+	ElseIf percent < 85
 		return 6
 	ElseIf percent < 100
 		return 7
 	Else
 		return 8
+	EndIf
+EndFunction			
+
+Int Function _percentToState5(int percent)
+    If percent < 0
+		percent = 0
+	elseif percent > 100
+		percent = 100
+	endIf
+
+	If percent == 0
+		return 0
+	ElseIf percent < 25
+		return 1
+	ElseIf percent < 50
+		return 2
+	ElseIf percent < 75
+		return 3
+	Else
+		return 4
 	EndIf
 EndFunction			

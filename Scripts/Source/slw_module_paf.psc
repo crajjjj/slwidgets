@@ -8,8 +8,9 @@ slw_config Property config Auto
 Actor Property PlayerRef Auto
 ;--------------------------------------------------
 
-;PAF
+;PAF/MiniNeeds
 PAF_MainQuestScript paf
+mndController mnd
 
 String PEE_STATE = "PAF_PEE"
 String POOP_STATE = "PAF_POOP"
@@ -17,6 +18,7 @@ String POOP_STATE = "PAF_POOP"
 Bool Function isInterfaceActive()
 	Return Module_Ready
 EndFunction
+
 
 Function initInterface()
 	If (!Module_Ready && isPAFReady())
@@ -28,16 +30,26 @@ Function initInterface()
 			slw_log.WriteLog("ModulePAF: PAF_MainQuestScript not found", 2)
 		endif
 	endif
+
+	If (!Module_Ready && isMiniNeedsReady())
+		slw_log.WriteLog("ModulePAF: MiniNeeds.esp found")
+		mnd = Game.GetFormFromFile(0x12C4, "MiniNeeds.esp") as mndController
+		if mnd	
+			Module_Ready = true 
+		else
+			slw_log.WriteLog("ModulePAF: mndController not found", 2)
+		endif
+	endif
 EndFunction
 
 Event onWidgetReload(iWant_Status_Bars iBars)
-	if(config.module_sla_arousal && isInterfaceActive())
+	if(config.module_paf_pee && isInterfaceActive())
 		_loadPeeIcons(iBars)
 	else
 		iBars.releaseIcon(slwGetModName(),PEE_STATE)
 	endif
 		
-	if(config.module_sla_exposure && isInterfaceActive())
+	if(config.module_paf_poo && isInterfaceActive())
 		_loadPooIcons(iBars)
 	else
 		iBars.releaseIcon(slwGetModName(),POOP_STATE)
@@ -45,10 +57,10 @@ Event onWidgetReload(iWant_Status_Bars iBars)
 EndEvent
 
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
-	if(config.module_sla_arousal && isInterfaceActive())
+	if(config.module_paf_pee && isInterfaceActive())
 		iBars.setIconStatus(slwGetModName(), PEE_STATE, getPeeLevel())
 	endif
-	if(config.module_sla_exposure && isInterfaceActive())
+	if(config.module_paf_poo && isInterfaceActive())
 		iBars.setIconStatus(slwGetModName(), POOP_STATE, getPoopLevel())
 	endif	
 EndEvent
@@ -58,18 +70,27 @@ Int Function getPeeLevel()
 	if !isInterfaceActive()
 		return 0
 	endif
-	int pafstate = paf.PeeState
-	if pafstate >= 4
-		return  4
-	Else
-		return pafstate
-	endif 
+	if paf
+		return _getPeeLevelPAF()
+	endif	
+	if mnd
+		return _getPeeLevelMND()
+	endif
 EndFunction
 ;states 0-4
 Int Function getPoopLevel()
 	if !isInterfaceActive()
 		return 0
 	endif
+	if paf
+		return _getPoopLevelPAF()
+	endif
+	if mnd
+		return _getPoopLevelMND()
+	endif
+EndFunction
+
+Int Function _getPoopLevelPAF()
 	int pafstate = paf.PoopState
 	if pafstate >= 4
 		return  4
@@ -77,7 +98,46 @@ Int Function getPoopLevel()
 		return pafstate
 	endif 
 EndFunction
+
+Int Function _getPoopLevelMND()
+	if !mnd.enablePoop
+		return 0
+	endif
+	int p = getPercent("Poop")
+	return _percentToState5(p)
+EndFunction
+
+Int Function _getPeeLevelPAF()
+	int pafstate = paf.PeeState
+	if pafstate >= 4
+		return  4
+	Else
+		return pafstate
+	endif 
+EndFunction
+
+Int Function _getPeeLevelMND()
+	if !mnd.enablePiss
+		return 0
+	endif
+
+	int p = getPercent("Piss")
+	return _percentToState5(p)
+EndFunction
+
+;fixed function from mnd
+int function getPercent(string need)
+	float now = Utility.GetCurrentGameTime()
+	float tsv = 20.0/mnd.TimeScale.getValue()
+	float perc = -1.0
 	
+	If need=="Piss"
+		perc = tsv * 24.0*(now - mnd.lastTimePiss)/mnd.timePiss
+	elseIf need=="Poop"
+		perc = tsv * 24.0*(now - mnd.lastTimePoop)/mnd.timePoop
+	endIf
+	return (perc * 100) as int
+endFunction
 
 Function _loadPeeIcons(iWant_Status_Bars iBars)
 	String[] s = new String[5]

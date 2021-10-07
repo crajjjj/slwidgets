@@ -80,6 +80,10 @@ Bool Function isPAFReady() Global
 	Return  isDependencyReady("PeeAndFart.esp")
 EndFunction
 
+Bool Function isMiniNeedsReady() Global
+	Return  isDependencyReady("MiniNeeds.esp")
+EndFunction
+
 Bool Function isDependencyReady(String modname) Global
 	Return Game.GetModbyName(modname) != 255
 EndFunction
