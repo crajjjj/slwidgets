@@ -11,6 +11,7 @@ slw_module_mme property module_mme auto
 slw_module_slp property module_slp auto
 slw_module_pregnancy property module_pregnancy auto
 slw_module_paf property module_paf auto
+slw_module_defeat property module_defeat auto
 
 Int property updateInterval = 5 auto hidden
 Bool property slw_stopped = False auto hidden
@@ -27,6 +28,7 @@ Bool property module_parasites_enabled = True auto hidden
 Bool property module_pregnancy_enabled = True auto hidden
 Bool property module_paf_pee = True auto hidden
 Bool property module_paf_poo = True auto hidden
+Bool property module_defeat_enabled = True auto hidden
 
 Function moduleSetup()
 	module_sla.moduleSetup()
@@ -36,6 +38,7 @@ Function moduleSetup()
 	module_slp.moduleSetup()
 	module_pregnancy.moduleSetup()
 	module_paf.moduleSetup()
+	module_defeat.moduleSetup()
 EndFunction
 
 ;doesn't work async with ibars
@@ -47,6 +50,7 @@ Function moduleWidgetReload(iWant_Status_Bars iBars)
 	module_slp.onWidgetReload(iBars)
 	module_pregnancy.onWidgetReload(iBars)
 	module_paf.onWidgetReload(iBars)
+	module_defeat.onWidgetReload(iBars)
 EndFunction
 
 ;doesn't work async with ibars
@@ -58,6 +62,7 @@ Function moduleWidgetStateUpdate(iWant_Status_Bars iBars)
 	module_slp.onWidgetStatusUpdate(iBars)
 	module_pregnancy.onWidgetStatusUpdate(iBars)
 	module_paf.onWidgetStatusUpdate(iBars)
+	module_defeat.onWidgetReload(iBars)
 EndFunction
 
 ;disable toggles if module is not ready because of dependency check
@@ -94,6 +99,10 @@ Function moduleSyncConfig()
 		module_paf_pee = false
 		module_paf_poo = false
 	endIf
+
+	if !module_defeat.isInterfaceActive()
+		module_defeat_enabled = false
+	endIf
 	
 EndFunction
 
@@ -115,6 +124,7 @@ Function SetDefaults()
 	module_pregnancy_enabled = True
 	module_paf_pee = True
 	module_paf_poo = True
+	module_defeat_enabled = True
 EndFunction
 
 Function DisableWidgets()
@@ -134,4 +144,5 @@ Function DisableWidgets()
 	module_pregnancy_enabled = false
 	module_paf_pee = false
 	module_paf_poo = false
+	module_defeat_enabled = false
 EndFunction

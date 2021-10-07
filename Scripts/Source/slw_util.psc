@@ -84,6 +84,10 @@ Bool Function isMiniNeedsReady() Global
 	Return  isDependencyReady("MiniNeeds.esp")
 EndFunction
 
+Bool Function isSLDefeatReady() Global
+	Return  isDependencyReady("SexLabDefeat.esp")
+EndFunction
+
 Bool Function isDependencyReady(String modname) Global
 	Return Game.GetModbyName(modname) != 255
 EndFunction

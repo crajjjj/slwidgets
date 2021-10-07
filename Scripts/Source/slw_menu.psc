@@ -17,6 +17,7 @@ int _mme_milk_Toggle
 int _mme_lactacid_Toggle
 int _parasites_mod_Toggle
 int _pregnancy_mod_Toggle
+int _defeat_mod_Toggle
 
 ; SCRIPT VERSION
 ; https://github.com/schlangster/skyui/wiki/MCM-Advanced-Features#incremental-upgrading
@@ -94,10 +95,13 @@ Function Toggles()
     SetCursorPosition(0)
 	AddHeaderOption("SexLab Parasites")
 	Int slpFlag = _getFlag(config.module_slp.isInterfaceActive()) 
-	_parasites_mod_Toggle = addToggleOption("Parasites Icon Enabled", config.module_parasites_enabled, slpFlag)
+	_parasites_mod_Toggle = addToggleOption("Parasites Icons Enabled", config.module_parasites_enabled, slpFlag)
 	AddHeaderOption("Pregnancy")
 	Int pregFlag = _getFlag(config.module_pregnancy.isInterfaceActive())
-	_pregnancy_mod_Toggle = addToggleOption("Pregnancy Icon Enabled", config.module_pregnancy_enabled, pregFlag)
+	_pregnancy_mod_Toggle = addToggleOption("Pregnancy Icons Enabled", config.module_pregnancy_enabled, pregFlag)
+	AddHeaderOption("Defeat")
+	Int defeatFlag = _getFlag(config.module_defeat.isInterfaceActive())
+	_defeat_mod_Toggle = addToggleOption("Defeat Icons Enabled", config.module_defeat_enabled, defeatFlag)
 EndFunction
 
 Function Debug()
@@ -115,8 +119,6 @@ Function Debug()
 	AddTextOption("Fill Her Up(sr_FillHerUp.esp)", StringIfElse( isFHUReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
 	AddTextOption("Milk Mod Economy (MilkModNEW.esp)", StringIfElse( isMMEReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
 	AddTextOption("Sexlab parasites(SexLab-Parasites.esp)", StringIfElse( isSLPReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOption("Pee and Fart (PeeAndFart.esp)", StringIfElse( isPAFReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOption("MiniNeeds (MiniNeeds.esp)", StringIfElse( isMiniNeedsReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
 	AddHeaderOption("Dependency check: pregnancy")
 	AddTextOption("Hentai Pregnancy", StringIfElse( isHPReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
 	AddTextOption("FertilityMode3", StringIfElse( isFM3Ready() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
@@ -125,6 +127,11 @@ Function Debug()
 	AddTextOption("EstrusChaurus", StringIfElse( isECReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
 	AddTextOption("EstrusSpider", StringIfElse( isESReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
 	AddTextOption("EstrusDwemer", StringIfElse( isEDReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddHeaderOption("Dependency check: needs")
+	AddTextOption("Pee and Fart (PeeAndFart.esp)", StringIfElse( isPAFReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddTextOption("MiniNeeds (MiniNeeds.esp)", StringIfElse( isMiniNeedsReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddHeaderOption("Dependency check: defeat")
+	AddTextOption("SLDefeat (SexLabDefeat.esp)", StringIfElse( isSLDefeatReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
 EndFunction
 
 
@@ -152,6 +159,8 @@ Event onOptionHighlight(int mcm_option)
 		SetInfoText("Toggle parasites icons")
 	ElseIf (mcm_option == _pregnancy_mod_Toggle)
 		SetInfoText("Toggle pregnancy module icons")
+	ElseIf (mcm_option == _defeat_mod_Toggle)
+		SetInfoText("Toggle defeat module icons")
 	endIf
 EndEvent
 
@@ -186,6 +195,9 @@ Event onOptionSelect(int mcm_option)
 	elseIf(mcm_option == _pregnancy_mod_Toggle)
 		config.module_pregnancy_enabled = !config.module_pregnancy_enabled
 		setToggleOptionValue(mcm_option, config.module_pregnancy_enabled)
+	elseIf(mcm_option == _defeat_mod_Toggle)
+		config.module_defeat_enabled = !config.module_defeat_enabled
+		setToggleOptionValue(mcm_option, config.module_defeat_enabled)
 	endIf
 EndEvent
 
