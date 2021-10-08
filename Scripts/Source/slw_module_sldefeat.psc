@@ -1,4 +1,4 @@
-Scriptname slw_module_defeat extends slw_base_module  
+Scriptname slw_module_sldefeat extends slw_base_module  
 import slw_log
 import slw_util
 
@@ -8,33 +8,41 @@ Actor Property PlayerRef Auto
 Bool Property Module_Ready = false auto hidden
 ;SL Defeat
 String DEFEAT_RAPED_STATE = "Defeat_Raped"
-Spell _defeatRapedSpell 
-Spell _defeatBeingRapedSpell
+
+MagicEffect _defeatWeakened
 
 string iconbasepath = "widgets/iwant/widgets/library/defeatmod/"
-
+;override
 Bool Function isInterfaceActive()
 	Return  Module_Ready
 EndFunction
+;override
+Function resetInterface()
+	Module_Ready = false
+EndFunction
 
+;override
 Function initInterface()
 	If (!Module_Ready && isSLDefeatReady())
 		WriteLog("ModuleDefeat: SexLabDefeat.esp found")
 		Module_Ready = true 
-		_defeatBeingRapedSpell = Game.GetFormFromFile(0x001D90, "SexLabDefeat.esp") as Spell
-		_defeatRapedSpell = Game.GetFormFromFile(0x0012C7, "SexLabDefeat.esp") as Spell
-		if !_defeatBeingRapedSpell || !_defeatRapedSpell
-			WriteLog("ModuleDefeat:: defeat spells not found", 2)
+		_defeatWeakened = Game.GetFormFromFile(0x0012C9, "SexLabDefeat.esp") as MagicEffect
+		if !_defeatWeakened
+			WriteLog("ModuleDefeat:: _defeatWeakened magicEffect not found", 2)
+		else
+			WriteLog("ModuleDefeat:: _defeatWeakened found")
 		endif
 	endif
 EndFunction
 
+;override
 Event onWidgetReload(iWant_Status_Bars iBars)
 	if(!config.module_defeat_enabled || !isInterfaceActive())
 		_releaseDefeatIcons(iBars)
 	endif
 EndEvent
 
+;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 	if (config.module_defeat_enabled && isInterfaceActive())
 		_reloadDefeatIcons(iBars)
@@ -45,8 +53,7 @@ Function _reloadDefeatIcons(iWant_Status_Bars iBars)
 	if !isInterfaceActive()
 		return
 	endif
-	
-	if PlayerRef.HasSpell(_defeatRapedSpell) || PlayerRef.HasSpell(_defeatBeingRapedSpell)
+	if PlayerRef.HasMagicEffect(_defeatWeakened)
 		_loadDefeatRapedIcon(iBars)
 	Else
 		iBars.releaseIcon(slwGetModName(),DEFEAT_RAPED_STATE)

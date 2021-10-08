@@ -42,7 +42,7 @@ String akActorName
 
 string iconbasepath = "widgets/iwant/widgets/library/pregnancymod/"
 
-
+;override
 Function initInterface()
 	akActorName = playerRef.GetLeveledActorBase().GetName()
 	
@@ -122,16 +122,30 @@ Function initInterface()
 	endif
 EndFunction
 
+;override
 Bool Function isInterfaceActive()
 	Return (Plugin_EstrusSpider || 	Plugin_EstrusChaurus || Plugin_EstrusDwemer || Plugin_BeeingFemale || Plugin_HentaiPregnancy || Plugin_EggFactory || Plugin_FertilityMode3)
 EndFunction
 
+;override
+Function resetInterface()
+	Plugin_EstrusSpider = false
+	Plugin_EstrusChaurus = false
+	Plugin_EstrusDwemer = false
+	Plugin_BeeingFemale = false
+	Plugin_HentaiPregnancy = false
+	Plugin_EggFactory = false
+	Plugin_FertilityMode3 = false
+EndFunction
+
+;override
 Event onWidgetReload(iWant_Status_Bars iBars)
 	if(!config.module_pregnancy_enabled || !isInterfaceActive())
 		_releasePregnancyIcons(iBars)
 	endif
 EndEvent
 
+;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 	if (config.module_pregnancy_enabled && isInterfaceActive())
 		_reloadPregnancyIcons(iBars)

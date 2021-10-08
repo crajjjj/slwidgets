@@ -6,6 +6,7 @@ Bool Property Module_Ready = false auto hidden
 
 slw_config Property config Auto
 Actor Property PlayerRef Auto
+
 ;--------------------------------------------------
 ;Apropos2
 Quest ActorsQuest
@@ -13,10 +14,17 @@ String VAG_STATE = "AP2Vaginal"
 String ANAL_STATE = "AP2Anal"
 String ORAL_STATE = "AP2Oral"
 
+;override
 Bool Function isInterfaceActive()
 	Return Module_Ready
 EndFunction
 
+;override
+Function resetInterface()
+	 Module_Ready = false
+EndFunction
+
+;override
 Function initInterface()
 	If (!Module_Ready && isAprReady())
 		slw_log.WriteLog("ModuleAPR: Apropos2.esp found")
@@ -29,6 +37,7 @@ Function initInterface()
 	endif
 EndFunction
 
+;override
 Event onWidgetReload(iWant_Status_Bars iBars)
 	if(config.module_apropos_two_wt && isInterfaceActive())
 		_loadApropos2Oral(iBars)
@@ -41,6 +50,7 @@ Event onWidgetReload(iWant_Status_Bars iBars)
 	endif
 EndEvent
 
+;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 	if (config.module_apropos_two_wt && isInterfaceActive())
 		iBars.setIconStatus(slwGetModName(), ORAL_STATE, GetWearStateOral())
@@ -48,7 +58,6 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 		iBars.setIconStatus(slwGetModName(), VAG_STATE, GetWearStateVaginal())
 	endIf
 EndEvent
-
 
 ReferenceAlias Function GetAproposAlias(Actor akTarget, Quest apropos2Quest )
 	; Search Apropos2 actor aliases as the player alias is not set in stone

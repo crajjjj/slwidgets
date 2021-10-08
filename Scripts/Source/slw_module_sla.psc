@@ -14,10 +14,17 @@ slaFrameworkScr sla
 String AROUSAL_STATE = "Arousal"
 String EXPOSURE_STATE = "Exposure"
 
+;override
 Bool Function isInterfaceActive()
 	Return Module_Ready
 EndFunction
 
+;override
+Function resetInterface()
+	Module_Ready = false
+EndFunction
+
+;override
 Function initInterface()
 	If (!Module_Ready && isSLAReady())
 		slw_log.WriteLog("ModuleSLA: SexLabAroused.esm found")
@@ -29,7 +36,7 @@ Function initInterface()
 		endif
 	endif
 EndFunction
-
+;override
 Event onWidgetReload(iWant_Status_Bars iBars)
 	if(config.module_sla_arousal && isInterfaceActive())
 		_loadArousedIcons(iBars)
@@ -43,7 +50,7 @@ Event onWidgetReload(iWant_Status_Bars iBars)
 		iBars.releaseIcon(slwGetModName(),EXPOSURE_STATE)
 	endif
 EndEvent
-
+;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 	if(config.module_sla_arousal && isInterfaceActive())
 		iBars.setIconStatus(slwGetModName(), AROUSAL_STATE, getArousalLevel())
@@ -52,7 +59,6 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 		iBars.setIconStatus(slwGetModName(), EXPOSURE_STATE, getExposureLevel())
 	endif	
 EndEvent
-
 
 Int Function getArousalLevel()
 	if !isInterfaceActive()

@@ -12,7 +12,7 @@ slw_module_mme property module_mme auto
 slw_module_slp property module_slp auto
 slw_module_pregnancy property module_pregnancy auto
 slw_module_paf property module_paf auto
-slw_module_defeat property module_defeat auto
+slw_module_sldefeat property module_defeat auto
 
 
 Int property updateInterval = 5 auto hidden
@@ -44,6 +44,18 @@ Function moduleSetup()
 	module_defeat.moduleSetup()
 EndFunction
 
+;force modules to reinit after restart
+Function moduleReset()
+	module_sla.moduleReset()
+	module_apropos_two.moduleReset()
+	module_fhu.moduleReset()
+	module_mme.moduleReset()
+	module_slp.moduleReset()
+	module_pregnancy.moduleReset()
+	module_paf.moduleReset()
+	module_defeat.moduleReset()
+EndFunction
+
 ;doesn't work async with ibars
 Function moduleWidgetReload(iWant_Status_Bars iBars)
 	module_sla.onWidgetReload(iBars)
@@ -65,7 +77,7 @@ Function moduleWidgetStateUpdate(iWant_Status_Bars iBars)
 	module_slp.onWidgetStatusUpdate(iBars)
 	module_pregnancy.onWidgetStatusUpdate(iBars)
 	module_paf.onWidgetStatusUpdate(iBars)
-	module_defeat.onWidgetReload(iBars)
+	module_defeat.onWidgetStatusUpdate(iBars)
 EndFunction
 
 ;disable toggles if module is not ready because of dependency check

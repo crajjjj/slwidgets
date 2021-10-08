@@ -14,10 +14,17 @@ String CUM_STATE = "FHUCum"
 String CUM_ANAL_STATE = "FHUCumAnal"
 String CUM_VAGINAL_STATE = "FHUCumVaginal"
 
+;override
 Bool Function isInterfaceActive()
 	Return Module_Ready
 EndFunction
 
+;override
+Function resetInterface()
+	Module_Ready = false
+EndFunction
+
+;override
 Function initInterface()
 	If (!Module_Ready && isFHUReady())
 		slw_log.WriteLog("ModuleFHU: sr_FillHerUp.esp found")
@@ -30,6 +37,7 @@ Function initInterface()
 	endif
 EndFunction
 
+;override
 Event onWidgetReload(iWant_Status_Bars iBars)
 	if(config.module_fhu_cum && isInterfaceActive())
 		_loadCumIcons(iBars)
@@ -48,6 +56,7 @@ Event onWidgetReload(iWant_Status_Bars iBars)
 	endif
 EndEvent
 
+;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 	if !isInterfaceActive()
 		return

@@ -17,6 +17,8 @@ int _mme_milk_Toggle
 int _mme_lactacid_Toggle
 int _parasites_mod_Toggle
 int _pregnancy_mod_Toggle
+int _paf_pee_Toggle
+int _paf_poo_Toggle
 int _defeat_mod_Toggle
 
 
@@ -31,14 +33,14 @@ endFunction
 Event OnConfigInit()
 	ModName = slwGetModName()
 	WriteLog("MCM: Initialising modules")
-	config.moduleSetup()
 	config.SetDefaults()
 	config.LoadSettingsAtStart()
+	widget_controller.setup()
 	Notification("MCM menu initialized.")
 EndEvent
 
 Event OnConfigClose()
-	widget_controller.reloadWidgets()
+		widget_controller.reloadWidgets()
 EndEvent
 
 Event OnConfigOpen()
@@ -89,8 +91,8 @@ Function General()
 
 	AddHeaderOption("$SLW_Needs")
 	Int pafFlag = _getFlag(config.module_paf.isInterfaceActive()) 
-	_mme_milk_Toggle = addToggleOption("$SLW_Needs_Pee", config.module_paf_pee, pafFlag)
-	_mme_lactacid_Toggle = addToggleOption("$SLW_Needs_Poop", config.module_paf_poo, pafFlag)
+	_paf_pee_Toggle = addToggleOption("$SLW_Needs_Pee", config.module_paf_pee, pafFlag)
+	_paf_poo_Toggle = addToggleOption("$SLW_Needs_Poop", config.module_paf_poo, pafFlag)
 EndFunction
 
 Function Toggles()
@@ -164,6 +166,10 @@ Event onOptionHighlight(int mcm_option)
 		SetInfoText("$SLW_MME_Milk_Toggle_Info")
 	ElseIf (mcm_option == _mme_lactacid_Toggle)
 		SetInfoText("$SLW_MME_Lactacid_Toggle_Info")
+	ElseIf (mcm_option == _paf_pee_Toggle)
+		SetInfoText("$SLW_PAF_Pee_Info")
+	ElseIf (mcm_option == _paf_poo_Toggle)
+		SetInfoText("$SLW_PAF_Poo_Info")
 	ElseIf (mcm_option == _parasites_mod_Toggle)
 		SetInfoText("$SLW_Parasites_Toggle_Info")
 	ElseIf (mcm_option == _pregnancy_mod_Toggle)
@@ -198,6 +204,12 @@ Event onOptionSelect(int mcm_option)
 	elseIf(mcm_option == _mme_lactacid_Toggle)
 		config.module_mme_lactacid = !config.module_mme_lactacid
 		setToggleOptionValue(mcm_option, config.module_mme_lactacid)
+	elseIf(mcm_option == _paf_pee_Toggle)
+		config.module_paf_pee = !config.module_paf_pee
+		setToggleOptionValue(mcm_option, config.module_paf_pee)
+	elseIf(mcm_option == _paf_poo_Toggle)
+		config.module_paf_poo = !config.module_paf_poo
+		setToggleOptionValue(mcm_option, config.module_paf_poo)
 	elseIf(mcm_option == _parasites_mod_Toggle)
 		config.module_parasites_enabled = !config.module_parasites_enabled
 		setToggleOptionValue(mcm_option, config.module_parasites_enabled)
@@ -230,9 +242,8 @@ State UPDATE_DEPENDENCIES_STATE
     Event OnSelectST()
         SetOptionFlagsST(OPTION_FLAG_DISABLED)
         SetTextOptionValueST("$SLW_Working")
-		
+		config.moduleReset()
 		config.moduleSetup()
-
 		SetTextOptionValueST("$SLW_GO")
         SetOptionFlagsST(OPTION_FLAG_NONE)
         ForcePageReset()
@@ -261,10 +272,13 @@ State TOGGLE_MOD_STATE
         SetTextOptionValueST("$SLW_Working")
 		config.slw_stopped = !config.slw_stopped
 		if config.slw_stopped
+			;disable flow
 			config.DisableWidgets()
+			config.moduleReset()
 			SetTextOptionValueST("$SLW_Enable")
 			ShowMessage("$SLW_Disabled", false)
 		Else
+			;enable flow
 			config.SetDefaults()
 			config.LoadUserSettingsPapyrus()
 			widget_controller.setup()
@@ -273,7 +287,7 @@ State TOGGLE_MOD_STATE
 		endif
         SetOptionFlagsST(OPTION_FLAG_NONE)
     EndEvent
-
+	
 	Event OnHighlightST()
         SetInfoText("$SLW_EnabledDisabled_Info")
     EndEvent

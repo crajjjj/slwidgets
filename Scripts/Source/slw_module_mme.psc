@@ -10,11 +10,17 @@ Actor Property PlayerRef Auto
 ;MME
 String MILK_STATE = "MMEMilk"
 String LACTACID_STATE = "MMELactacid"
-
+;override
 Bool Function isInterfaceActive()
 	Return Module_Ready
 EndFunction
 
+;override
+Function resetInterface()
+	Module_Ready = false
+EndFunction
+
+;override
 Function initInterface()
 	If (!Module_Ready && isMMEReady())
 		slw_log.WriteLog("ModuleMME: MilkModNEW.esp found")
@@ -22,6 +28,7 @@ Function initInterface()
 	endif
 EndFunction
 
+;override
 Event onWidgetReload(iWant_Status_Bars iBars)
 	if(config.module_mme_milk && isInterfaceActive())
 		_loadMilkIcons(iBars)
@@ -36,6 +43,7 @@ Event onWidgetReload(iWant_Status_Bars iBars)
 	endif
 EndEvent
 
+;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 	if (config.module_mme_milk && isInterfaceActive())
 		iBars.setIconStatus(slwGetModName(), MILK_STATE, getMilkLevel())

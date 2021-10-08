@@ -15,11 +15,17 @@ mndController mnd
 String PEE_STATE = "PAF_PEE"
 String POOP_STATE = "PAF_POOP"
 
+;override
 Bool Function isInterfaceActive()
 	Return Module_Ready
 EndFunction
 
+;override
+Function resetInterface()
+	Module_Ready = false
+EndFunction
 
+;override
 Function initInterface()
 	If (!Module_Ready && isPAFReady())
 		slw_log.WriteLog("ModulePAF: PeeAndFart.esp found")
@@ -42,6 +48,7 @@ Function initInterface()
 	endif
 EndFunction
 
+;override
 Event onWidgetReload(iWant_Status_Bars iBars)
 	if(config.module_paf_pee && isInterfaceActive())
 		_loadPeeIcons(iBars)
@@ -56,6 +63,7 @@ Event onWidgetReload(iWant_Status_Bars iBars)
 	endif
 EndEvent
 
+;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 	if(config.module_paf_pee && isInterfaceActive())
 		iBars.setIconStatus(slwGetModName(), PEE_STATE, getPeeLevel())

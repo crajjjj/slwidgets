@@ -16,10 +16,17 @@ String akActorName
 
 string iconbasepath = "widgets/iwant/widgets/library/slp/parasite"
 
+;override
 Bool Function isInterfaceActive()
 	Return  Module_Ready
 EndFunction
 
+;override
+Function resetInterface()
+	Module_Ready = false
+EndFunction
+
+;override
 Function initInterface()
 	If (!Module_Ready && isSLPReady())
 		WriteLog("ModuleSLP: SexLab-Parasites.esp found")
@@ -32,18 +39,19 @@ Function initInterface()
 	endif
 EndFunction
 
+;override
 Event onWidgetReload(iWant_Status_Bars iBars)
 	if(!config.module_parasites_enabled || !isInterfaceActive())
 		_releaseParasiteIcons(iBars)
 	endif
 EndEvent
 
+;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 	if (config.module_parasites_enabled && isInterfaceActive())
 		_reloadParasiteIcons(iBars)
 	endIf
 EndEvent
-
 
 Function _releaseParasiteIcons(iWant_Status_Bars iBars)
 	iBars.releaseIcon(slwGetModName(),Parasites_SpiderEggs)
