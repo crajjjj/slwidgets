@@ -24,6 +24,15 @@ Function WriteLog(String asMessage, Int aiPriority = 0) Global
 	TraceUser(asModName, asMessage, aiPriority)
 EndFunction
 
+Function WriteLogAndPrintConsole(String asMessage, Int aiPriority = 0) Global
+	WriteLog(asMessage,aiPriority)
+	PrintConsole(asMessage)
+EndFunction
+
 Function Notification(String msg) Global
     Debug.Notification("[SLWidgets] " + msg)
+EndFunction
+
+Function PrintConsole(String msg) Global
+    MiscUtil.PrintConsole("[SLWidgets] " + msg)
 EndFunction

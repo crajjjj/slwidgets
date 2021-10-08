@@ -19,6 +19,8 @@ int _parasites_mod_Toggle
 int _pregnancy_mod_Toggle
 int _defeat_mod_Toggle
 
+
+
 ; SCRIPT VERSION
 ; https://github.com/schlangster/skyui/wiki/MCM-Advanced-Features#incremental-upgrading
 
@@ -31,6 +33,7 @@ Event OnConfigInit()
 	WriteLog("MCM: Initialising modules")
 	config.moduleSetup()
 	config.SetDefaults()
+	config.LoadSettingsAtStart()
 	Notification("MCM menu initialized.")
 EndEvent
 
@@ -40,127 +43,133 @@ EndEvent
 
 Event OnConfigOpen()
 		Pages = New String[3]
-		Pages[0] = "General"
-		Pages[1] = "Toggles"
-		Pages[2] = "Debug"
+		Pages[0] = "$SLW_General_Page"
+		Pages[1] = "$SLW_Toggles_Page"
+		Pages[2] = "$SLW_Debug_Page"
 EndEvent
 
 Event OnPageReset(string page)
 	config.moduleSyncConfig()
 
-	if (page == "General")
+	if (page == "$SLW_General_Page")
 		General()
-	elseIf (page == "Toggles")
+	elseIf (page == "$SLW_Toggles_Page")
 		Toggles()
-	elseIf (page == "Debug")
+	elseIf (page == "$SLW_Debug_Page")
 		Debug()
 	endIf
 EndEvent
 
 Function General()
     SetCursorFillMode(TOP_TO_BOTTOM)
-	AddHeaderOption("General")
+	AddHeaderOption("$SLW_General")
 	Int sliderFlag = _getFlag()
-	_update_interval_slider = AddSliderOption("Update interval", config.updateInterval, "{0}", sliderFlag)
+	_update_interval_slider = AddSliderOption("$SLW_Update_Interval", config.updateInterval, "{0}", sliderFlag)
 	AddEmptyOption()
 	
-	AddHeaderOption("Sexlab Aroused")
+	AddHeaderOption("$SLW_Sexlab_Aroused")
 	Int slaFlag = _getFlag(config.module_sla.isInterfaceActive())
-	_sla_arousal_Toggle = addToggleOption("Arousal Icon Enabled", config.module_sla_arousal, slaFlag)
-	_sla_exposure_Toggle = addToggleOption("Exposure Icon Enabled",config.module_sla_exposure, slaFlag)
+	_sla_arousal_Toggle = addToggleOption("$SLW_Arousal_Icon_Enabled", config.module_sla_arousal, slaFlag)
+	_sla_exposure_Toggle = addToggleOption("$SLW_Exposure_Icon_Enabled",config.module_sla_exposure, slaFlag)
 	
-	AddHeaderOption("Apropos 2")
+	AddHeaderOption("$SLW_Apropos2")
 	Int wtFlag = _getFlag(config.module_apropos_two.isInterfaceActive()) 
-	_apropos_two_wt_Toggle = addToggleOption("W&T Icon Enabled", config.module_apropos_two_wt, wtFlag)
+	_apropos_two_wt_Toggle = addToggleOption("$SLW_WT_Icon_Enabled", config.module_apropos_two_wt, wtFlag)
 	
-	AddHeaderOption("Fill Her Up")
+	AddHeaderOption("$SLW_FHU")
 	Int fhuFlag = _getFlag(config.module_fhu.isInterfaceActive()) 
-	_fhu_cum_Toggle = addToggleOption("FHU Total Icon Enabled", config.module_fhu_cum, fhuFlag)
-	_fhu_cum_Vaginal_Toggle = addToggleOption("FHU Vaginal Pool Icon Enabled", config.module_fhu_cum_vaginal, fhuFlag)
-	_fhu_cum_Anal_Toggle = addToggleOption("FHU Anal Pool Icon Enabled", config.module_fhu_cum_anal, fhuFlag)
+	_fhu_cum_Toggle = addToggleOption("$SLW_FHU_TI", config.module_fhu_cum, fhuFlag)
+	_fhu_cum_Vaginal_Toggle = addToggleOption("$SLW_FHU_VI", config.module_fhu_cum_vaginal, fhuFlag)
+	_fhu_cum_Anal_Toggle = addToggleOption("$SLW_FHU_AI", config.module_fhu_cum_anal, fhuFlag)
 	
-	AddHeaderOption("Milk Mod Economy")
+	AddHeaderOption("$SLW_MME")
 	Int mmeFlag = _getFlag(config.module_mme.isInterfaceActive()) 
-	_mme_milk_Toggle = addToggleOption("MME Milk Icon Enabled", config.module_mme_milk, mmeFlag)
-	_mme_lactacid_Toggle = addToggleOption("MME Lactacid Icon Enabled", config.module_mme_lactacid, mmeFlag)
+	_mme_milk_Toggle = addToggleOption("$SLW_MME_MI", config.module_mme_milk, mmeFlag)
+	_mme_lactacid_Toggle = addToggleOption("$SLW_MME_LI", config.module_mme_lactacid, mmeFlag)
 
-	AddHeaderOption("Needs(PAF/MiniNeeds)")
+	AddHeaderOption("$SLW_Needs")
 	Int pafFlag = _getFlag(config.module_paf.isInterfaceActive()) 
-	_mme_milk_Toggle = addToggleOption("Pee Icon Enabled", config.module_paf_pee, pafFlag)
-	_mme_lactacid_Toggle = addToggleOption("Poop Icon Enabled", config.module_paf_poo, pafFlag)
+	_mme_milk_Toggle = addToggleOption("$SLW_Needs_Pee", config.module_paf_pee, pafFlag)
+	_mme_lactacid_Toggle = addToggleOption("$SLW_Needs_Poop", config.module_paf_poo, pafFlag)
 EndFunction
 
 Function Toggles()
     SetCursorFillMode(TOP_TO_BOTTOM)
     SetCursorPosition(0)
-	AddHeaderOption("SexLab Parasites")
+	AddHeaderOption("$SLW_SLP")
 	Int slpFlag = _getFlag(config.module_slp.isInterfaceActive()) 
-	_parasites_mod_Toggle = addToggleOption("Parasites Icons Enabled", config.module_parasites_enabled, slpFlag)
-	AddHeaderOption("Pregnancy")
+	_parasites_mod_Toggle = addToggleOption("$SLW_SLP_Icon", config.module_parasites_enabled, slpFlag)
+	AddHeaderOption("$SLW_Pregnancy")
 	Int pregFlag = _getFlag(config.module_pregnancy.isInterfaceActive())
-	_pregnancy_mod_Toggle = addToggleOption("Pregnancy Icons Enabled", config.module_pregnancy_enabled, pregFlag)
-	AddHeaderOption("Defeat")
+	_pregnancy_mod_Toggle = addToggleOption("$SLW_Pregnancy_Icons", config.module_pregnancy_enabled, pregFlag)
+	AddHeaderOption("$SLW_Defeat")
 	Int defeatFlag = _getFlag(config.module_defeat.isInterfaceActive())
-	_defeat_mod_Toggle = addToggleOption("Defeat Icons Enabled", config.module_defeat_enabled, defeatFlag)
+	_defeat_mod_Toggle = addToggleOption("$SLW_Defeat_Icon", config.module_defeat_enabled, defeatFlag)
 EndFunction
 
 Function Debug()
 	SetCursorFillMode(TOP_TO_BOTTOM)
 	SetCursorPosition(0)
-	AddHeaderOption("SL Widgets. Version: " + GetVersionString())
+	AddHeaderOption("SLWidgets. Version: " + GetVersionString())
 	AddEmptyOption()
-	AddTextOptionST("UpdateDeps","Recheck dependencies","GO", OPTION_FLAG_NONE)
-	AddTextOptionST("AddEmptyIcon","Add empty icon placeholder(for toggles arrangement)","ADD", OPTION_FLAG_NONE)
-	AddTextOptionST("ToggleMod","Disable/Enable mod", StringIfElse( config.slw_stopped , "Enable", "Disable"), OPTION_FLAG_NONE)
-	AddHeaderOption("Dependency check:")
-	AddTextOption("iWant Status Bars ready", StringIfElse( widget_controller.isLoaded() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOption("Sexlab Aroused(SexLabAroused.esm)", StringIfElse( isSLAReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOption("Apropos 2 (Apropos2.esp)", StringIfElse( isAprReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOption("Fill Her Up(sr_FillHerUp.esp)", StringIfElse( isFHUReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOption("Milk Mod Economy (MilkModNEW.esp)", StringIfElse( isMMEReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOption("Sexlab parasites(SexLab-Parasites.esp)", StringIfElse( isSLPReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddHeaderOption("Dependency check: pregnancy")
-	AddTextOption("Hentai Pregnancy", StringIfElse( isHPReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOption("FertilityMode3", StringIfElse( isFM3Ready() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOption("BeeingFemale", StringIfElse( isBFReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOption("EggFactory", StringIfElse( isEFReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOption("EstrusChaurus", StringIfElse( isECReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOption("EstrusSpider", StringIfElse( isESReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOption("EstrusDwemer", StringIfElse( isEDReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddHeaderOption("Dependency check: needs")
-	AddTextOption("Pee and Fart (PeeAndFart.esp)", StringIfElse( isPAFReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddTextOption("MiniNeeds (MiniNeeds.esp)", StringIfElse( isMiniNeedsReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
-	AddHeaderOption("Dependency check: defeat")
-	AddTextOption("SLDefeat (SexLabDefeat.esp)", StringIfElse( isSLDefeatReady() , "OK", "NOT FOUND"), OPTION_FLAG_DISABLED)
+	AddTextOptionST("TOGGLE_MOD_STATE","$SLW_Debug_Toggle", StringIfElse( config.slw_stopped , "$SLW_Enable", "$SLW_Disable"), OPTION_FLAG_NONE)
+	AddTextOptionST("UPDATE_DEPENDENCIES_STATE","$SLW_Recheck","$SLW_GO", OPTION_FLAG_NONE)
+	AddTextOptionST("ADD_EMPTY_ICON_STATE","$SLW_Empty_Icon_Add","$SLW_Add", OPTION_FLAG_NONE)
+	
+	AddHeaderOption("$SLW_User_Settings")
+	Int loadSettingsFlagPapyrus = _getFlag(jsonutil.JsonExists(config.slw_settings_path))
+	AddTextOptionST("LOAD_USER_SETTINGS_STATE", "$SLW_Load_Settings", "$SLW_GO", loadSettingsFlagPapyrus)
+	AddTextOptionST("SAVE_USER_SETTINGS_STATE", "$SLW_Save_Settings", "$SLW_GO", 0)
+
+	AddHeaderOption("$SLW_Dependency_check")
+	AddTextOption("$SLW_Iwant_SB_Check", StringIfElse( widget_controller.isLoaded() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_SLA_Check", StringIfElse( isSLAReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_Appr2_Check", StringIfElse( isAprReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_FHU_Check", StringIfElse( isFHUReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_MME_Check", StringIfElse( isMMEReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_SLP_Check", StringIfElse( isSLPReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddHeaderOption("$SLW_Dependency_check_pregnancy")
+	AddTextOption("$SLW_HP_Check", StringIfElse( isHPReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_FM3_Check", StringIfElse( isFM3Ready() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_BF_Check", StringIfElse( isBFReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_EF_Check", StringIfElse( isEFReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_EC_Check", StringIfElse( isECReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_ES_Check", StringIfElse( isESReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_ED_Check", StringIfElse( isEDReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddHeaderOption("$SLW_Dependency_check_needs")
+	AddTextOption("$SLW_PAF_Check", StringIfElse( isPAFReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_MND_Check", StringIfElse( isMiniNeedsReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddHeaderOption("$SLW_Dependency_check_defeat")
+	AddTextOption("$SLW_SLD_Check", StringIfElse( isSLDefeatReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 EndFunction
 
 
 
 Event onOptionHighlight(int mcm_option)
 	If (mcm_option == _update_interval_slider)
-		SetInfoText("Set the update interval of the widget")
+		SetInfoText("$SLW_UpdateInterval_Info")
 	ElseIf (mcm_option == _sla_arousal_Toggle)
-		SetInfoText("Toggle arousal icon")
+		SetInfoText("$SLW_Arousal_Toggle_Info")
 	ElseIf (mcm_option == _sla_exposure_Toggle)
-		SetInfoText("Toggle exposure icon")
+		SetInfoText("$SLW_Exposure_Toggle_Info")
 	ElseIf (mcm_option == _apropos_two_wt_Toggle)
-		SetInfoText("Toggle wear and tear icons")
+		SetInfoText("$SLW_WT_Toggle_Info")
 	ElseIf (mcm_option == _fhu_cum_Toggle)
-		SetInfoText("Toggle fill her up total pool icon")
+		SetInfoText("$SLW_FHU_Toggle_Info")
 	ElseIf (mcm_option == _fhu_cum_Anal_Toggle)
-		SetInfoText("Toggle fill her up anal pool icon")
+		SetInfoText("$SLW_FHU_Anal_Toggle_Info")
 	ElseIf (mcm_option == _fhu_cum_Vaginal_Toggle)
-		SetInfoText("Toggle fill her up vaginal pool icon")
+		SetInfoText("$SLW_FHU_Vaginal_Toggle_Info")
 	ElseIf (mcm_option == _mme_milk_Toggle)
-		SetInfoText("Toggle milk icons")
+		SetInfoText("$SLW_MME_Milk_Toggle_Info")
 	ElseIf (mcm_option == _mme_lactacid_Toggle)
-		SetInfoText("Toggle lactacid icons")
+		SetInfoText("$SLW_MME_Lactacid_Toggle_Info")
 	ElseIf (mcm_option == _parasites_mod_Toggle)
-		SetInfoText("Toggle parasites icons")
+		SetInfoText("$SLW_Parasites_Toggle_Info")
 	ElseIf (mcm_option == _pregnancy_mod_Toggle)
-		SetInfoText("Toggle pregnancy module icons")
+		SetInfoText("$SLW_Pregnancy_Toggle_Info")
 	ElseIf (mcm_option == _defeat_mod_Toggle)
-		SetInfoText("Toggle defeat module icons")
+		SetInfoText("$SLW_Defeat_Toggle_Info")
 	endIf
 EndEvent
 
@@ -217,57 +226,100 @@ Event OnOptionSliderAccept(Int mcm_option, Float Value)
 	EndIf
 EndEvent
 
-State UpdateDeps
+State UPDATE_DEPENDENCIES_STATE
     Event OnSelectST()
         SetOptionFlagsST(OPTION_FLAG_DISABLED)
-        SetTextOptionValueST("Working...")
+        SetTextOptionValueST("$SLW_Working")
 		
 		config.moduleSetup()
 
-		SetTextOptionValueST("GO")
+		SetTextOptionValueST("$SLW_GO")
         SetOptionFlagsST(OPTION_FLAG_NONE)
         ForcePageReset()
     EndEvent
 
 	Event OnHighlightST()
-        SetInfoText("Recheck dependencies. This will reinit all the modules")
+        SetInfoText("$SLW_UpdateDeps_Info")
     EndEvent   
 EndState
 
-State AddEmptyIcon
+State ADD_EMPTY_ICON_STATE
     Event OnSelectST()
         SetOptionFlagsST(OPTION_FLAG_DISABLED)
-        SetTextOptionValueST("Working...")
+        SetTextOptionValueST("$SLW_Working")
 		
 		widget_controller.LoadEmptyIcon()
 
-		SetTextOptionValueST("ADD")
+		SetTextOptionValueST("$SLW_Add")
         SetOptionFlagsST(OPTION_FLAG_NONE)
     EndEvent
 EndState
 
-State ToggleMod
+State TOGGLE_MOD_STATE
     Event OnSelectST()
         SetOptionFlagsST(OPTION_FLAG_DISABLED)
-        SetTextOptionValueST("Working...")
+        SetTextOptionValueST("$SLW_Working")
 		config.slw_stopped = !config.slw_stopped
 		if config.slw_stopped
 			config.DisableWidgets()
-			SetTextOptionValueST("Enable")
-			Notification("Mod disabled")
+			SetTextOptionValueST("$SLW_Enable")
+			ShowMessage("$SLW_Disabled", false)
 		Else
 			config.SetDefaults()
+			config.LoadUserSettingsPapyrus()
 			widget_controller.setup()
-			SetTextOptionValueST("Disable")
-			Notification("Mod enabled")
+			SetTextOptionValueST("$SLW_Disable")
+			ShowMessage("$SLW_Enabled", false)
 		endif
         SetOptionFlagsST(OPTION_FLAG_NONE)
     EndEvent
 
 	Event OnHighlightST()
-        SetInfoText("Start/Stop the mod - update script will be stopped and all the icons removed")
+        SetInfoText("$SLW_EnabledDisabled_Info")
     EndEvent
 EndState
+
+state SAVE_USER_SETTINGS_STATE
+	function OnSelectST()
+		if jsonutil.JsonExists(config.slw_settings_path)
+			if !ShowMessage("$SLW_Overwrite_Settings_Question", true, "$Accept", "$Cancel")
+				return 
+			endIf
+		endIf
+		if config.SaveUserSettingsPapyrus()
+			ShowMessage("$SLW_Settings_Saved_Status", false, "$Accept", "$Cancel")
+		else
+			ShowMessage("$SLW_Save_Settings_Failed_Status", false, "$Accept", "$Cancel")
+		endIf
+		ForcePageReset()
+	endFunction
+
+	function OnHighlightST()
+		SetInfoText("$SLW_Save_Settings_Info")
+	endFunction
+endState
+
+state LOAD_USER_SETTINGS_STATE
+
+	function OnSelectST()
+
+		if ShowMessage("$SLW_Load_Settings_Question", true, "$Accept", "$Cancel")
+			if config.LoadUserSettingsPapyrus()
+				ShowMessage("$SLW_Settings_Loaded_Status", false, "$Accept", "$Cancel")
+			else
+				ShowMessage("$SLW_Load_Settings_Failed_Status", false, "$Accept", "$Cancel")
+			endIf
+		endIf
+	endFunction
+
+	function OnHighlightST()
+		if jsonutil.JsonExists(config.slw_settings_path)
+			SetInfoText("$SLW_Load_Settings_Info")
+		else
+			SetInfoText("$SLW_Load_Settings_Info_Not_Exist")
+		endIf
+	endFunction
+endState
 
 int Function _getFlag(Bool cond = true)
 	if config.slw_stopped

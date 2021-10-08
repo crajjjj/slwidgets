@@ -1,6 +1,7 @@
 Scriptname slw_config extends Quest
 import slw_util
 import slw_log
+import FISSFactory
 
 slw_widget_controller Property widget_controller auto
 
@@ -13,8 +14,10 @@ slw_module_pregnancy property module_pregnancy auto
 slw_module_paf property module_paf auto
 slw_module_defeat property module_defeat auto
 
+
 Int property updateInterval = 5 auto hidden
 Bool property slw_stopped = False auto hidden
+String property slw_settings_path = "..\\SlWidgets\\UserSettings" auto hidden
 
 Bool property module_sla_arousal = True auto hidden
 Bool property module_sla_exposure = True auto hidden
@@ -146,3 +149,56 @@ Function DisableWidgets()
 	module_paf_poo = false
 	module_defeat_enabled = false
 EndFunction
+
+
+function LoadSettingsAtStart()
+	Bool ValidatePapyrusUtil = papyrusutil.GetVersion() > 31
+	if ValidatePapyrusUtil
+		if jsonutil.JsonExists(slw_settings_path)
+			LoadUserSettingsPapyrus()
+			return 
+		endIf
+	endIf
+endFunction
+
+Bool function LoadUserSettingsPapyrus()
+	if !jsonutil.IsGood(slw_settings_path)
+		WriteLogAndPrintConsole("SLWidgets: Can't load user settings. Errors: {" + jsonutil.getErrors(slw_settings_path) + "}", 2)
+		return false
+	endIf
+	module_sla_arousal = jsonutil.GetPathBoolValue(slw_settings_path, "module_sla_arousal", module_sla_arousal)
+	module_sla_exposure = jsonutil.GetPathBoolValue(slw_settings_path, "module_sla_exposure", module_sla_exposure)
+	module_apropos_two_wt = jsonutil.GetPathBoolValue(slw_settings_path, "module_apropos_two_wt", module_apropos_two_wt)
+	module_fhu_cum = jsonutil.GetPathBoolValue(slw_settings_path, "module_fhu_cum", module_fhu_cum)
+	module_fhu_cum_anal = jsonutil.GetPathBoolValue(slw_settings_path, "module_fhu_cum_anal", module_fhu_cum_anal)
+	module_fhu_cum_vaginal = jsonutil.GetPathBoolValue(slw_settings_path, "module_fhu_cum_vaginal", module_fhu_cum_vaginal)
+	module_mme_milk = jsonutil.GetPathBoolValue(slw_settings_path, "module_mme_milk", module_mme_milk)
+	module_mme_lactacid = jsonutil.GetPathBoolValue(slw_settings_path, "module_mme_lactacid", module_mme_lactacid)
+	module_parasites_enabled = jsonutil.GetPathBoolValue(slw_settings_path, "module_parasites_enabled", module_parasites_enabled)
+	module_pregnancy_enabled = jsonutil.GetPathBoolValue(slw_settings_path, "module_pregnancy_enabled", module_pregnancy_enabled)
+	module_paf_pee = jsonutil.GetPathBoolValue(slw_settings_path, "module_paf_pee", module_paf_pee)
+	module_paf_poo = jsonutil.GetPathBoolValue(slw_settings_path, "module_paf_poo", module_paf_poo)
+	module_defeat_enabled = jsonutil.GetPathBoolValue(slw_settings_path, "module_defeat_enabled", module_defeat_enabled)
+	return true
+endFunction
+
+Bool function SaveUserSettingsPapyrus()
+	jsonutil.SetPathIntValue(slw_settings_path, "module_sla_arousal", module_sla_arousal as Int)
+	jsonutil.SetPathIntValue(slw_settings_path, "module_sla_exposure", module_sla_exposure as Int)
+	jsonutil.SetPathIntValue(slw_settings_path, "module_apropos_two_wt", module_apropos_two_wt as Int)
+	jsonutil.SetPathIntValue(slw_settings_path, "module_fhu_cum", module_fhu_cum as Int)
+	jsonutil.SetPathIntValue(slw_settings_path, "module_fhu_cum_anal", module_fhu_cum_anal as Int)
+	jsonutil.SetPathIntValue(slw_settings_path, "module_fhu_cum_vaginal", module_fhu_cum_vaginal as Int)
+	jsonutil.SetPathIntValue(slw_settings_path, "module_mme_milk", module_mme_milk as Int)
+	jsonutil.SetPathIntValue(slw_settings_path, "module_mme_lactacid", module_mme_lactacid as Int)
+	jsonutil.SetPathIntValue(slw_settings_path, "module_parasites_enabled", module_parasites_enabled as Int)
+	jsonutil.SetPathIntValue(slw_settings_path, "module_pregnancy_enabled", module_pregnancy_enabled as Int)
+	jsonutil.SetPathIntValue(slw_settings_path, "module_paf_pee", module_paf_pee as Int)
+	jsonutil.SetPathIntValue(slw_settings_path, "module_paf_poo", module_paf_poo as Int)
+	jsonutil.SetPathIntValue(slw_settings_path, "module_defeat_enabled", module_defeat_enabled as Int)
+	if !jsonutil.Save(slw_settings_path, false)
+		WriteLogAndPrintConsole("SLWidgets: Error saving user settings", 2)
+		return false
+	endIf
+	return true
+endFunction

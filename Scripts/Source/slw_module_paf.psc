@@ -204,7 +204,7 @@ Function _loadPooIcons(iWant_Status_Bars iBars)
 	r[0] = 100
 	g[0] = 70
 	b[0] = 36
-	a[0] = 33
+	a[0] = 50
 	; Slightly Filled
 	s[1] = iconbasepath + "1.dds"
 	d[1] = "Slightly" + status
