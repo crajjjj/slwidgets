@@ -21,9 +21,9 @@ Function initInterface()
 	If (!Module_Ready && isSLDefeatReady())
 		WriteLog("ModuleDefeat: SexLabDefeat.esp found")
 		Module_Ready = true 
-		_defeatBeingRapedSpell = Game.GetFormFromFile(0x01D90, "SexLabDefeat.esp") as Spell
-		_defeatRapedSpell = Game.GetFormFromFile(0x012C7, "SexLabDefeat.esp") as Spell
-		if !_defeatBeingRapedSpell || _defeatRapedSpell
+		_defeatBeingRapedSpell = Game.GetFormFromFile(0x001D90, "SexLabDefeat.esp") as Spell
+		_defeatRapedSpell = Game.GetFormFromFile(0x0012C7, "SexLabDefeat.esp") as Spell
+		if !_defeatBeingRapedSpell || !_defeatRapedSpell
 			WriteLog("ModuleDefeat:: defeat spells not found", 2)
 		endif
 	endif
