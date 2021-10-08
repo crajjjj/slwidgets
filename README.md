@@ -3,8 +3,8 @@ SexLab Widgets SSE
 
 A  plugin for iWant Status Bars to add sexlab related widgets to Skyrim. Supports 2 mechanics
 - Icons that have 9 stages and change dynamically
-- Icons that are appear/dissapear on condition
-102 icons included.
+- Icons that appear/dissapear on condition
+113 icons included.
 
 
 Currently supported plugins: 
@@ -13,9 +13,12 @@ Stages:
 - vApropos2 - w&t icons
 - vFill her up - cum icon
 - MME - milk and lactacid
+- PAF and MiniNeeds - piss and poop icons
+
 Toggles:
-- SexLab-Parasite
+- Parasites: SexLab-Parasite
 - Pregnancy: HentaiPregnancy, BeeingFemale, EggFactory, EstrusChaurus, EstrusSpider, EstrusDwemer, FM3 
+- Defeat: SLDefeat 
 
 
 Installation
@@ -34,10 +37,10 @@ Hard Requirements
 
 - iWant Status Bars
 - iWant Widgets
+- PapyrusUtil
 
 
 Soft Dependencies
-
 Sexlab Aroused SE (any version will do, including SLAX)
 Apropos2 SE
 Fill her up 
@@ -49,7 +52,9 @@ EstrusChaurus
 EstrusSpider
 EstrusDwemer
 Fertility Mode 3
-
+PAF
+MiniNeeds
+SLDefeat
 
 Incompatible mods:
 
