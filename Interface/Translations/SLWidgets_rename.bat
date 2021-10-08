@@ -6,3 +6,4 @@ copy /y SLWidgets_ENGLISH.txt SLWidgets_ITALIAN.txt
 copy /y SLWidgets_ENGLISH.txt SLWidgets_JAPANESE.txt
 copy /y SLWidgets_ENGLISH.txt SLWidgets_POLISH.txt
 copy /y SLWidgets_ENGLISH.txt SLWidgets_SPANISH.txt
+copy /y SLWidgets_ENGLISH.txt SLWidgets_RUSSIAN.txt
