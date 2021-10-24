@@ -115,7 +115,12 @@ Function initInterface()
 	If (!Plugin_FertilityMode3 && isFM3Ready())
 		WriteLog("ModulePregnancy: Fertility Mode found")
 		Plugin_FertilityMode3 = true
-		_FMStorage = Game.GetFormFromFile(0x000D62,"Fertility Mode.esm") as _JSW_BB_Storage
+		;check if _JSW_BB_Storage is overwritten by Fertility Mode 3 Fixes and Updates.esp
+		if isFM3TweaksReady()
+			_FMStorage = Game.GetFormFromFile(0x000D62,"Fertility Mode 3 Fixes and Updates.esp") as _JSW_BB_Storage
+		else
+			_FMStorage = Game.GetFormFromFile(0x000D62,"Fertility Mode.esm") as _JSW_BB_Storage
+		endif
 		if !_FMStorage
 			WriteLog("ModulePregnancy: _JSW_BB_Storage not found", 2)
 		endif
