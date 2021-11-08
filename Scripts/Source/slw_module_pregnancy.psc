@@ -115,12 +115,8 @@ Function initInterface()
 	If (!Plugin_FertilityMode3 && isFM3Ready())
 		WriteLog("ModulePregnancy: Fertility Mode found")
 		Plugin_FertilityMode3 = true
-		;check if _JSW_BB_Storage is overwritten by Fertility Mode 3 Fixes and Updates.esp
-		if isFM3TweaksReady()
-			_FMStorage = Game.GetFormFromFile(0x000D62,"Fertility Mode 3 Fixes and Updates.esp") as _JSW_BB_Storage
-		else
-			_FMStorage = Game.GetFormFromFile(0x000D62,"Fertility Mode.esm") as _JSW_BB_Storage
-		endif
+		_FMStorage = Game.GetFormFromFile(0x000D62,"Fertility Mode.esm") as _JSW_BB_Storage
+		
 		if !_FMStorage
 			WriteLog("ModulePregnancy: _JSW_BB_Storage not found", 2)
 		endif
@@ -232,7 +228,12 @@ EndFunction
 EndFunction
 
 Function handleFertilityMode3(iWant_Status_Bars iBars)
-	int actorIndex = _FMStorage.TrackedActors.Find(PlayerRef)
+	int actorIndex = _FMStorage.TrackedActors.Find(PlayerRef as form) 
+	if (actorIndex == -1)
+		iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)
+		iBars.releaseIcon(slwGetModName(),Pregnancy_Fetus)
+		iBars.releaseIcon(slwGetModName(),Pregnancy_CumInflation)
+	endIf
 	if (_FMStorage.LastConception[actorIndex] != 0.0)
 		; Fired for pregnant actors
 		_loadFetusIcon(iBars)
@@ -245,8 +246,8 @@ Function handleFertilityMode3(iWant_Status_Bars iBars)
 		iBars.releaseIcon(slwGetModName(),Pregnancy_Fetus)
 		iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)
    endIf
-
-   If (_FMStorage.SpermCount[actorIndex] > 0.0)
+	; Mismatch error can be shown cause tweaks mod changed SpermCount array to int
+   If _FMStorage.SpermCount[actorIndex] > 0
 	; Fired for inflated actors
 		_loadCumInflationIcon(iBars)
    else
