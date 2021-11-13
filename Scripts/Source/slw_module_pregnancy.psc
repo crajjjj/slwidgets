@@ -233,6 +233,7 @@ Function handleFertilityMode3(iWant_Status_Bars iBars)
 		iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)
 		iBars.releaseIcon(slwGetModName(),Pregnancy_Fetus)
 		iBars.releaseIcon(slwGetModName(),Pregnancy_CumInflation)
+		return
 	endIf
 	if (_FMStorage.LastConception[actorIndex] != 0.0)
 		; Fired for pregnant actors
