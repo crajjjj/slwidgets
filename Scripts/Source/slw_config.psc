@@ -33,6 +33,11 @@ Bool property module_paf_pee = True auto hidden
 Bool property module_paf_poo = True auto hidden
 Bool property module_defeat_enabled = True auto hidden
 
+Event OnInit()
+	SetDefaults()
+	LoadSettingsAtStart()
+EndEvent
+
 Function moduleSetup()
 	module_sla.moduleSetup()
 	module_apropos_two.moduleSetup()

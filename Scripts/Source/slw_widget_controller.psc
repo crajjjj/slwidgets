@@ -16,6 +16,10 @@ bool Function isLoaded()
 	return controller_initialised
 EndFunction
 
+Event OnInit()
+	setup()
+EndEvent
+
 ; Assumed lifecycle: menu OnInit() -> setup() (Modules initialisation) -> OniWantStatusBarsReady -> UpdateIcons() -> ||controller_initialised|| -> UpdateIconStateStatus(in a loop)
 
 ;on game reload

@@ -31,11 +31,7 @@ int function GetVersion()
 endFunction
 
 Event OnConfigInit()
-	ModName = slwGetModName()
-	WriteLog("MCM: Initialising modules")
-	config.SetDefaults()
-	config.LoadSettingsAtStart()
-	widget_controller.setup()
+	ModName = "SLWidgets"
 	Notification("MCM menu initialized.")
 EndEvent
 
