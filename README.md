@@ -8,18 +8,19 @@ A  plugin for iWant Status Bars to add sexlab related widgets to Sk
 MCM for flexible configuration
 
 
-Supported plugins: 
+Supported plugins and icons: 
 
-Stages:
-- vSLA SE (SexLab Aroused eXtended/SLAM) - Arousal and exposure icons
-- vApropos2 - w&t icons
-- vFill her up - cum icon
-- MME - milk and lactacid
-- PAF and MiniNeeds - piss and poop icons
-Toggles:
-- SexLab-Parasite - spider eggs, chaurus worms
-- Pregnancy: HentaiPregnancy, BeeingFemale, EggFactory, EstrusChaurus, EstrusSpider, EstrusDwemer, FM3  - cum inflation/ovulation/pregnancy
-- Defeat: SLDefeat -weakened (raped)
+Stages (constantly showing status):
+- vSLA SE (SexLab Aroused eXtended/SLAM) - Arousal (face) and exposure (Heart) icons
+- vApropos2 - w&t icons (vagina, anus and mouth state icons)
+- vFill her up - cum icons (total + vaginal + anal pool icons)
+- MME - milk (breast) and lactacid (bottle) icons
+- PAF and MiniNeeds - piss (bladder) and poop (colon) icons
+
+Toggles (appear on condition only):
+- SexLab-Parasite - spider eggs, chaurus worms (when infected)
+- Pregnancy: HentaiPregnancy, BeeingFemale, EggFactory, EstrusChaurus, EstrusSpider, EstrusDwemer, FM3  - cum inflation(spermatozoids icon)/ovulation (ovulation egg icon) /pregnancy (different icons belly based - fetus/eggs/spider eggs/spheres)
+- Defeat: SLDefeat - weakened (raped) - hands on body icon
 
 
 
@@ -62,13 +63,19 @@ PAF
 MiniNeeds
 SLDefeat
 
-
+Troubleshooting
+- Check console messages
+- Check papyrus logs and slwidgets user logs
+- Check mcm debug page and dependency check
+- Try to disable/enable plugin (widgets are reloaded on menu close event)
+- Check ibars menu - if icons were added or not
+- Check the load order iwidgets->ibars->slwidgets
 
 Incompatible mods:
 
 Affected indirectly by mods that impact iWant Widgets.  Mods significantly altering hudmenu.gfx directly or via a hudmenu.swf file may prevent image display.
 
-Tested in different mod lists with multiple UI mods (Tsukiro/D&DDC)
+Tested in different mod lists with multiple UI mods (Tsukiro/D&DDC/Licentia)
 
 
 

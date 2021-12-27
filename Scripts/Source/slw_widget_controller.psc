@@ -48,30 +48,35 @@ Event OnUpdate()
 	if config.slw_stopped
 		return
 	endif
-    if(controller_initialised)
+    if(controller_initialised && iBars.isReady())
 		config.moduleWidgetStateUpdate(iBars)
 		RegisterForSingleUpdate(config.updateInterval)
 	else
-		RegisterForSingleUpdate(1)
+		RegisterForSingleUpdate(3)
 	endIf
 EndEvent
 
 ;ON mcm update and init
 Function reloadWidgets()
-	If !controller_initialised
-		WriteLog("iBars not loaded yet. Reloading widgets failed", 2)
+	If !controller_initialised || !iBars || !iBars.isReady()
+		WriteLogAndPrintConsole("iBars not loaded yet. Reloading widgets failed", 2)
 		Return
 	endIf
 	_reloadWidgets()
 endFunction
 
 Function _reloadWidgets()
-	WriteLog("WidgetController: reloading widgets")
+	WriteLogAndPrintConsole("WidgetController: reloading widgets")
 	config.moduleWidgetReload(iBars)
 endFunction
 
 ;Debug function to arrange iwant status bars icons better - fill empty spaces in the main bar to load/release toggles in a secondary bar
 Function loadEmptyIcon()
+	If !controller_initialised || !iBars || !iBars.isReady()
+		WriteLogAndPrintConsole("iBars not loaded yet. Loading empty icon failed", 2)
+		Return
+	endIf
+
 	String[] s = new String[1]
 	String[] d = new String[1]
 	Int[] r = new Int[1]
