@@ -41,7 +41,6 @@ Event OniWantStatusBarsReady(String eventName, String strArg, Float numArg, Form
 			Utility.Wait(5)
 			controller_initialised = true
 		endif
-		RegisterForSingleUpdate(5)
 	EndIf
 EndEvent
 
