@@ -23,11 +23,12 @@ EndEvent
 ; Assumed lifecycle: menu OnInit() -> setup() (Modules initialisation) -> OniWantStatusBarsReady -> UpdateIcons() -> ||controller_initialised|| -> UpdateIconStateStatus(in a loop)
 
 ;on game reload
+;on enable mod button click
 Function setup()
 	WriteLog("WidgetController module setup")
 	config.moduleSetup()
 	RegisterForModEvent(STATUS_BARS_EVENT_NAME, "OniWantStatusBarsReady")
-	RegisterForSingleUpdate(1)
+	RegisterForSingleUpdate(5)
 EndFunction
 
 Event OniWantStatusBarsReady(String eventName, String strArg, Float numArg, Form sender)
@@ -40,6 +41,7 @@ Event OniWantStatusBarsReady(String eventName, String strArg, Float numArg, Form
 			Utility.Wait(5)
 			controller_initialised = true
 		endif
+		RegisterForSingleUpdate(5)
 	EndIf
 EndEvent
 
@@ -52,7 +54,7 @@ Event OnUpdate()
 		config.moduleWidgetStateUpdate(iBars)
 		RegisterForSingleUpdate(config.updateInterval)
 	else
-		RegisterForSingleUpdate(3)
+		RegisterForSingleUpdate(5)
 	endIf
 EndEvent
 
