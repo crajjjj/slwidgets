@@ -88,6 +88,10 @@ Bool Function isMiniNeedsReady() Global
 	Return  isDependencyReady("MiniNeeds.esp")
 EndFunction
 
+Bool Function isAlivePeeingReady() Global
+	Return  isDependencyReady("AlivePeeingSE.esp")
+EndFunction
+
 Bool Function isSLDefeatReady() Global
 	Return  isDependencyReady("SexLabDefeat.esp")
 EndFunction
@@ -223,10 +227,9 @@ Int Function GetCumAmountVag(Actor akTarget, Quest FhuInflateQuest) Global
 	return percentToState9(percentage as int)
 EndFunction
 
-;PAF/MiniNeeds
+;PAF/MiniNeeds/ALP
 ;--------------------------------------
-
-Int Function _getPoopLevelPAF( Quest paf) Global
+Int Function getPoopLevelPAF( Quest paf) Global
 	int pafstate = (paf as PAF_MainQuestScript).PoopState
 	if pafstate >= 4
 		return  4
@@ -235,7 +238,7 @@ Int Function _getPoopLevelPAF( Quest paf) Global
 	endif 
 EndFunction
 
-Int Function _getPoopLevelMND(Quest mnd) Global
+Int Function getPoopLevelMND(Quest mnd) Global
 	if !(mnd as mndController).enablePoop
 		return 0
 	endif
@@ -243,7 +246,7 @@ Int Function _getPoopLevelMND(Quest mnd) Global
 	return percentToState5(p)
 EndFunction
 
-Int Function _getPeeLevelPAF(Quest paf) Global
+Int Function getPeeLevelPAF(Quest paf) Global
 	int pafstate = (paf as PAF_MainQuestScript).PeeState
 	if pafstate >= 4
 		return  4
@@ -252,12 +255,18 @@ Int Function _getPeeLevelPAF(Quest paf) Global
 	endif 
 EndFunction
 
-Int Function _getPeeLevelMND(Quest mnd) Global
+Int Function getPeeLevelMND(Quest mnd) Global
 	if !(mnd as mndController).enablePiss
 		return 0
 	endif
 
 	int p = getMNDPercent("Piss", mnd)
+	return percentToState5(p)
+EndFunction
+
+Int Function getPeeLevelALP(GlobalVariable apb, GlobalVariable apbm ) Global
+	int p = (apb.GetValue()/apbm.GetValue() * 100) as Int
+	
 	return percentToState5(p)
 EndFunction
 
@@ -278,7 +287,6 @@ endFunction
 
 ;FM+
 ;--------------------------------------
-
 int function getFMActorIndex( Quest fm, Actor akTarget) Global
 	return (fm as _JSW_BB_Storage).TrackedActors.Find(akTarget as form) 
 endFunction

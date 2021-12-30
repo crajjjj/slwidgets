@@ -8,9 +8,13 @@ slw_config Property config Auto
 Actor Property PlayerRef Auto
 ;--------------------------------------------------
 
-;PAF/MiniNeeds
+;PAF
 Quest paf
+;MiniNeeds
 Quest mnd
+;Alive peeing
+GlobalVariable apb
+GlobalVariable apbm
 
 String PEE_STATE = "PAF_PEE"
 String POOP_STATE = "PAF_POOP"
@@ -29,7 +33,7 @@ EndFunction
 Function initInterface()
 	If (!Module_Ready && isPAFReady())
 		slw_log.WriteLog("ModulePAF: PeeAndFart.esp found")
-		paf = Game.GetFormFromFile(0x0012C8, "PeeAndFart.esp") As PAF_MainQuestScript
+		paf = Game.GetFormFromFile(0x0012C8, "PeeAndFart.esp") As Quest
 		if paf
 			Module_Ready = true 
 		else
@@ -39,13 +43,26 @@ Function initInterface()
 
 	If (!Module_Ready && isMiniNeedsReady())
 		slw_log.WriteLog("ModulePAF: MiniNeeds.esp found")
-		mnd = Game.GetFormFromFile(0x12C4, "MiniNeeds.esp") as mndController
-		if mnd	
+		mnd = Game.GetFormFromFile(0x12C4, "MiniNeeds.esp") as Quest
+		if mnd
 			Module_Ready = true 
 		else
 			slw_log.WriteLog("ModulePAF: mndController not found", 2)
 		endif
 	endif
+
+	If (!Module_Ready && isAlivePeeingReady())
+		slw_log.WriteLog("ModulePAF: AlivePeeingSE.esp found")
+		apb = Game.GetFormFromFile(0x002DAF, "AlivePeeingSE.esp") as GlobalVariable
+		apbm = Game.GetFormFromFile(0x002DB3, "AlivePeeingSE.esp") as GlobalVariable
+		if apb && apbm
+			Module_Ready = true 
+		else
+			slw_log.WriteLog("ModulePAF: APB or APBM not found", 2)
+		endif
+	endif
+
+	
 EndFunction
 
 ;override
@@ -70,7 +87,7 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 	endif
 	if(config.module_paf_poo && isInterfaceActive())
 		iBars.setIconStatus(slwGetModName(), POOP_STATE, getPoopLevel())
-	endif	
+	endif
 EndEvent
 
 ;states 0-4
@@ -79,10 +96,13 @@ Int Function getPeeLevel()
 		return 0
 	endif
 	if paf
-		return _getPeeLevelPAF(paf)
+		return getPeeLevelPAF(paf)
 	endif	
 	if mnd
-		return _getPeeLevelMND(mnd)
+		return getPeeLevelMND(mnd)
+	endif
+	if apb && apbm
+		return getPeeLevelALP(apb, apbm)
 	endif
 EndFunction
 ;states 0-4
@@ -91,10 +111,10 @@ Int Function getPoopLevel()
 		return 0
 	endif
 	if paf
-		return _getPoopLevelPAF(paf)
+		return getPoopLevelPAF(paf)
 	endif
 	if mnd
-		return _getPoopLevelMND(mnd)
+		return getPoopLevelMND(mnd)
 	endif
 EndFunction
 

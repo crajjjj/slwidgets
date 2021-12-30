@@ -18,15 +18,15 @@ MCM for flexible configuration
 
 - vFill her up - cum icons (total + vaginal + anal pool icons)
 
-- MME - milk (breast) and lactacid (bottle) icons
+- MME - milk (breast) and lactacid (bottle) icons
 
-- PAF and MiniNeeds - piss (bladder) and poop (colon) icons
+- PAF, MiniNeeds, AlivePeeing - piss (bladder) and poop (colon) icons
 
 2) Toggles (appear on condition only):
 
 - SexLab-Parasite - spider eggs, chaurus worms (when infected)
 
--  Pregnancy: HentaiPregnancy, BeeingFemale, EggFactory, EstrusChaurus, EstrusSpider, EstrusDwemer, FM3 cum inflation(spermatozoids icon)/ovulation (ovulation egg icon) /pregnancy (different icons belly  based  fetus/eggs/spider eggs/spheres)
+- Pregnancy: HentaiPregnancy, BeeingFemale, EggFactory, EstrusChaurus, EstrusSpider, EstrusDwemer, FM3 cum inflation(spermatozoids icon)/ovulation (ovulation egg icon) /pregnancy (different icons belly  based  fetus/eggs/spider eggs/spheres)
 
 - Defeat: SLDefeat - weakened (raped) - hands on body icon
 
@@ -61,7 +61,7 @@ MCM for flexible configuration
 
 - Sexlab Aroused SE (any version will do, including SLAX)
 - Apropos2 SE
-- Fill her up 
+- Fill her up
 - Fertility Mod 3
 - HentaiPregnancy
 - BeeingFemale
@@ -76,7 +76,7 @@ MCM for flexible configuration
 
 # Incompatible mods:
 
-- Affected indirectly by mods that impact iWant Widgets.  Mods significantly altering hudmenu.gfx directly or via a hudmenu.swf file may prevent image display.
+- Affected indirectly by mods that impact iWant Widgets. Mods significantly altering hudmenu.gfx directly or via a hudmenu.swf file may prevent image display.
 - Tested without issues in different mod lists with multiple UI mods (Tsukiro/D&DDC/Licentia).
 - In heavy script load mod lists there's a possibility of iBars misbehaving - icons overlapping/stacking/potentially other init issues (on game reload phase seems overloaded which makes papyrus skip instructions).
 Encountered with babo dialogue/being female.
