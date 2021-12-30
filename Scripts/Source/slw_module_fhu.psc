@@ -62,32 +62,15 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 		return
 	endif
 	if config.module_fhu_cum 
-		iBars.setIconStatus(slwGetModName(), CUM_STATE, GetCumAmount())
+		iBars.setIconStatus(slwGetModName(), CUM_STATE, GetCumAmount(PlayerRef, FhuInflateQuest))
 	endIf
 	if config.module_fhu_cum_anal
-		iBars.setIconStatus(slwGetModName(), CUM_ANAL_STATE, GetCumAmountAnal())
+		iBars.setIconStatus(slwGetModName(), CUM_ANAL_STATE, GetCumAmountAnal(PlayerRef, FhuInflateQuest))
 	endIf
 	if config.module_fhu_cum_vaginal
-		iBars.setIconStatus(slwGetModName(), CUM_VAGINAL_STATE, GetCumAmountVag())
+		iBars.setIconStatus(slwGetModName(), CUM_VAGINAL_STATE, GetCumAmountVag(PlayerRef, FhuInflateQuest))
 	endIf
 EndEvent
-
-
-Int Function GetCumAmount()
-		int percentage =(FhuInflateQuest as sr_inflateQuest).GetInflationPercentage(playerRef) as int
-		return _percentToState9(percentage)
-EndFunction
-
-Int Function GetCumAmountAnal()
-		float percentage =(FhuInflateQuest as sr_inflateQuest).GetAnalPercentage(playerRef) * 100.0 
-		return _percentToState9(percentage as int)
-EndFunction
-
-Int Function GetCumAmountVag()
-		float percentage =(FhuInflateQuest as sr_inflateQuest).GetVaginalPercentage(playerRef) * 100.0 
-		return _percentToState9(percentage as int)
-EndFunction
-
 
 Function _loadCumIcons(iWant_Status_Bars iBars)
 	String[] s = new String[9]

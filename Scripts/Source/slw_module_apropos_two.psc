@@ -28,8 +28,14 @@ EndFunction
 Function initInterface()
 	If (!Module_Ready && isAprReady())
 		slw_log.WriteLog("ModuleAPR: Apropos2.esp found")
-		Module_Ready = true 
 		ActorsQuest = Game.GetFormFromFile(0x02902C, "Apropos2.esp") as Quest
+		
+		if !ActorsQuest
+			slw_log.WriteLog("ModuleAPR: Apropos2.esp is not yet initialised")
+			return
+		endif
+
+		Module_Ready = true 
 		if GetAproposAlias(PlayerRef, ActorsQuest) == None
 			String akActorName = playerRef.GetLeveledActorBase().GetName()
 			slw_log.WriteLog("Actor "+ akActorName + " is not yet registered in Apropos2")
@@ -53,70 +59,13 @@ EndEvent
 ;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 	if (config.module_apropos_two_wt && isInterfaceActive())
-		iBars.setIconStatus(slwGetModName(), ORAL_STATE, GetWearStateOral())
-		iBars.setIconStatus(slwGetModName(), ANAL_STATE, GetWearStateAnal())
-		iBars.setIconStatus(slwGetModName(), VAG_STATE, GetWearStateVaginal())
+		iBars.setIconStatus(slwGetModName(), ORAL_STATE, GetWearStateOral(PlayerRef, ActorsQuest))
+		iBars.setIconStatus(slwGetModName(), ANAL_STATE, GetWearStateAnal(PlayerRef, ActorsQuest))
+		iBars.setIconStatus(slwGetModName(), VAG_STATE, GetWearStateVaginal(PlayerRef, ActorsQuest))
 	endIf
 EndEvent
 
-ReferenceAlias Function GetAproposAlias(Actor akTarget, Quest apropos2Quest )
-	; Search Apropos2 actor aliases as the player alias is not set in stone
-	ReferenceAlias AproposTwoAlias = None
-	Int i = 0
-	ReferenceAlias AliasSelect
-	While i < apropos2Quest.GetNumAliases() 
-		AliasSelect = ActorsQuest.GetNthAlias(i) as ReferenceAlias
-		If AliasSelect.GetReference() as Actor == akTarget
-			AproposTwoAlias = AliasSelect
-		EndIf
-		Return AproposTwoAlias
-		i += 1
-	EndWhile
-	Return AproposTwoAlias
-EndFunction
 
-	
-Int Function GetWearStateAnal() 
-	ReferenceAlias AproposTwoAlias = GetAproposAlias(PlayerRef, ActorsQuest)
-	if GetAproposAlias(PlayerRef, ActorsQuest) != None
-		Int damage =  (AproposTwoAlias as Apropos2ActorAlias).AnalWearTearState
-		If damage <= 8
-			return damage
-		Else
-			return 8
-		EndIf
-	Else
-		return 0
-	Endif
-EndFunction
-
-Int Function GetWearStateVaginal() 
-	ReferenceAlias AproposTwoAlias = GetAproposAlias(PlayerRef, ActorsQuest)
-	if GetAproposAlias(PlayerRef, ActorsQuest) != None
-		Int damage = (AproposTwoAlias as Apropos2ActorAlias).VaginalWearTearState
-		If damage <= 8
-			return damage
-		Else
-			return 8
-		EndIf
-	Else
-		return 0
-	Endif
-EndFunction
-
-Int Function GetWearStateOral() 
-	ReferenceAlias AproposTwoAlias = GetAproposAlias(PlayerRef, ActorsQuest)
-	if GetAproposAlias(PlayerRef, ActorsQuest) != None
-		Int damage = (AproposTwoAlias as Apropos2ActorAlias).OralWearTearState
-		If damage <= 8
-			return damage
-		Else
-			return 8
-		EndIf
-	Else
-		return 0
-	Endif
-EndFunction
 
 Function _loadApropos2Oral(iWant_Status_Bars iBars)
 	String[] s = new String[9]

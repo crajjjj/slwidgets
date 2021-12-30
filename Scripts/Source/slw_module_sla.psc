@@ -9,7 +9,7 @@ Actor Property PlayerRef Auto
 ;--------------------------------------------------
 
 ;SLA
-slaFrameworkScr sla
+Quest sla
 
 String AROUSAL_STATE = "Arousal"
 String EXPOSURE_STATE = "Exposure"
@@ -28,14 +28,16 @@ EndFunction
 Function initInterface()
 	If (!Module_Ready && isSLAReady())
 		slw_log.WriteLog("ModuleSLA: SexLabAroused.esm found")
-		sla = Game.GetFormFromFile(0x4290F, "SexLabAroused.esm") As slaFrameworkScr
+		sla = Game.GetFormFromFile(0x4290F, "SexLabAroused.esm") As Quest
 		if sla	
 			Module_Ready = true 
 		else
 			slw_log.WriteLog("ModuleSLA: slaFrameworkScr not found", 2)
+			Module_Ready = false 
 		endif
 	endif
 EndFunction
+
 ;override
 Event onWidgetReload(iWant_Status_Bars iBars)
 	if(config.module_sla_arousal && isInterfaceActive())
@@ -50,32 +52,16 @@ Event onWidgetReload(iWant_Status_Bars iBars)
 		iBars.releaseIcon(slwGetModName(),EXPOSURE_STATE)
 	endif
 EndEvent
+
 ;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 	if(config.module_sla_arousal && isInterfaceActive())
-		iBars.setIconStatus(slwGetModName(), AROUSAL_STATE, getArousalLevel())
+		iBars.setIconStatus(slwGetModName(), AROUSAL_STATE, getArousalLevel(sla, PlayerRef))
 	endif
 	if(config.module_sla_exposure && isInterfaceActive())
-		iBars.setIconStatus(slwGetModName(), EXPOSURE_STATE, getExposureLevel())
+		iBars.setIconStatus(slwGetModName(), EXPOSURE_STATE, getExposureLevel(sla, PlayerRef))
 	endif	
 EndEvent
-
-Int Function getArousalLevel()
-	if !isInterfaceActive()
-		return 0
-	endif
-	Int arousal = sla.GetActorArousal(playerRef)
-	return _percentToState9(arousal)
-EndFunction
-
-Int Function getExposureLevel()
-	if !isInterfaceActive()
-		return 0
-	endif
-	Int exposure = sla.GetActorExposure(playerRef)
-	return _percentToState9(exposure)
-EndFunction
-	
 
 Function _loadArousedIcons(iWant_Status_Bars iBars)
 	String[] s = new String[9]

@@ -29,6 +29,7 @@ Function initInterface()
 		_defeatWeakened = Game.GetFormFromFile(0x0012C9, "SexLabDefeat.esp") as MagicEffect
 		if !_defeatWeakened
 			WriteLog("ModuleDefeat:: _defeatWeakened magicEffect not found", 2)
+			Module_Ready = false 
 		else
 			WriteLog("ModuleDefeat:: _defeatWeakened found")
 		endif

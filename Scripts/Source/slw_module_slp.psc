@@ -11,7 +11,7 @@ String Parasites_SpiderEggs = "Parasites_SpiderEggs"
 String Parasites_ChaurusWorm = "Parasites_ChaurusWorm"
 String Parasites_ChaurusWormVag = "Parasites_ChaurusWormVag"
 
-SLP_fcts_parasites slp
+Quest slp
 String akActorName
 
 string iconbasepath = "widgets/iwant/widgets/library/slp/parasite"
@@ -31,10 +31,11 @@ Function initInterface()
 	If (!Module_Ready && isSLPReady())
 		WriteLog("ModuleSLP: SexLab-Parasites.esp found")
 		Module_Ready = true
-		slp = Game.GetFormFromFile(0x000D62, "SexLab-Parasites.esp") As SLP_fcts_parasites
+		slp = Game.GetFormFromFile(0x000D62, "SexLab-Parasites.esp") As Quest
 		akActorName = playerRef.GetLeveledActorBase().GetName()
 		if !slp
 			WriteLog("ModuleSLP:: SLP_fcts_parasites not found", 2)
+			Module_Ready = false
 		endif
 	endif
 EndFunction
@@ -61,22 +62,22 @@ EndFunction
 
 ;Parasites
  Function _reloadParasiteIcons(iWant_Status_Bars iBars)
-	if slp.isInfectedByString(PlayerRef,"SpiderEgg")
+	if isInfectedBySLP(slp, PlayerRef,"SpiderEgg")
 		_loadSpiderIcon(iBars)
 	Else
-		iBars.releaseIcon(slwGetModName(),Parasites_SpiderEggs)
+		iBars.releaseIcon(slwGetModName(), Parasites_SpiderEggs)
 	endif
 
-	if slp.isInfectedByString(PlayerRef,"ChaurusWorm")
+	if isInfectedBySLP(slp, PlayerRef,"ChaurusWorm")
 		_loadChaurusWormIcon(iBars)
 	Else
-		iBars.releaseIcon(slwGetModName(),Parasites_ChaurusWorm)
+		iBars.releaseIcon(slwGetModName(), Parasites_ChaurusWorm)
 	endif
 
-	if slp.isInfectedByString(PlayerRef,"ChaurusWormVag")
+	if isInfectedBySLP(slp, PlayerRef,"ChaurusWormVag")
 		_loadChaurusWormVagIcon(iBars)
 	Else
-		iBars.releaseIcon(slwGetModName(),Parasites_ChaurusWormVag)
+		iBars.releaseIcon(slwGetModName(), Parasites_ChaurusWormVag)
 	endif
 EndFunction
 

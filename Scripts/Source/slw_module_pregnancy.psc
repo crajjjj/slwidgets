@@ -26,7 +26,7 @@ Keyword _zzEstrusSpiderParasiteKWD
 Spell _DwemerBreederSpell
 Keyword _zzEstrusDwemerParasiteKWD
 
-_JSW_BB_Storage _FMStorage
+Quest _FMStorage
 
 ;Pregnancy
 String Pregnancy_Basic = "Pregnancy_Basic"
@@ -48,75 +48,72 @@ Function initInterface()
 	
 	If (!Plugin_EstrusChaurus && isECReady())
 		WriteLog("ModulePregnancy: EstrusChaurus.esp found")
-		Plugin_EstrusChaurus = true
 		_ChaurusBreederSpell = Game.GetFormFromFile(0x19121, "EstrusChaurus.esp") as Spell
-		if !_ChaurusBreederSpell
-			WriteLog("ModulePregnancy: _ChaurusBreederSpell not found", 2)
-		endif
 		_zzEstrusParasiteKeyword = Game.GetFormFromFile(0x160A8, "EstrusChaurus.esp") as Keyword
-		if !_zzEstrusParasiteKeyword
-			WriteLog("ModulePregnancy: _zzEstrusParasiteKeyword not found", 2)
+		Plugin_EstrusChaurus = true
+		if !_ChaurusBreederSpell || !_zzEstrusParasiteKeyword
+			WriteLog("ModulePregnancy: _ChaurusBreederSpell or _zzEstrusParasiteKeyword  not found", 2)
+			Plugin_EstrusChaurus = false
 		endif
 	endif
 	
 	If (!Plugin_EstrusSpider && isESReady())
 		WriteLog("ModulePregnancy: EstrusSpider.esp found")
-		Plugin_EstrusSpider = true
 		_SpiderBreederSpell = Game.GetFormFromFile(0x4e255, "EstrusSpider.esp") as Spell
-		if !_SpiderBreederSpell
-			WriteLog("ModulePregnancy: _SpiderBreederSpell not found", 2)
-		endif
 		_zzEstrusSpiderParasiteKWD = Game.GetFormFromFile(0x4F2A3, "EstrusSpider.esp") as Keyword
-		if !_SpiderBreederSpell
-			WriteLog("ModulePregnancy: _zzEstrusSpiderParasiteKWD not found", 2)
+		Plugin_EstrusSpider = true
+		if (!_SpiderBreederSpell || !_zzEstrusSpiderParasiteKWD)
+			WriteLog("ModulePregnancy: _SpiderBreederSpell or _zzEstrusSpiderParasiteKWD not found", 2)
+			Plugin_EstrusSpider = false
 		endif
+		
 	endif
 	
 	If (!Plugin_EstrusDwemer && isEDReady())
 		WriteLog("ModulePregnancy: EstrusDwemer.esp found")
-		Plugin_EstrusDwemer = true
 		_DwemerBreederSpell = Game.GetFormFromFile(0x4e255, "EstrusDwemer.esp") as Spell 
-		if !_DwemerBreederSpell
-			WriteLog("ModulePregnancy: _DwemerBreederSpell not found", 2)
-		endif
 		_zzEstrusDwemerParasiteKWD = Game.GetFormFromFile(0x4F2A3, "EstrusDwemer.esp") as Keyword
-		if !_zzEstrusDwemerParasiteKWD
-			WriteLog("ModulePregnancy: _zzEstrusDwemerParasiteKWD not found", 2)
+		Plugin_EstrusDwemer = true
+		if (!_DwemerBreederSpell || !_zzEstrusDwemerParasiteKWD)
+			WriteLog("ModulePregnancy: _DwemerBreederSpell or _zzEstrusDwemerParasiteKWD not found", 2)
+			Plugin_EstrusDwemer = false
 		endif
 	endif
 	
 	If (!Plugin_BeeingFemale && isBFReady())
 		WriteLog("ModulePregnancy: BeeingFemale.esm found")
-		Plugin_BeeingFemale = true
 		_BFStatePregnant = Game.GetFormFromFile(0x28a0, "BeeingFemale.esm") as Spell
+		Plugin_BeeingFemale = true
 		if !_BFStatePregnant
 			WriteLog("ModulePregnancy: _BFStatePregnant not found", 2)
+			Plugin_BeeingFemale = false
 		endif
 	endif
 	
 	If (!Plugin_HentaiPregnancy && isHPReady())
 		WriteLog("ModulePregnancy: HentaiPregnancy.esm found")
-		Plugin_HentaiPregnancy = true
 		_HentaiPregnantFaction = ( Game.GetFormFromFile(0x12085, "HentaiPregnancy.esm") as Faction )
+		Plugin_HentaiPregnancy = true
 		if !_HentaiPregnantFaction
 			WriteLog("ModulePregnancy: _HentaiPregnantFaction not found", 2)
+			Plugin_HentaiPregnancy = false
 		endif
 	endif
 
 	If (!Plugin_EggFactory && isEFReady())
 		WriteLog("ModulePregnancy: EggFactory found")
-		Plugin_EggFactory = true
 		_EggFactoryPregnantFaction = Game.GetFormFromFile(0x2943C, "EggFactory.esp") as Faction 
+		Plugin_EggFactory = true
 		if !_EggFactoryPregnantFaction
 			WriteLog("ModulePregnancy: _EggFactoryPregnantFaction not found", 2)
+			Plugin_EggFactory = false
 		endif
 	endif
 
 	If (!Plugin_FertilityMode3 && isFM3Ready())
 		WriteLog("ModulePregnancy: Fertility Mode found")
+		_FMStorage = Game.GetFormFromFile(0x000D62,"Fertility Mode.esm") as Quest 
 		Plugin_FertilityMode3 = true
-		_FMStorage = Game.GetFormFromFile(0x000D62,"Fertility Mode.esm") as _JSW_BB_Storage
-		
 		if !_FMStorage
 			WriteLog("ModulePregnancy: _JSW_BB_Storage not found", 2)
 		endif
@@ -228,18 +225,18 @@ EndFunction
 EndFunction
 
 Function handleFertilityMode3(iWant_Status_Bars iBars)
-	int actorIndex = _FMStorage.TrackedActors.Find(PlayerRef as form) 
+	int actorIndex = getFMActorIndex(_FMStorage,PlayerRef)
 	if (actorIndex == -1)
 		iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)
 		iBars.releaseIcon(slwGetModName(),Pregnancy_Fetus)
 		iBars.releaseIcon(slwGetModName(),Pregnancy_CumInflation)
 		return
 	endIf
-	if (_FMStorage.LastConception[actorIndex] != 0.0)
+	if isFMPregnant(_FMStorage,actorIndex)
 		; Fired for pregnant actors
 		_loadFetusIcon(iBars)
 		iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)
-  	elseIf _FMStorage.LastOvulation[actorIndex] != 0.0
+  	elseIf isFMOvulating(_FMStorage, actorIndex)
 		 ; Fired for ovulating actors
 		 _loadOvulationIcon(iBars)
 		 iBars.releaseIcon(slwGetModName(),Pregnancy_Fetus)
@@ -248,7 +245,7 @@ Function handleFertilityMode3(iWant_Status_Bars iBars)
 		iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)
    endIf
 	; Mismatch error can be shown cause tweaks mod changed SpermCount array to int
-   If _FMStorage.SpermCount[actorIndex] > 0
+   If hasFMSperm(_FMStorage, actorIndex)
 	; Fired for inflated actors
 		_loadCumInflationIcon(iBars)
    else

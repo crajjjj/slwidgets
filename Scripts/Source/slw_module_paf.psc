@@ -9,8 +9,8 @@ Actor Property PlayerRef Auto
 ;--------------------------------------------------
 
 ;PAF/MiniNeeds
-PAF_MainQuestScript paf
-mndController mnd
+Quest paf
+Quest mnd
 
 String PEE_STATE = "PAF_PEE"
 String POOP_STATE = "PAF_POOP"
@@ -30,7 +30,7 @@ Function initInterface()
 	If (!Module_Ready && isPAFReady())
 		slw_log.WriteLog("ModulePAF: PeeAndFart.esp found")
 		paf = Game.GetFormFromFile(0x0012C8, "PeeAndFart.esp") As PAF_MainQuestScript
-		if paf	
+		if paf
 			Module_Ready = true 
 		else
 			slw_log.WriteLog("ModulePAF: PAF_MainQuestScript not found", 2)
@@ -79,10 +79,10 @@ Int Function getPeeLevel()
 		return 0
 	endif
 	if paf
-		return _getPeeLevelPAF()
+		return _getPeeLevelPAF(paf)
 	endif	
 	if mnd
-		return _getPeeLevelMND()
+		return _getPeeLevelMND(mnd)
 	endif
 EndFunction
 ;states 0-4
@@ -91,61 +91,14 @@ Int Function getPoopLevel()
 		return 0
 	endif
 	if paf
-		return _getPoopLevelPAF()
+		return _getPoopLevelPAF(paf)
 	endif
 	if mnd
-		return _getPoopLevelMND()
+		return _getPoopLevelMND(mnd)
 	endif
 EndFunction
 
-Int Function _getPoopLevelPAF()
-	int pafstate = paf.PoopState
-	if pafstate >= 4
-		return  4
-	Else
-		return pafstate
-	endif 
-EndFunction
 
-Int Function _getPoopLevelMND()
-	if !mnd.enablePoop
-		return 0
-	endif
-	int p = getPercent("Poop")
-	return _percentToState5(p)
-EndFunction
-
-Int Function _getPeeLevelPAF()
-	int pafstate = paf.PeeState
-	if pafstate >= 4
-		return  4
-	Else
-		return pafstate
-	endif 
-EndFunction
-
-Int Function _getPeeLevelMND()
-	if !mnd.enablePiss
-		return 0
-	endif
-
-	int p = getPercent("Piss")
-	return _percentToState5(p)
-EndFunction
-
-;fixed function from mnd
-int function getPercent(string need)
-	float now = Utility.GetCurrentGameTime()
-	float tsv = 20.0/mnd.TimeScale.getValue()
-	float perc = -1.0
-	
-	If need=="Piss"
-		perc = tsv * 24.0*(now - mnd.lastTimePiss)/mnd.timePiss
-	elseIf need=="Poop"
-		perc = tsv * 24.0*(now - mnd.lastTimePoop)/mnd.timePoop
-	endIf
-	return (perc * 100) as int
-endFunction
 
 Function _loadPeeIcons(iWant_Status_Bars iBars)
 	String[] s = new String[5]
