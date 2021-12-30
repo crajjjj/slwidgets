@@ -1,6 +1,10 @@
 Scriptname slw_module_paf extends slw_base_module  
 import slw_log
 import slw_util
+import slw_interface_paf
+import slw_interface_mnd
+import slw_interface_alp
+
 
 Bool Property Module_Ready = false auto hidden
 

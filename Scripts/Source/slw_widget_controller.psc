@@ -11,7 +11,7 @@ String EMPTY_STATE = "PLACEHOLDER"
 String STATUS_BARS_EVENT_NAME = "iWantStatusBarsReady"
 
 int _emptyIconIndex = 0
-int _checkModules = 0
+int _checkPlugins = 0
 
 bool Function isLoaded()
 	return controller_initialised
@@ -26,9 +26,8 @@ EndEvent
 ;on game reload
 ;on enable mod button click
 Function setup()
-	WriteLog("WidgetController module setup")
-	config.moduleReset()
-	_checkModules = 1 
+	trace("WidgetController controller setup")
+	_checkPlugins = 1 
 	RegisterForModEvent(STATUS_BARS_EVENT_NAME, "OniWantStatusBarsReady")
 	RegisterForSingleUpdate(5)
 EndFunction
@@ -52,20 +51,20 @@ Event OnUpdate()
 		return
 	endif
 	;postponed module init
-	If _checkModules > 0
-		_checkModules += 1
-		If _checkModules > 2
+	If _checkPlugins > 0
+		_checkPlugins += 1
+		If _checkPlugins >= 2
+			WriteLog("WidgetController: moduleSetup")
 			config.moduleSetup()
-			_checkModules = 0
+			_checkPlugins = 0
 		EndIf
 	EndIf
-    if(controller_initialised && iBars.isReady())
+    if(controller_initialised && iBars.isReady() && _checkPlugins == 0)
 		config.moduleWidgetStateUpdate(iBars)
 		RegisterForSingleUpdate(config.updateInterval)
 	else
 		RegisterForSingleUpdate(5)
 	endIf
-
 	
 EndEvent
 

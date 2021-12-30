@@ -1,6 +1,7 @@
 Scriptname slw_module_sla extends slw_base_module  
 import slw_log
 import slw_util
+import slw_interface_sla
 
 Bool Property Module_Ready = false auto hidden
 

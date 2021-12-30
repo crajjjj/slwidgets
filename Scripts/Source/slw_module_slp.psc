@@ -1,6 +1,7 @@
 Scriptname slw_module_slp extends slw_base_module  
 import slw_log
 import slw_util
+import slw_interface_slp
 
 slw_config Property config Auto
 Actor Property PlayerRef Auto

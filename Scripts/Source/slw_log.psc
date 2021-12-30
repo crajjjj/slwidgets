@@ -24,6 +24,10 @@ Function WriteLog(String asMessage, Int aiPriority = 0) Global
 	TraceUser(asModName, asMessage, aiPriority)
 EndFunction
 
+Function trace(String msg, Int aiPriority = 0) Global 
+	;WriteLog(msg,aiPriority)
+EndFunction
+
 Function WriteLogAndPrintConsole(String asMessage, Int aiPriority = 0) Global
 	WriteLog(asMessage,aiPriority)
 	PrintConsole(asMessage)

@@ -278,6 +278,7 @@ State TOGGLE_MOD_STATE
 			;enable flow
 			config.SetDefaults()
 			config.LoadUserSettingsPapyrus()
+			config.moduleSetup()
 			widget_controller.setup()
 			SetTextOptionValueST("$SLW_Disable")
 			ShowMessage("$SLW_Enabled", false)

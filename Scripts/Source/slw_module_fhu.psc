@@ -1,6 +1,7 @@
 Scriptname slw_module_fhu extends slw_base_module  
 import slw_log
 import slw_util
+import slw_interface_fhu
 
 Bool Property Module_Ready = false auto hidden
 
