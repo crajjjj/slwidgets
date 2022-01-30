@@ -58,11 +58,24 @@ Event OnPageReset(string page)
 	endIf
 EndEvent
 
+event OnVersionUpdate(int a_version)
+	; a_version is the new version, CurrentVersion is the old version
+	if (a_version >= 20005 && CurrentVersion < 20005)
+		WriteLog("Updating  to version 2.0.5")
+		config.moduleReset()
+	endIf
+endEvent
+
 Function General()
     SetCursorFillMode(TOP_TO_BOTTOM)
 	AddHeaderOption("$SLW_General")
+	AddTextOptionST("TOGGLE_MOD_STATE","$SLW_Mod_Toggle", StringIfElse(config.slw_stopped , "$SLW_Enable", "$SLW_Disable"), OPTION_FLAG_NONE)
 	Int sliderFlag = _getFlag()
 	_update_interval_slider = AddSliderOption("$SLW_Update_Interval", config.updateInterval, "{0}", sliderFlag)
+	AddHeaderOption("$SLW_User_Settings")
+	Int loadSettingsFlagPapyrus = _getFlag(jsonutil.JsonExists(config.slw_settings_path))
+	AddTextOptionST("LOAD_USER_SETTINGS_STATE", "$SLW_Load_Settings", "$SLW_GO", loadSettingsFlagPapyrus)
+	AddTextOptionST("SAVE_USER_SETTINGS_STATE", "$SLW_Save_Settings", "$SLW_GO", 0)
 	AddEmptyOption()
 	
 	AddHeaderOption("$SLW_Sexlab_Aroused")
@@ -110,14 +123,8 @@ Function Debug()
 	SetCursorPosition(0)
 	AddHeaderOption("SLWidgets. Version: " + GetVersionString())
 	AddEmptyOption()
-	AddTextOptionST("TOGGLE_MOD_STATE","$SLW_Debug_Toggle", StringIfElse( config.slw_stopped , "$SLW_Enable", "$SLW_Disable"), OPTION_FLAG_NONE)
 	AddTextOptionST("UPDATE_DEPENDENCIES_STATE","$SLW_Recheck","$SLW_GO", OPTION_FLAG_NONE)
 	AddTextOptionST("ADD_EMPTY_ICON_STATE","$SLW_Empty_Icon_Add","$SLW_Add", OPTION_FLAG_NONE)
-	
-	AddHeaderOption("$SLW_User_Settings")
-	Int loadSettingsFlagPapyrus = _getFlag(jsonutil.JsonExists(config.slw_settings_path))
-	AddTextOptionST("LOAD_USER_SETTINGS_STATE", "$SLW_Load_Settings", "$SLW_GO", loadSettingsFlagPapyrus)
-	AddTextOptionST("SAVE_USER_SETTINGS_STATE", "$SLW_Save_Settings", "$SLW_GO", 0)
 
 	AddHeaderOption("$SLW_Dependency_check")
 	AddTextOption("$SLW_Iwant_SB_Check", StringIfElse( widget_controller.isLoaded() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
@@ -261,6 +268,10 @@ State ADD_EMPTY_ICON_STATE
 		SetTextOptionValueST("$SLW_Add")
         SetOptionFlagsST(OPTION_FLAG_NONE)
     EndEvent
+	
+	Event OnHighlightST()
+		SetInfoText("$SLW_Empty_Icon_Add_Info")
+    EndEvent
 EndState
 
 State TOGGLE_MOD_STATE
@@ -287,7 +298,12 @@ State TOGGLE_MOD_STATE
     EndEvent
 	
 	Event OnHighlightST()
-        SetInfoText("$SLW_EnabledDisabled_Info")
+		if config.slw_stopped
+			SetInfoText("$SLW_Disabled_Info")
+		Else
+			SetInfoText("$SLW_Enabled_Info")
+		endif
+       
     EndEvent
 EndState
 

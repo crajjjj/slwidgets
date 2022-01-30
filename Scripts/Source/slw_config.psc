@@ -173,16 +173,18 @@ function LoadSettingsAtStart()
 	if ValidatePapyrusUtil
 		if jsonutil.JsonExists(slw_settings_path)
 			LoadUserSettingsPapyrus()
-			return 
+			return
 		endIf
 	endIf
 endFunction
 
 Bool function LoadUserSettingsPapyrus()
 	if !jsonutil.IsGood(slw_settings_path)
-		WriteLogAndPrintConsole("SLWidgets: Can't load user settings. Errors: {" + jsonutil.getErrors(slw_settings_path) + "}", 2)
+		WriteLog("SLWidgets: Can't load user settings. Errors: {" + jsonutil.getErrors(slw_settings_path) + "}", 2)
 		return false
 	endIf
+	slw_stopped = jsonutil.GetPathBoolValue(slw_settings_path, "slw_stopped", slw_stopped)
+	updateInterval = jsonutil.GetPathIntValue(slw_settings_path, "updateInterval", updateInterval)
 	module_sla_arousal = jsonutil.GetPathBoolValue(slw_settings_path, "module_sla_arousal", module_sla_arousal)
 	module_sla_exposure = jsonutil.GetPathBoolValue(slw_settings_path, "module_sla_exposure", module_sla_exposure)
 	module_apropos_two_wt = jsonutil.GetPathBoolValue(slw_settings_path, "module_apropos_two_wt", module_apropos_two_wt)
@@ -200,6 +202,8 @@ Bool function LoadUserSettingsPapyrus()
 endFunction
 
 Bool function SaveUserSettingsPapyrus()
+	jsonutil.SetPathIntValue(slw_settings_path, "slw_stopped", slw_stopped as Int)
+	jsonutil.SetPathIntValue(slw_settings_path, "updateInterval", updateInterval as Int)
 	jsonutil.SetPathIntValue(slw_settings_path, "module_sla_arousal", module_sla_arousal as Int)
 	jsonutil.SetPathIntValue(slw_settings_path, "module_sla_exposure", module_sla_exposure as Int)
 	jsonutil.SetPathIntValue(slw_settings_path, "module_apropos_two_wt", module_apropos_two_wt as Int)
@@ -214,7 +218,7 @@ Bool function SaveUserSettingsPapyrus()
 	jsonutil.SetPathIntValue(slw_settings_path, "module_paf_poo", module_paf_poo as Int)
 	jsonutil.SetPathIntValue(slw_settings_path, "module_defeat_enabled", module_defeat_enabled as Int)
 	if !jsonutil.Save(slw_settings_path, false)
-		WriteLogAndPrintConsole("SLWidgets: Error saving user settings", 2)
+		WriteLog("SLWidgets: Error saving user settings", 2)
 		return false
 	endIf
 	return true
