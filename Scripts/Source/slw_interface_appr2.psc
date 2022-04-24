@@ -9,24 +9,32 @@ import slw_util
 
 ReferenceAlias Function GetAproposAlias(Actor akTarget, Quest apropos2Quest ) Global
 	; Search Apropos2 actor aliases as the player alias is not set in stone
-	ReferenceAlias AproposTwoAlias = None
+	ReferenceAlias aproposTwoAlias = None
 	Int i = 0
 	ReferenceAlias AliasSelect
-	While i < apropos2Quest.GetNumAliases() 
+	Int aliasesInt = apropos2Quest.GetNumAliases() 
+	;slw_log.WriteLog("Apropos2 actor count" + aliasesInt)
+	While i < aliasesInt 
 		AliasSelect = apropos2Quest.GetNthAlias(i) as ReferenceAlias
 		If AliasSelect.GetReference() as Actor == akTarget
-			AproposTwoAlias = AliasSelect
+			;slw_log.WriteLog("Apropos2 player found")
+			aproposTwoAlias = AliasSelect
 		EndIf
-		Return AproposTwoAlias
+		Return aproposTwoAlias
 		i += 1
 	EndWhile
-	Return AproposTwoAlias
+
+	if aproposTwoAlias == None
+		String akActorName = akTarget.GetLeveledActorBase().GetName()
+		;slw_log.WriteLog("Actor "+ akActorName + " is not yet registered in Apropos2")
+	EndIf
+	Return aproposTwoAlias
 EndFunction
 	
 Int Function GetWearStateAnal(Actor akTarget,  Quest apropos2Quest) Global
-	ReferenceAlias AproposTwoAlias = GetAproposAlias(akTarget, apropos2Quest) 
-	if GetAproposAlias(akTarget, apropos2Quest) != None
-		Int damage =  (AproposTwoAlias as Apropos2ActorAlias).AnalWearTearState
+	ReferenceAlias aproposTwoAlias = GetAproposAlias(akTarget, apropos2Quest) 
+	if aproposTwoAlias != None
+		Int damage =  (aproposTwoAlias as Apropos2ActorAlias).AnalWearTearState
 		If damage <= 8
 			return damage
 		Else
@@ -38,9 +46,9 @@ Int Function GetWearStateAnal(Actor akTarget,  Quest apropos2Quest) Global
 EndFunction
 
 Int Function GetWearStateVaginal(Actor akTarget,  Quest apropos2Quest) Global 
-	ReferenceAlias AproposTwoAlias = GetAproposAlias(akTarget, apropos2Quest)
-	if GetAproposAlias(akTarget, apropos2Quest) != None
-		Int damage = (AproposTwoAlias as Apropos2ActorAlias).VaginalWearTearState
+	ReferenceAlias aproposTwoAlias = GetAproposAlias(akTarget, apropos2Quest)
+	if aproposTwoAlias != None
+		Int damage = (aproposTwoAlias as Apropos2ActorAlias).VaginalWearTearState
 		If damage <= 8
 			return damage
 		Else
@@ -52,9 +60,9 @@ Int Function GetWearStateVaginal(Actor akTarget,  Quest apropos2Quest) Global
 EndFunction
 
 Int Function GetWearStateOral(Actor akTarget, Quest apropos2Quest) Global
-	ReferenceAlias AproposTwoAlias = GetAproposAlias(akTarget, apropos2Quest)
-	if GetAproposAlias(akTarget, apropos2Quest) != None
-		Int damage = (AproposTwoAlias as Apropos2ActorAlias).OralWearTearState
+	ReferenceAlias aproposTwoAlias = GetAproposAlias(akTarget, apropos2Quest)
+	if aproposTwoAlias != None
+		Int damage = (aproposTwoAlias as Apropos2ActorAlias).OralWearTearState
 		If damage <= 8
 			return damage
 		Else
