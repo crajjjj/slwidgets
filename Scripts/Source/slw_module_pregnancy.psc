@@ -2,6 +2,7 @@ Scriptname slw_module_pregnancy extends slw_base_module
 import slw_log
 import slw_util
 import slw_interface_fm
+import slw_interface_eggfact36
 
 slw_config Property config Auto
 Actor Property PlayerRef Auto
@@ -16,7 +17,10 @@ Bool Property Plugin_HentaiPregnancy = false auto hidden
 
 Spell _BFStatePregnant 
 Faction _HentaiPregnantFaction
+;deprecated
 Faction _EggFactoryPregnantFaction
+;EggFactory
+Quest EggFactoryMasterTimerQuest
 
 Spell _ChaurusBreederSpell
 Keyword _zzEstrusParasiteKeyword
@@ -103,12 +107,13 @@ Function initInterface()
 
 	If (!Plugin_EggFactory && isEFReady())
 		WriteLog("ModulePregnancy: EggFactory found")
-		_EggFactoryPregnantFaction = Game.GetFormFromFile(0x2943C, "EggFactory.esp") as Faction 
+		EggFactoryMasterTimerQuest = Game.GetFormFromFile(0x03D261, "EggFactory.esp") as Quest
 		Plugin_EggFactory = true
-		if !_EggFactoryPregnantFaction
-			WriteLog("ModulePregnancy: _EggFactoryPregnantFaction not found", 2)
+		if !EggFactoryMasterTimerQuest
+			WriteLog("ModulePregnancy: EggFactoryMasterTimerQuest not found", 2)
 			Plugin_EggFactory = false
 		endif
+
 	endif
 
 	If (!Plugin_FertilityMode3 && isFM3Ready())
@@ -190,7 +195,7 @@ EndFunction
 	
 	;EggFactory
 	If Plugin_EggFactory
-		if PlayerRef.isInFaction(_EggFactoryPregnantFaction ) ;EggFactoryPregCheck Faction
+		if isEggFactPregnant(EggFactoryMasterTimerQuest,PlayerRef) ;EggFactoryPregCheck Faction
 			_loadEggsIcon(iBars)
 		else
 			iBars.releaseIcon(slwGetModName(),Pregnancy_Eggs)
