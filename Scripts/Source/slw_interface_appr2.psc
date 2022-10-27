@@ -19,15 +19,15 @@ ReferenceAlias Function GetAproposAlias(Actor akTarget, Quest apropos2Quest ) Gl
 		If AliasSelect.GetReference() as Actor == akTarget
 			;slw_log.WriteLog("Apropos2 player found")
 			aproposTwoAlias = AliasSelect
+			Return aproposTwoAlias
 		EndIf
-		Return aproposTwoAlias
 		i += 1
 	EndWhile
 
-	if aproposTwoAlias == None
-		String akActorName = akTarget.GetLeveledActorBase().GetName()
+	;if aproposTwoAlias == None
+		;String akActorName = akTarget.GetLeveledActorBase().GetName()
 		;slw_log.WriteLog("Actor "+ akActorName + " is not yet registered in Apropos2")
-	EndIf
+	;EndIf
 	Return aproposTwoAlias
 EndFunction
 	
