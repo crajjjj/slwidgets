@@ -388,6 +388,6 @@ Function _loadCumOralIcons(iWant_Status_Bars iBars)
 	a[8] = 100
 	
 	; This will fail silently if the icon is already loaded
-	iBars.loadIcon(slwGetModName(), CUM_VAGINAL_STATE, d, s, r, g, b, a)
+	iBars.loadIcon(slwGetModName(), CUM_ORAL_STATE, d, s, r, g, b, a)
 
 EndFunction
