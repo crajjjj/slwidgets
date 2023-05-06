@@ -4,7 +4,7 @@ SexLab Widgets SSE
 A  plugin for iWant Status Bars to add sexlab related widgets to Skyrim. Supports 2 mechanics
 - Icons that have 9 stages and change dynamically
 - Icons that appear/dissapear on condition
-113 icons included.
+113+ icons included.
 MCM for flexible configuration
 
 
@@ -16,7 +16,7 @@ MCM for flexible configuration
 
 - vApropos2 - w&t icons (vagina, anus and mouth state icons)
 
-- vFill her up - cum icons (total + vaginal + anal pool icons)
+- vFill her up (baka) - cum icons (total + vaginal + anal + oral pool icons)
 
 - MME - milk (breast) and lactacid (bottle) icons
 
@@ -77,12 +77,12 @@ MCM for flexible configuration
 # Incompatible mods:
 
 - Affected indirectly by mods that impact iWant Widgets. Mods significantly altering hudmenu.gfx directly or via a hudmenu.swf file may prevent image display.
-- Tested without issues in different mod lists with multiple UI mods (Tsukiro/D&DDC/Licentia).
+- Tested without issues in different mod lists with multiple UI mods (Tsukiro/D&DDC/Licentia/Nefaram/Masterstroke).
 - In heavy script load mod lists there's a possibility of iBars misbehaving - icons overlapping/stacking/potentially other init issues (on game reload phase seems overloaded which makes papyrus skip instructions).
-Encountered with babo dialogue/being female.
 Workaround - disable icons -> save and load or fast travel (to clean unmanaged messed up icons) -> enable icons.
 
 ## Troubleshooting
+- Make sure you have only 1 iWidgets.esp plugin
 - Check console messages
 - Check papyrus logs and slwidgets user logs
 - Check mcm debug page and dependency check

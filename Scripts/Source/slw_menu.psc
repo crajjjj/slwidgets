@@ -13,6 +13,7 @@ int _apropos_two_wt_Toggle
 int _fhu_cum_Toggle
 int _fhu_cum_Anal_Toggle
 int _fhu_cum_Vaginal_Toggle
+int _fhu_cum_Oral_Toggle
 int _mme_milk_Toggle
 int _mme_lactacid_Toggle
 int _parasites_mod_Toggle
@@ -92,6 +93,7 @@ Function General()
 	_fhu_cum_Toggle = addToggleOption("$SLW_FHU_TI", config.module_fhu_cum, fhuFlag)
 	_fhu_cum_Vaginal_Toggle = addToggleOption("$SLW_FHU_VI", config.module_fhu_cum_vaginal, fhuFlag)
 	_fhu_cum_Anal_Toggle = addToggleOption("$SLW_FHU_AI", config.module_fhu_cum_anal, fhuFlag)
+	_fhu_cum_Oral_Toggle = addToggleOption("$SLW_FHU_OI", config.module_fhu_cum_oral, fhuFlag)
 	
 	AddHeaderOption("$SLW_MME")
 	Int mmeFlag = _getFlag(config.module_mme.isInterfaceActive()) 
@@ -164,6 +166,8 @@ Event onOptionHighlight(int mcm_option)
 		SetInfoText("$SLW_FHU_Toggle_Info")
 	ElseIf (mcm_option == _fhu_cum_Anal_Toggle)
 		SetInfoText("$SLW_FHU_Anal_Toggle_Info")
+	ElseIf (mcm_option == _fhu_cum_Oral_Toggle)
+		SetInfoText("$SLW_FHU_Oral_Toggle_Info")
 	ElseIf (mcm_option == _fhu_cum_Vaginal_Toggle)
 		SetInfoText("$SLW_FHU_Vaginal_Toggle_Info")
 	ElseIf (mcm_option == _mme_milk_Toggle)
@@ -202,6 +206,9 @@ Event onOptionSelect(int mcm_option)
 	elseIf(mcm_option == _fhu_cum_Anal_Toggle)
 		config.module_fhu_cum_anal = !config.module_fhu_cum_anal
 		setToggleOptionValue(mcm_option, config.module_fhu_cum_anal)
+	elseIf(mcm_option == _fhu_cum_Oral_Toggle)
+		config.module_fhu_cum_oral = !config.module_fhu_cum_oral
+		setToggleOptionValue(mcm_option, config.module_fhu_cum_oral)
 	elseIf(mcm_option == _mme_milk_Toggle)
 		config.module_mme_milk = !config.module_mme_milk
 		setToggleOptionValue(mcm_option, config.module_mme_milk)

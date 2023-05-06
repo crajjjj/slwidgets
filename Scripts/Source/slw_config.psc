@@ -25,6 +25,7 @@ Bool property module_apropos_two_wt = True auto hidden
 Bool property module_fhu_cum = True auto hidden
 Bool property module_fhu_cum_anal = True auto hidden
 Bool property module_fhu_cum_vaginal = True auto hidden
+Bool property module_fhu_cum_oral = True auto hidden
 Bool property module_mme_milk = True auto hidden
 Bool property module_mme_lactacid = True auto hidden
 Bool property module_parasites_enabled = True auto hidden
@@ -100,6 +101,7 @@ Function moduleSyncConfig()
 		module_fhu_cum = false
 		module_fhu_cum_anal = false
 		module_fhu_cum_vaginal = false
+		module_fhu_cum_oral = false
 	endIf
 
 	if !module_mme.isInterfaceActive()
@@ -138,6 +140,7 @@ Function SetDefaults()
 	module_fhu_cum = True
 	module_fhu_cum_anal = True
 	module_fhu_cum_vaginal = True
+	module_fhu_cum_oral= True
 	module_mme_milk = True
 	module_mme_lactacid = True
 	module_parasites_enabled = True
@@ -191,6 +194,7 @@ Bool function LoadUserSettingsPapyrus()
 	module_fhu_cum = jsonutil.GetPathBoolValue(slw_settings_path, "module_fhu_cum", module_fhu_cum)
 	module_fhu_cum_anal = jsonutil.GetPathBoolValue(slw_settings_path, "module_fhu_cum_anal", module_fhu_cum_anal)
 	module_fhu_cum_vaginal = jsonutil.GetPathBoolValue(slw_settings_path, "module_fhu_cum_vaginal", module_fhu_cum_vaginal)
+	module_fhu_cum_oral = jsonutil.GetPathBoolValue(slw_settings_path, "module_fhu_cum_oral", module_fhu_cum_oral)
 	module_mme_milk = jsonutil.GetPathBoolValue(slw_settings_path, "module_mme_milk", module_mme_milk)
 	module_mme_lactacid = jsonutil.GetPathBoolValue(slw_settings_path, "module_mme_lactacid", module_mme_lactacid)
 	module_parasites_enabled = jsonutil.GetPathBoolValue(slw_settings_path, "module_parasites_enabled", module_parasites_enabled)
@@ -210,6 +214,7 @@ Bool function SaveUserSettingsPapyrus()
 	jsonutil.SetPathIntValue(slw_settings_path, "module_fhu_cum", module_fhu_cum as Int)
 	jsonutil.SetPathIntValue(slw_settings_path, "module_fhu_cum_anal", module_fhu_cum_anal as Int)
 	jsonutil.SetPathIntValue(slw_settings_path, "module_fhu_cum_vaginal", module_fhu_cum_vaginal as Int)
+	jsonutil.SetPathIntValue(slw_settings_path, "module_fhu_cum_oral", module_fhu_cum_oral as Int)
 	jsonutil.SetPathIntValue(slw_settings_path, "module_mme_milk", module_mme_milk as Int)
 	jsonutil.SetPathIntValue(slw_settings_path, "module_mme_lactacid", module_mme_lactacid as Int)
 	jsonutil.SetPathIntValue(slw_settings_path, "module_parasites_enabled", module_parasites_enabled as Int)

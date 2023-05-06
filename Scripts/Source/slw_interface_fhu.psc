@@ -21,3 +21,8 @@ Int Function GetCumAmountVag(Actor akTarget, Quest FhuInflateQuest) Global
 	float percentage =(FhuInflateQuest as sr_inflateQuest).GetVaginalPercentage(akTarget) * 100.0 
 	return percentToState9(percentage as int)
 EndFunction
+
+Int Function GetCumAmountOral(Actor akTarget, Quest FhuInflateQuest) Global
+	float percentage =(FhuInflateQuest as sr_inflateQuest).GetOralPercentage(akTarget) * 100.0 
+	return percentToState9(percentage as int)
+EndFunction
