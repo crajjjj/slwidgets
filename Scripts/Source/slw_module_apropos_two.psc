@@ -14,6 +14,10 @@ Quest ActorsQuest
 String VAG_STATE = "AP2Vaginal"
 String ANAL_STATE = "AP2Anal"
 String ORAL_STATE = "AP2Oral"
+int EMPTY = -1
+int vag_prv = -1
+int oral_prv = -1
+int anal_prv = -1
 
 ;override
 Bool Function isInterfaceActive()
@@ -46,6 +50,9 @@ EndFunction
 
 ;override
 Event onWidgetReload(iWant_Status_Bars iBars)
+	vag_prv = EMPTY
+	oral_prv = EMPTY
+   	anal_prv = EMPTY
 	if(config.module_apropos_two_wt && isInterfaceActive())
 		_loadApropos2Oral(iBars)
 		_loadApropos2Anal(iBars)
@@ -60,9 +67,21 @@ EndEvent
 ;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 	if (config.module_apropos_two_wt && isInterfaceActive())
-		iBars.setIconStatus(slwGetModName(), ORAL_STATE, GetWearStateOral(PlayerRef, ActorsQuest))
-		iBars.setIconStatus(slwGetModName(), ANAL_STATE, GetWearStateAnal(PlayerRef, ActorsQuest))
-		iBars.setIconStatus(slwGetModName(), VAG_STATE, GetWearStateVaginal(PlayerRef, ActorsQuest))
+		int oral_curr = GetWearStateOral(PlayerRef, ActorsQuest)
+		if oral_prv == EMPTY || oral_curr != oral_prv
+			iBars.setIconStatus(slwGetModName(), ORAL_STATE, oral_curr)
+			oral_prv = oral_curr
+		endif
+		int anal_curr = GetWearStateAnal(PlayerRef, ActorsQuest)
+		if anal_prv == EMPTY || anal_curr != anal_prv
+			iBars.setIconStatus(slwGetModName(), ANAL_STATE, anal_curr)
+			anal_prv = anal_curr
+		endif
+		int vag_curr = GetWearStateVaginal(PlayerRef, ActorsQuest)
+		if vag_prv == EMPTY || vag_curr != vag_prv
+			iBars.setIconStatus(slwGetModName(), VAG_STATE, vag_curr)
+			vag_prv = vag_curr
+		endif
 	endIf
 EndEvent
 

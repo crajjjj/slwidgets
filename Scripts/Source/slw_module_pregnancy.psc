@@ -240,12 +240,12 @@ Function handleFertilityMode3(iWant_Status_Bars iBars)
 	endIf
 	if isFMPregnant(_FMStorage,actorIndex)
 		; Fired for pregnant actors
-		_loadFetusIcon(iBars)
 		iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)
+		_loadFetusIcon(iBars)
   	elseIf isFMOvulating(_FMStorage, actorIndex)
 		 ; Fired for ovulating actors
-		 _loadOvulationIcon(iBars)
 		 iBars.releaseIcon(slwGetModName(),Pregnancy_Fetus)
+		 _loadOvulationIcon(iBars)
 	else
 		iBars.releaseIcon(slwGetModName(),Pregnancy_Fetus)
 		iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)

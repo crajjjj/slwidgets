@@ -10,6 +10,10 @@ Actor Property PlayerRef Auto
 ;MME
 String MILK_STATE = "MMEMilk"
 String LACTACID_STATE = "MMELactacid"
+
+int EMPTY = -1
+int milk_state_prv = -1
+int lactacid_state_prv = -1
 ;override
 Bool Function isInterfaceActive()
 	Return Module_Ready
@@ -30,6 +34,8 @@ EndFunction
 
 ;override
 Event onWidgetReload(iWant_Status_Bars iBars)
+	milk_state_prv = EMPTY
+	lactacid_state_prv = EMPTY
 	if(config.module_mme_milk && isInterfaceActive())
 		_loadMilkIcons(iBars)
 	else
@@ -46,11 +52,19 @@ EndEvent
 ;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 	if (config.module_mme_milk && isInterfaceActive())
-		iBars.setIconStatus(slwGetModName(), MILK_STATE, getMilkLevel())
+		int milk_state_curr = getMilkLevel()
+		if milk_state_prv == EMPTY || milk_state_prv != milk_state_curr
+			iBars.setIconStatus(slwGetModName(), MILK_STATE, milk_state_curr )
+			milk_state_prv = milk_state_curr
+		endif
 	endIf
 
 	if (config.module_mme_lactacid && isInterfaceActive())
-		iBars.setIconStatus(slwGetModName(), LACTACID_STATE, getLactacidLevel())
+		int lactacid_state_curr = getLactacidLevel()
+		if milk_state_prv == EMPTY || lactacid_state_prv != lactacid_state_curr
+			iBars.setIconStatus(slwGetModName(), LACTACID_STATE, lactacid_state_curr )
+			lactacid_state_prv = lactacid_state_curr
+		endif
 	endIf
 EndEvent
 

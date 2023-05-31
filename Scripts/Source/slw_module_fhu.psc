@@ -16,6 +16,12 @@ String CUM_ANAL_STATE = "FHUCumAnal"
 String CUM_VAGINAL_STATE = "FHUCumVaginal"
 String CUM_ORAL_STATE = "FHUCumOral"
 
+int EMPTY = -1
+int cum_state_prv = -1
+int cum_anal_state_prv = -1
+int cum_vaginal_state_prv = -1
+int cum_oral_state_prv = -1
+
 ;override
 Bool Function isInterfaceActive()
 	Return Module_Ready
@@ -41,6 +47,10 @@ EndFunction
 
 ;override
 Event onWidgetReload(iWant_Status_Bars iBars)
+	cum_state_prv = EMPTY
+	cum_anal_state_prv = EMPTY
+ 	cum_vaginal_state_prv = EMPTY
+ 	cum_oral_state_prv = EMPTY
 	if(config.module_fhu_cum && isInterfaceActive())
 		_loadCumIcons(iBars)
 	else
@@ -69,16 +79,32 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 		return
 	endif
 	if config.module_fhu_cum 
-		iBars.setIconStatus(slwGetModName(), CUM_STATE, GetCumAmount(PlayerRef, FhuInflateQuest))
+		int cum_state_curr = GetCumAmount(PlayerRef, FhuInflateQuest)
+		if cum_state_prv == EMPTY || cum_state_prv != cum_state_curr
+			iBars.setIconStatus(slwGetModName(), CUM_STATE, cum_state_curr)
+			cum_state_prv = cum_state_curr
+		endif
 	endIf
-	if config.module_fhu_cum_anal
-		iBars.setIconStatus(slwGetModName(), CUM_ANAL_STATE, GetCumAmountAnal(PlayerRef, FhuInflateQuest))
+	if config.module_fhu_cum_anal 
+		int cum_anal_state_curr = GetCumAmountAnal(PlayerRef, FhuInflateQuest)
+		if cum_anal_state_prv == EMPTY || cum_anal_state_prv != cum_anal_state_curr
+			iBars.setIconStatus(slwGetModName(), CUM_ANAL_STATE, cum_anal_state_curr)
+			cum_anal_state_prv = cum_anal_state_curr
+		endif
 	endIf
-	if config.module_fhu_cum_vaginal
-		iBars.setIconStatus(slwGetModName(), CUM_VAGINAL_STATE, GetCumAmountVag(PlayerRef, FhuInflateQuest))
+	if config.module_fhu_cum_vaginal 
+		int cum_vag_state_curr = GetCumAmountVag(PlayerRef, FhuInflateQuest)
+		if cum_vaginal_state_prv == EMPTY || cum_vaginal_state_prv != cum_vag_state_curr
+			iBars.setIconStatus(slwGetModName(), CUM_VAGINAL_STATE, cum_vag_state_curr)
+			cum_vaginal_state_prv = cum_vag_state_curr
+		endif
 	endIf
-	if config.module_fhu_cum_oral
-		iBars.setIconStatus(slwGetModName(), CUM_ORAL_STATE, GetCumAmountOral(PlayerRef, FhuInflateQuest))
+	if config.module_fhu_cum_oral 
+		int cum_oral_state_curr = GetCumAmountOral(PlayerRef, FhuInflateQuest)
+		if cum_oral_state_prv == EMPTY || cum_oral_state_prv != cum_oral_state_curr
+			iBars.setIconStatus(slwGetModName(), CUM_ORAL_STATE, cum_oral_state_curr)
+			cum_oral_state_prv = cum_oral_state_curr
+		endif
 	endIf
 	
 EndEvent

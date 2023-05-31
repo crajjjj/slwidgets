@@ -16,6 +16,9 @@ Faction pExposureFaction
 
 String AROUSAL_STATE = "Arousal"
 String EXPOSURE_STATE = "Exposure"
+int EMPTY = -1
+int arousal_state_prv = -1
+int exposure_state_prv = -1
 
 ;override
 Bool Function isInterfaceActive()
@@ -45,6 +48,8 @@ EndFunction
 
 ;override
 Event onWidgetReload(iWant_Status_Bars iBars)
+	arousal_state_prv = EMPTY
+	exposure_state_prv = EMPTY
 	if(config.module_sla_arousal && isInterfaceActive())
 		_loadArousedIcons(iBars)
 	else
@@ -60,12 +65,20 @@ EndEvent
 
 ;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
-	if(config.module_sla_arousal && isInterfaceActive())
-		iBars.setIconStatus(slwGetModName(), AROUSAL_STATE, getArousalLevel(pArousalFaction, sla, PlayerRef))
-	endif
-	if(config.module_sla_exposure && isInterfaceActive())
-		iBars.setIconStatus(slwGetModName(), EXPOSURE_STATE, getExposureLevel(pExposureFaction, sla, PlayerRef))
-	endif
+	if (config.module_sla_arousal && isInterfaceActive())
+		int arousal_state_curr = getArousalLevel(pArousalFaction, sla, PlayerRef)
+		if arousal_state_prv == EMPTY || arousal_state_prv != arousal_state_curr
+			iBars.setIconStatus(slwGetModName(), AROUSAL_STATE, arousal_state_curr )
+			arousal_state_prv = arousal_state_curr
+		endif
+	endIf
+	if (config.module_sla_exposure && isInterfaceActive())
+		int exposure_state_curr = getExposureLevel(pExposureFaction, sla, PlayerRef)
+		if exposure_state_prv == EMPTY || exposure_state_prv != exposure_state_curr
+			iBars.setIconStatus(slwGetModName(), EXPOSURE_STATE, exposure_state_curr )
+			exposure_state_prv = exposure_state_curr
+		endif
+	endIf
 EndEvent
 
 Function _loadArousedIcons(iWant_Status_Bars iBars)

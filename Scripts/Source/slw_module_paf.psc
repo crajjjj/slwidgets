@@ -22,7 +22,9 @@ GlobalVariable apbm
 
 String PEE_STATE = "PAF_PEE"
 String POOP_STATE = "PAF_POOP"
-
+int EMPTY = -1
+int pee_state_prv = -1
+int poop_state_prv = -1
 ;override
 Bool Function isInterfaceActive()
 	Return Module_Ready
@@ -71,6 +73,8 @@ EndFunction
 
 ;override
 Event onWidgetReload(iWant_Status_Bars iBars)
+	pee_state_prv = EMPTY
+	poop_state_prv = EMPTY
 	if(config.module_paf_pee && isInterfaceActive())
 		_loadPeeIcons(iBars)
 	else
@@ -86,12 +90,20 @@ EndEvent
 
 ;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
-	if(config.module_paf_pee && isInterfaceActive())
-		iBars.setIconStatus(slwGetModName(), PEE_STATE, getPeeLevel())
-	endif
-	if(config.module_paf_poo && isInterfaceActive())
-		iBars.setIconStatus(slwGetModName(), POOP_STATE, getPoopLevel())
-	endif
+	if (config.module_paf_pee && isInterfaceActive())
+		int pee_state_curr = getPeeLevel()
+		if pee_state_prv == EMPTY || pee_state_prv != pee_state_curr
+			iBars.setIconStatus(slwGetModName(), PEE_STATE, pee_state_curr )
+			pee_state_prv = pee_state_curr
+		endif
+	endIf
+	if (config.module_paf_poo && isInterfaceActive())
+		int poop_state_curr = getPoopLevel()
+		if poop_state_prv == EMPTY || poop_state_prv != poop_state_curr
+			iBars.setIconStatus(slwGetModName(), POOP_STATE, poop_state_curr )
+			poop_state_prv = poop_state_curr
+		endif
+	endIf
 EndEvent
 
 ;states 0-4
