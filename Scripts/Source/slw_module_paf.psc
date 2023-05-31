@@ -32,6 +32,8 @@ EndFunction
 
 ;override
 Function resetInterface()
+	pee_state_prv = EMPTY
+	poop_state_prv = EMPTY
 	Module_Ready = false
 EndFunction
 

@@ -29,6 +29,10 @@ EndFunction
 
 ;override
 Function resetInterface()
+	cum_state_prv = EMPTY
+	cum_anal_state_prv = EMPTY
+ 	cum_vaginal_state_prv = EMPTY
+ 	cum_oral_state_prv = EMPTY
 	Module_Ready = false
 EndFunction
 

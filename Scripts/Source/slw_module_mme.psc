@@ -21,6 +21,8 @@ EndFunction
 
 ;override
 Function resetInterface()
+	milk_state_prv = EMPTY
+	lactacid_state_prv = EMPTY
 	Module_Ready = false
 EndFunction
 

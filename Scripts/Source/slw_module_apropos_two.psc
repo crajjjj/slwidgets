@@ -26,7 +26,10 @@ EndFunction
 
 ;override
 Function resetInterface()
-	 Module_Ready = false
+	vag_prv = EMPTY
+	oral_prv = EMPTY
+   	anal_prv = EMPTY
+	Module_Ready = false
 EndFunction
 
 ;override
