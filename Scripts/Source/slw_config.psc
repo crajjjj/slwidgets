@@ -16,7 +16,7 @@ slw_module_sldefeat property module_defeat auto
 
 
 Int property updateInterval = 5 auto hidden
-Bool property slw_stopped = False auto hidden
+Bool property slw_stopped = True auto hidden
 String property slw_settings_path = "..\\SlWidgets\\UserSettings" auto hidden
 
 Bool property module_sla_arousal = True auto hidden
@@ -35,8 +35,6 @@ Bool property module_paf_poo = True auto hidden
 Bool property module_defeat_enabled = True auto hidden
 
 Event OnInit()
-	SetDefaults()
-	LoadSettingsAtStart()
 EndEvent
 
 Function moduleSetup()
@@ -129,6 +127,7 @@ Function moduleSyncConfig()
 EndFunction
 
 ;to deal with upgrades later
+;Not used
 Function SetDefaults()
 	WriteLog("Setting Defaults")
 	slw_stopped = False
@@ -170,23 +169,11 @@ Function DisableWidgets()
 	module_defeat_enabled = false
 EndFunction
 
-
-function LoadSettingsAtStart()
-	Bool ValidatePapyrusUtil = papyrusutil.GetVersion() > 31
-	if ValidatePapyrusUtil
-		if jsonutil.JsonExists(slw_settings_path)
-			LoadUserSettingsPapyrus()
-			return
-		endIf
-	endIf
-endFunction
-
 Bool function LoadUserSettingsPapyrus()
 	if !jsonutil.IsGood(slw_settings_path)
 		WriteLog("SLWidgets: Can't load user settings. Errors: {" + jsonutil.getErrors(slw_settings_path) + "}", 2)
 		return false
 	endIf
-	slw_stopped = jsonutil.GetPathBoolValue(slw_settings_path, "slw_stopped", slw_stopped)
 	updateInterval = jsonutil.GetPathIntValue(slw_settings_path, "updateInterval", updateInterval)
 	module_sla_arousal = jsonutil.GetPathBoolValue(slw_settings_path, "module_sla_arousal", module_sla_arousal)
 	module_sla_exposure = jsonutil.GetPathBoolValue(slw_settings_path, "module_sla_exposure", module_sla_exposure)
@@ -206,7 +193,7 @@ Bool function LoadUserSettingsPapyrus()
 endFunction
 
 Bool function SaveUserSettingsPapyrus()
-	jsonutil.SetPathIntValue(slw_settings_path, "slw_stopped", slw_stopped as Int)
+	
 	jsonutil.SetPathIntValue(slw_settings_path, "updateInterval", updateInterval as Int)
 	jsonutil.SetPathIntValue(slw_settings_path, "module_sla_arousal", module_sla_arousal as Int)
 	jsonutil.SetPathIntValue(slw_settings_path, "module_sla_exposure", module_sla_exposure as Int)

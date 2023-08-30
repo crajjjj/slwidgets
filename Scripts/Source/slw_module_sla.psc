@@ -27,6 +27,8 @@ EndFunction
 
 ;override
 Function resetInterface()
+	arousal_state_prv = EMPTY
+	exposure_state_prv = EMPTY
 	Module_Ready = false
 EndFunction
 

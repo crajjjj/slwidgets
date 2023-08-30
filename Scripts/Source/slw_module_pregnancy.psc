@@ -3,6 +3,7 @@ import slw_log
 import slw_util
 import slw_interface_fm
 import slw_interface_eggfact36
+import slw_interface_sgo4
 
 slw_config Property config Auto
 Actor Property PlayerRef Auto
@@ -14,6 +15,7 @@ Bool Property Plugin_EggFactory = false auto hidden
 Bool Property Plugin_BeeingFemale = false auto hidden
 Bool Property Plugin_FertilityMode3 = false auto hidden
 Bool Property Plugin_HentaiPregnancy = false auto hidden
+Bool Property Plugin_SGO4 = false auto hidden
 
 Spell _BFStatePregnant 
 Faction _HentaiPregnantFaction
@@ -33,6 +35,8 @@ Keyword _zzEstrusDwemerParasiteKWD
 
 Quest _FMStorage
 
+Quest _dse_sgo_QuestDatabase_Main
+
 ;Pregnancy
 String Pregnancy_Basic = "Pregnancy_Basic"
 String Pregnancy_CumInflation = "Pregnancy_CumInflation"
@@ -42,6 +46,7 @@ String Pregnancy_Eggs = "Pregnancy_Eggs"
 String Pregnancy_Spider_Eggs = "Pregnancy_Spider_Eggs"
 String Pregnancy_Chaurus_Eggs = "Pregnancy_Chaurus_Eggs"
 String Pregnancy_Dwemer_Spheres = "Pregnancy_Dwemer_Spheres"
+String Pregnancy_Gems = "Pregnancy_Gems"
 
 String akActorName
 
@@ -124,11 +129,21 @@ Function initInterface()
 			WriteLog("ModulePregnancy: _JSW_BB_Storage not found", 2)
 		endif
 	endif
+
+	If (!Plugin_SGO4 && isSGO4Ready())
+		WriteLog("ModulePregnancy: SGO4 found")
+		_dse_sgo_QuestDatabase_Main = Game.GetFormFromFile(0x00182A,"dse-soulgem-oven.esp") as Quest 
+		Plugin_SGO4 = true
+		if !_dse_sgo_QuestDatabase_Main
+			WriteLog("ModulePregnancy: _dse_sgo_QuestDatabase_Main not found", 2)
+		endif
+	endif
+
 EndFunction
 
 ;override
 Bool Function isInterfaceActive()
-	Return (Plugin_EstrusSpider || 	Plugin_EstrusChaurus || Plugin_EstrusDwemer || Plugin_BeeingFemale || Plugin_HentaiPregnancy || Plugin_EggFactory || Plugin_FertilityMode3)
+	Return (Plugin_EstrusSpider || 	Plugin_EstrusChaurus || Plugin_EstrusDwemer || Plugin_BeeingFemale || Plugin_HentaiPregnancy || Plugin_EggFactory || Plugin_FertilityMode3 || Plugin_SGO4)
 EndFunction
 
 ;override
@@ -140,6 +155,7 @@ Function resetInterface()
 	Plugin_HentaiPregnancy = false
 	Plugin_EggFactory = false
 	Plugin_FertilityMode3 = false
+	Plugin_SGO4 = false
 EndFunction
 
 ;override
@@ -168,6 +184,7 @@ Function _releasePregnancyIcons(iWant_Status_Bars iBars)
 	iBars.releaseIcon(slwGetModName(),Pregnancy_Spider_Eggs)
 	iBars.releaseIcon(slwGetModName(),Pregnancy_Chaurus_Eggs)
 	iBars.releaseIcon(slwGetModName(),Pregnancy_Dwemer_Spheres)
+	iBars.releaseIcon(slwGetModName(),Pregnancy_Gems)
 EndFunction
 
 
@@ -182,6 +199,11 @@ EndFunction
 
 	if Plugin_FertilityMode3
 		handleFertilityMode3(iBars)
+	endif
+	
+	;Soul Gem Oven 4
+	if Plugin_SGO4
+		handleSGO4(iBars)
 	endif
 
 	;BeeingFemale
@@ -228,6 +250,7 @@ EndFunction
 			iBars.releaseIcon(slwGetModName(),Pregnancy_Dwemer_Spheres)
 		endif
 	endif
+
 EndFunction
 
 Function handleFertilityMode3(iWant_Status_Bars iBars)
@@ -257,6 +280,14 @@ Function handleFertilityMode3(iWant_Status_Bars iBars)
    else
 		iBars.releaseIcon(slwGetModName(),Pregnancy_CumInflation)
    endIf
+EndFunction
+
+Function handleSGO4(iWant_Status_Bars iBars)
+	if (gotGems(_dse_sgo_QuestDatabase_Main,PlayerRef))
+		_loadGemsIcon(iBars)
+	else
+		iBars.releaseIcon(slwGetModName(), Pregnancy_Gems)
+	endif
 EndFunction
 
 ;Hentai pregnancy LE/SE
@@ -440,4 +471,24 @@ Function _loadOvulationIcon(iWant_Status_Bars iBars)
 	
 	; This will fail silently if the icon is already loaded
 	iBars.loadIcon(slwGetModName(), Pregnancy_Ovulation, d, s, r, g, b, a)
+EndFunction
+
+Function _loadGemsIcon(iWant_Status_Bars iBars)
+	String[] s = new String[1]
+	String[] d = new String[1]
+	Int[] r = new Int[1]
+	Int[] g = new Int[1]
+	Int[] b = new Int[1]
+	Int[] a = new Int[1]
+	
+	; HentaiPregnant
+	s[0] = iconbasepath + "gems.dds"
+	d[0] = "PregnantGems"
+	r[0] = 255
+	g[0] = 255
+	b[0] = 255
+	a[0] = 100
+	
+	; This will fail silently if the icon is already loaded
+	iBars.loadIcon(slwGetModName(), Pregnancy_Gems, d, s, r, g, b, a)
 EndFunction	

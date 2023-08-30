@@ -61,24 +61,26 @@ EndEvent
 
 event OnVersionUpdate(int a_version)
 	; a_version is the new version, CurrentVersion is the old version
-	if (a_version >= 20005 && CurrentVersion < 20005)
-		WriteLog("Updating  to version 2.0.5")
-		config.moduleReset()
-	endIf
 endEvent
 
 Function General()
     SetCursorFillMode(TOP_TO_BOTTOM)
 	AddHeaderOption("$SLW_General")
-	AddTextOptionST("TOGGLE_MOD_STATE","$SLW_Mod_Toggle", StringIfElse(config.slw_stopped , "$SLW_Enable", "$SLW_Disable"), OPTION_FLAG_NONE)
+	int enableflag = _getFlag(widget_controller.isLoaded())
+	AddTextOptionST("TOGGLE_MOD_STATE","$SLW_Mod_Toggle", StringIfElse(config.slw_stopped , "$SLW_Enable", "$SLW_Disable"), enableflag)
 	Int sliderFlag = _getFlag()
 	_update_interval_slider = AddSliderOption("$SLW_Update_Interval", config.updateInterval, "{0}", sliderFlag)
+	
 	AddHeaderOption("$SLW_User_Settings")
 	Int loadSettingsFlagPapyrus = _getFlag(jsonutil.JsonExists(config.slw_settings_path))
 	AddTextOptionST("LOAD_USER_SETTINGS_STATE", "$SLW_Load_Settings", "$SLW_GO", loadSettingsFlagPapyrus)
 	AddTextOptionST("SAVE_USER_SETTINGS_STATE", "$SLW_Save_Settings", "$SLW_GO", 0)
-	AddEmptyOption()
-	
+EndFunction
+
+Function Toggles()
+    SetCursorFillMode(TOP_TO_BOTTOM)
+    SetCursorPosition(0)
+	AddHeaderOption("$SLW_Static")
 	AddHeaderOption("$SLW_Sexlab_Aroused")
 	Int slaFlag = _getFlag(config.module_sla.isInterfaceActive())
 	_sla_arousal_Toggle = addToggleOption("$SLW_Arousal_Icon_Enabled", config.module_sla_arousal, slaFlag)
@@ -104,11 +106,8 @@ Function General()
 	Int pafFlag = _getFlag(config.module_paf.isInterfaceActive()) 
 	_paf_pee_Toggle = addToggleOption("$SLW_Needs_Pee", config.module_paf_pee, pafFlag)
 	_paf_poo_Toggle = addToggleOption("$SLW_Needs_Poop", config.module_paf_poo, pafFlag)
-EndFunction
-
-Function Toggles()
-    SetCursorFillMode(TOP_TO_BOTTOM)
-    SetCursorPosition(0)
+	
+	AddHeaderOption("$SLW_Conditional")
 	AddHeaderOption("$SLW_SLP")
 	Int slpFlag = _getFlag(config.module_slp.isInterfaceActive()) 
 	_parasites_mod_Toggle = addToggleOption("$SLW_SLP_Icon", config.module_parasites_enabled, slpFlag)
@@ -126,8 +125,7 @@ Function Debug()
 	AddHeaderOption("SLWidgets. Version: " + GetVersionString())
 	AddEmptyOption()
 	AddTextOptionST("UPDATE_DEPENDENCIES_STATE","$SLW_Recheck","$SLW_GO", OPTION_FLAG_NONE)
-	AddTextOptionST("ADD_EMPTY_ICON_STATE","$SLW_Empty_Icon_Add","$SLW_Add", OPTION_FLAG_NONE)
-
+	
 	AddHeaderOption("$SLW_Dependency_check")
 	AddTextOption("$SLW_Iwant_SB_Check", StringIfElse( widget_controller.isLoaded() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddTextOption("$SLW_SLA_Check", StringIfElse( isSLAReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
@@ -143,12 +141,15 @@ Function Debug()
 	AddTextOption("$SLW_EC_Check", StringIfElse( isECReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddTextOption("$SLW_ES_Check", StringIfElse( isESReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddTextOption("$SLW_ED_Check", StringIfElse( isEDReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_SGO4_Check", StringIfElse( isSGO4Ready() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddHeaderOption("$SLW_Dependency_check_needs")
 	AddTextOption("$SLW_PAF_Check", StringIfElse( isPAFReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddTextOption("$SLW_MND_Check", StringIfElse( isMiniNeedsReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddTextOption("$SLW_ALP_Check", StringIfElse( isAlivePeeingReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddHeaderOption("$SLW_Dependency_check_defeat")
 	AddTextOption("$SLW_SLD_Check", StringIfElse( isSLDefeatReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+
+	AddTextOptionST("ADD_EMPTY_ICON_STATE","$SLW_Empty_Icon_Add","$SLW_Add", OPTION_FLAG_NONE)
 EndFunction
 
 
@@ -290,13 +291,12 @@ State TOGGLE_MOD_STATE
 			;disable flow
 			config.DisableWidgets()
 			config.moduleReset()
+			widget_controller.UnregisterForUpdate()
 			SetTextOptionValueST("$SLW_Enable")
 			ShowMessage("$SLW_Disabled", false)
 		Else
 			;enable flow
-			config.SetDefaults()
-			config.LoadUserSettingsPapyrus()
-			config.moduleSetup()
+			config.moduleReset()
 			widget_controller.setup()
 			SetTextOptionValueST("$SLW_Disable")
 			ShowMessage("$SLW_Enabled", false)
@@ -326,7 +326,6 @@ state SAVE_USER_SETTINGS_STATE
 		else
 			ShowMessage("$SLW_Save_Settings_Failed_Status", false, "$Accept", "$Cancel")
 		endIf
-		ForcePageReset()
 	endFunction
 
 	function OnHighlightST()
@@ -335,9 +334,7 @@ state SAVE_USER_SETTINGS_STATE
 endState
 
 state LOAD_USER_SETTINGS_STATE
-
 	function OnSelectST()
-
 		if ShowMessage("$SLW_Load_Settings_Question", true, "$Accept", "$Cancel")
 			if config.LoadUserSettingsPapyrus()
 				ShowMessage("$SLW_Settings_Loaded_Status", false, "$Accept", "$Cancel")
@@ -357,9 +354,6 @@ state LOAD_USER_SETTINGS_STATE
 endState
 
 int Function _getFlag(Bool cond = true)
-	if config.slw_stopped
-		return OPTION_FLAG_DISABLED
-	endif
 	If  !cond 	
    		return OPTION_FLAG_DISABLED  
 	Else

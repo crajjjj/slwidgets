@@ -14,72 +14,45 @@ int _emptyIconIndex = 0
 int _checkPlugins = 0
 
 bool Function isLoaded()
-	return controller_initialised
+	return controller_initialised && iBars && iBars.isReady()
 EndFunction
 
+; Assumed lifecycle: menu OnInit() -> OniWantStatusBarsReady......mcm enable -> setup() (Modules initialisation) -> UpdateIcons() -> ||controller_initialised|| -> UpdateIconStateStatus(in a loop)
 Event OnInit()
-	setup()
-EndEvent
-
-; Assumed lifecycle: menu OnInit() -> setup() (Modules initialisation) -> OniWantStatusBarsReady -> UpdateIcons() -> ||controller_initialised|| -> UpdateIconStateStatus(in a loop)
-
-;on game reload
-;on enable mod button click
-Function setup()
-	trace("WidgetController controller setup")
-	_checkPlugins = 1 
 	RegisterForModEvent(STATUS_BARS_EVENT_NAME, "OniWantStatusBarsReady")
-	RegisterForSingleUpdate(5)
-EndFunction
+	controller_initialised = true
+EndEvent
 
 Event OniWantStatusBarsReady(String eventName, String strArg, Float numArg, Form sender)
 	If eventName == STATUS_BARS_EVENT_NAME
 		iBars = sender As iWant_Status_Bars
-		if (!controller_initialised)
-			WriteLog("WidgetController: iWantStatusBars loaded")
-			_reloadWidgets()
-			;give some time to load all icons
-			Utility.Wait(5)
-			controller_initialised = true
-		endif
 	EndIf
 EndEvent
+;on game reload
+;on enable mod button click
+Function setup()
+	Notification("WidgetController: moduleSetup")
+	config.moduleSetup()
+	RegisterForSingleUpdate(3)
+EndFunction
 
 ;Main update function
 Event OnUpdate()
 	if config.slw_stopped
 		return
 	endif
-	;postponed module init
-	If _checkPlugins > 0
-		_checkPlugins += 1
-		If _checkPlugins >= 2
-			WriteLog("WidgetController: moduleSetup")
-			config.moduleSetup()
-			_checkPlugins = 0
-		EndIf
-	EndIf
-    if(controller_initialised && iBars.isReady() && _checkPlugins == 0)
-		config.moduleWidgetStateUpdate(iBars)
-		RegisterForSingleUpdate(config.updateInterval)
-	else
-		RegisterForSingleUpdate(5)
-	endIf
-	
+	config.moduleWidgetStateUpdate(iBars)
+	RegisterForSingleUpdate(config.updateInterval)
 EndEvent
 
 ;ON mcm update and init
-Function reloadWidgets()
-	If !controller_initialised || !iBars || !iBars.isReady()
-		WriteLogAndPrintConsole("iBars not loaded yet. Reloading widgets failed", 2)
+function reloadWidgets()
+	If (!iBars || !iBars.isReady())
+		WriteLog("iBars not ready. Reloading widgets failed", 2)
 		Return
 	endIf
-	_reloadWidgets()
-endFunction
-
-Function _reloadWidgets()
 	WriteLogAndPrintConsole("WidgetController: reloading widgets")
-	config.moduleWidgetReload(iBars)
+	config.moduleWidgetReload(iBars) 
 endFunction
 
 ;Debug function to arrange iwant status bars icons better - fill empty spaces in the main bar to load/release toggles in a secondary bar
