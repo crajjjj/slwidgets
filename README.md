@@ -26,7 +26,7 @@ MCM for flexible configuration
 
 - SexLab-Parasite - spider eggs, chaurus worms (when infected)
 
-- Pregnancy: HentaiPregnancy, BeeingFemale, EggFactory, EstrusChaurus, EstrusSpider, EstrusDwemer, FM3 cum inflation(spermatozoids icon)/ovulation (ovulation egg icon) /pregnancy (different icons belly  based  fetus/eggs/spider eggs/spheres)
+- Pregnancy: HentaiPregnancy, BeeingFemale, EggFactory, EstrusChaurus, EstrusSpider, EstrusDwemer, SGO4, FM3 cum inflation(spermatozoids icon)/ovulation (ovulation egg icon) /pregnancy (different icons belly  based  fetus/eggs/spider eggs/spheres)
 
 - Defeat: SLDefeat - weakened (raped) - hands on body icon
 
@@ -37,7 +37,7 @@ MCM for flexible configuration
 
 - (Optional) Flexible icon configuration via SLWidgets MCM 
 
-- (Optional) Save SLWidget properties via MCM (autopreload for new saves - inspired by Settings Loader Series)
+- (Optional) Save SLWidget properties via MCM (load for new saves)
 
 - (Optional) Configure icon placement/color/size in iWant Status Bars MCM. You can use multiple bars as well
 
@@ -78,7 +78,7 @@ MCM for flexible configuration
 
 - Affected indirectly by mods that impact iWant Widgets. Mods significantly altering hudmenu.gfx directly or via a hudmenu.swf file may prevent image display.
 - Tested without issues in different mod lists with multiple UI mods (Tsukiro/D&DDC/Licentia/Nefaram/Masterstroke).
-- In heavy script load mod lists there's a possibility of iBars misbehaving - icons overlapping/stacking/potentially other init issues (on game reload phase seems overloaded which makes papyrus skip instructions).
+- In heavy script load mod lists there's a possibility of iBars misbehaving - icons overlapping/stacking/potentially other issues
 Workaround - disable icons -> save and load or fast travel (to clean unmanaged messed up icons) -> enable icons.
 
 ## Troubleshooting
