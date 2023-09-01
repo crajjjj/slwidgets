@@ -23,15 +23,21 @@ Event OnInit()
 	controller_initialised = true
 EndEvent
 
+;init ibars
 Event OniWantStatusBarsReady(String eventName, String strArg, Float numArg, Form sender)
 	If eventName == STATUS_BARS_EVENT_NAME
 		iBars = sender As iWant_Status_Bars
 	EndIf
 EndEvent
+
 ;on game reload
 ;on enable mod button click
 Function setup()
 	Notification("WidgetController: moduleSetup")
+	;just in case
+	UnregisterForModEvent(STATUS_BARS_EVENT_NAME)
+	RegisterForModEvent(STATUS_BARS_EVENT_NAME, "OniWantStatusBarsReady")
+	;
 	config.moduleSetup()
 	RegisterForSingleUpdate(3)
 EndFunction
@@ -45,14 +51,14 @@ Event OnUpdate()
 	RegisterForSingleUpdate(config.updateInterval)
 EndEvent
 
-;ON mcm update and init
+;ON mcm updates
 function reloadWidgets()
 	If (!iBars || !iBars.isReady())
 		WriteLog("iBars not ready. Reloading widgets failed", 2)
 		Return
 	endIf
 	WriteLogAndPrintConsole("WidgetController: reloading widgets")
-	config.moduleWidgetReload(iBars) 
+	config.moduleWidgetReload(iBars)
 endFunction
 
 ;Debug function to arrange iwant status bars icons better - fill empty spaces in the main bar to load/release toggles in a secondary bar
