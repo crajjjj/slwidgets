@@ -33,7 +33,7 @@ EndEvent
 ;on game reload
 ;on enable mod button click
 Function setup()
-	Notification("WidgetController: moduleSetup")
+	;Notification("WidgetController: moduleSetup")
 	;just in case
 	UnregisterForModEvent(STATUS_BARS_EVENT_NAME)
 	RegisterForModEvent(STATUS_BARS_EVENT_NAME, "OniWantStatusBarsReady")
