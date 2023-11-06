@@ -293,12 +293,14 @@ State TOGGLE_MOD_STATE
 			config.moduleReset()
 			widget_controller.UnregisterForUpdate()
 			SetTextOptionValueST("$SLW_Enable")
+			widget_controller.reloadWidgets()
 			ShowMessage("$SLW_Disabled", false)
 		Else
 			;enable flow
 			config.moduleReset()
 			widget_controller.setup()
 			SetTextOptionValueST("$SLW_Disable")
+			widget_controller.reloadWidgets()
 			ShowMessage("$SLW_Enabled", false)
 		endif
         SetOptionFlagsST(OPTION_FLAG_NONE)
