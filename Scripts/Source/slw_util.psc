@@ -139,7 +139,7 @@ Int Function percentToState5(int percent) Global
 		percent = 100
 	endIf
 
-	If percent == 0
+	If percent < 10
 		return 0
 	ElseIf percent < 25
 		return 1
