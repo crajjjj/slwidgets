@@ -111,7 +111,7 @@ Int Function percentToState9(int percent) Global
 		percent = 100
 	endIf
 
-	If percent == 0
+	If percent < 5
 		return 0
 	ElseIf percent < 10
 		return 1
