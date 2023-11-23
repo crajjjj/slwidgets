@@ -61,8 +61,8 @@ Function initInterface()
 
 	If (!Module_Ready && isAlivePeeingReady())
 		slw_log.WriteLog("ModulePAF: AlivePeeingSE.esp found")
-		apb = Game.GetFormFromFile(0x002DAF, "AlivePeeingSE.esp") as GlobalVariable
-		apbm = Game.GetFormFromFile(0x002DB3, "AlivePeeingSE.esp") as GlobalVariable
+		apb = Game.GetFormFromFile(0x026E08, "AlivePeeingSE.esp") as GlobalVariable
+		apbm = Game.GetFormFromFile(0x026E04, "AlivePeeingSE.esp") as GlobalVariable
 		if apb && apbm
 			Module_Ready = true 
 		else
