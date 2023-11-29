@@ -8,7 +8,7 @@ EndFunction
 
 ;SemVer support
 Int Function GetVersion() Global
-    Return 20011
+    Return 20012
     ; 1.0.0   -> 10000
     ; 1.1.0   -> 10100
     ; 1.1.1  -> 10101
@@ -17,7 +17,7 @@ Int Function GetVersion() Global
 EndFunction
 
 String Function GetVersionString() Global
-    Return "2.0.11"
+    Return "2.0.12"
 EndFunction
 
 String Function StringIfElse(Bool isTrue, String returnTrue, String returnFalse = "") Global
@@ -101,7 +101,12 @@ Bool Function isSGO4Ready() Global
 EndFunction
 
 Bool Function isDependencyReady(String modname) Global
-	Return Game.GetModbyName(modname) != 255
+	int index = Game.GetModByName(modname)
+	if index == 255 || index == -1
+		return false
+	else
+		return true
+	endif
 EndFunction
 
 Int Function percentToState9(int percent) Global
