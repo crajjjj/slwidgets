@@ -34,10 +34,12 @@ EndFunction
 Int Function GetWearStateAnal(Actor akTarget,  Quest apropos2Quest) Global
 	ReferenceAlias aproposTwoAlias = GetAproposAlias(akTarget, apropos2Quest) 
 	if aproposTwoAlias != None
-		Int damage =  (aproposTwoAlias as Apropos2ActorAlias).AnalWearTearState
-		If damage <= 8
+		Int damage =  (aproposTwoAlias as Apropos2ActorAlias).AnalWearTearState - 1
+		If damage < 0
+			return 0
+		Elseif  damage <= 8
 			return damage
-		Else
+		else
 			return 8
 		EndIf
 	Else
@@ -48,10 +50,12 @@ EndFunction
 Int Function GetWearStateVaginal(Actor akTarget,  Quest apropos2Quest) Global 
 	ReferenceAlias aproposTwoAlias = GetAproposAlias(akTarget, apropos2Quest)
 	if aproposTwoAlias != None
-		Int damage = (aproposTwoAlias as Apropos2ActorAlias).VaginalWearTearState
-		If damage <= 8
+		Int damage = (aproposTwoAlias as Apropos2ActorAlias).VaginalWearTearState - 1
+		If damage < 0
+			return 0
+		Elseif  damage <= 8
 			return damage
-		Else
+		else
 			return 8
 		EndIf
 	Else
@@ -62,10 +66,12 @@ EndFunction
 Int Function GetWearStateOral(Actor akTarget, Quest apropos2Quest) Global
 	ReferenceAlias aproposTwoAlias = GetAproposAlias(akTarget, apropos2Quest)
 	if aproposTwoAlias != None
-		Int damage = (aproposTwoAlias as Apropos2ActorAlias).OralWearTearState
-		If damage <= 8
+		Int damage = (aproposTwoAlias as Apropos2ActorAlias).OralWearTearState - 1
+		If damage < 0
+			return 0
+		Elseif  damage <= 8
 			return damage
-		Else
+		else
 			return 8
 		EndIf
 	Else

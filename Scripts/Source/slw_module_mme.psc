@@ -1,11 +1,16 @@
 Scriptname slw_module_mme extends slw_base_module  
 import slw_log
 import slw_util
-
+import slw_interface_sgo4
+;deprecated
 Bool Property Module_Ready = false auto hidden
+
+Bool Property Plugin_SGO4 = false auto hidden
+Bool Property Plugin_MME = false auto hidden
 
 slw_config Property config Auto
 Actor Property PlayerRef Auto
+Quest _dse_sgo_QuestDatabase_Main
 
 ;MME
 String MILK_STATE = "MMEMilk"
@@ -16,21 +21,30 @@ int milk_state_prv = -1
 int lactacid_state_prv = -1
 ;override
 Bool Function isInterfaceActive()
-	Return Module_Ready
+	Return Plugin_MME || Plugin_SGO4
 EndFunction
 
 ;override
 Function resetInterface()
 	milk_state_prv = EMPTY
 	lactacid_state_prv = EMPTY
-	Module_Ready = false
+	Plugin_MME = false
+	Plugin_SGO4 = false
 EndFunction
 
 ;override
 Function initInterface()
-	If (!Module_Ready && isMMEReady())
+	If (!Plugin_MME && isMMEReady())
 		slw_log.WriteLog("ModuleMME: MilkModNEW.esp found")
-		Module_Ready = true 
+		Plugin_MME = true
+	endif
+	If (!Plugin_SGO4 && isSGO4Ready())
+		WriteLog("ModulePregnancy: SGO4 found")
+		_dse_sgo_QuestDatabase_Main = Game.GetFormFromFile(0x00182A,"dse-soulgem-oven.esp") as Quest 
+		Plugin_SGO4 = true
+		if !_dse_sgo_QuestDatabase_Main
+			WriteLog("ModulePregnancy: _dse_sgo_QuestDatabase_Main not found", 2)
+		endif
 	endif
 EndFunction
 
@@ -71,13 +85,20 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 EndEvent
 
 Int Function getMilkLevel()
+	int milkLevelMME = 0
+	int milkLevelSGO = 0
+	if Plugin_MME
 		float milkCur = MME_Storage.getMilkCurrent(playerRef)
 		float milkMax = MME_Storage.getMilkMaximum(playerRef)
 		if milkMax <= 0
 			milkMax = 1
 		endif
-		Int milkLevel = ((milkCur / milkMax) * 100) as Int
-		return percentToState9(milkLevel)
+		milkLevelMME = ((milkCur / milkMax) * 100) as Int
+	endif
+	if Plugin_SGO4
+		milkLevelSGO = (getMilkPercent(_dse_sgo_QuestDatabase_Main, playerRef) * 100) as Int
+	endif
+		return percentToState9(milkLevelMME + milkLevelSGO)
 EndFunction
 
 Int Function getLactacidLevel()

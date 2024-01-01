@@ -97,10 +97,9 @@ Function Toggles()
 	_fhu_cum_Anal_Toggle = addToggleOption("$SLW_FHU_AI", config.module_fhu_cum_anal, fhuFlag)
 	_fhu_cum_Oral_Toggle = addToggleOption("$SLW_FHU_OI", config.module_fhu_cum_oral, fhuFlag)
 	
-	AddHeaderOption("$SLW_MME")
-	Int mmeFlag = _getFlag(config.module_mme.isInterfaceActive()) 
-	_mme_milk_Toggle = addToggleOption("$SLW_MME_MI", config.module_mme_milk, mmeFlag)
-	_mme_lactacid_Toggle = addToggleOption("$SLW_MME_LI", config.module_mme_lactacid, mmeFlag)
+	AddHeaderOption("$SLW_MME") 
+	_mme_milk_Toggle = addToggleOption("$SLW_MME_MI", config.module_mme_milk,_getFlag(config.module_mme.isInterfaceActive()))
+	_mme_lactacid_Toggle = addToggleOption("$SLW_MME_LI", config.module_mme_lactacid, _getFlag(isMMEReady()))
 
 	AddHeaderOption("$SLW_Needs")
 	Int pafFlag = _getFlag(config.module_paf.isInterfaceActive()) 

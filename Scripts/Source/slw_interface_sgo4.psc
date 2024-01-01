@@ -8,3 +8,7 @@ import slw_util
 bool function gotGems( Quest sgo, Actor akTarget) Global
 	return (sgo as dse_sgo_QuestDatabase_Main).ActorGemCount(akTarget) > 0
 endFunction
+
+Float Function getMilkPercent( Quest sgo, Actor akTarget) Global
+	return (sgo as dse_sgo_QuestDatabase_Main).ActorMilkTotalPercent(akTarget)
+endFunction
