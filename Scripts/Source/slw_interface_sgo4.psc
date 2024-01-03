@@ -9,6 +9,9 @@ bool function gotGems( Quest sgo, Actor akTarget) Global
 	return (sgo as dse_sgo_QuestDatabase_Main).ActorGemCount(akTarget) > 0
 endFunction
 
-Float Function getMilkPercent( Quest sgo, Actor akTarget) Global
-	return (sgo as dse_sgo_QuestDatabase_Main).ActorMilkTotalPercent(akTarget)
+Float Function getMilkMax( Quest sgo, Actor akTarget) Global
+	return (sgo as dse_sgo_QuestDatabase_Main).ActorMilkMax(akTarget)
+endFunction
+Float Function getMilkCur( Quest sgo, Actor akTarget) Global
+	return (sgo as dse_sgo_QuestDatabase_Main).ActorMilkAmount(akTarget)
 endFunction

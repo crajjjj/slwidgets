@@ -35,15 +35,15 @@ EndFunction
 ;override
 Function initInterface()
 	If (!Plugin_MME && isMMEReady())
-		slw_log.WriteLog("ModuleMME: MilkModNEW.esp found")
+		slw_log.WriteLog("ModuleMilk: MilkModNEW.esp found")
 		Plugin_MME = true
 	endif
 	If (!Plugin_SGO4 && isSGO4Ready())
-		WriteLog("ModulePregnancy: SGO4 found")
+		WriteLog("ModuleMilk: SGO4 found")
 		_dse_sgo_QuestDatabase_Main = Game.GetFormFromFile(0x00182A,"dse-soulgem-oven.esp") as Quest 
 		Plugin_SGO4 = true
 		if !_dse_sgo_QuestDatabase_Main
-			WriteLog("ModulePregnancy: _dse_sgo_QuestDatabase_Main not found", 2)
+			WriteLog("ModuleMilk: _dse_sgo_QuestDatabase_Main not found", 2)
 		endif
 	endif
 EndFunction
@@ -85,20 +85,20 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 EndEvent
 
 Int Function getMilkLevel()
-	int milkLevelMME = 0
-	int milkLevelSGO = 0
+	float milkCur
+	float milkMax
 	if Plugin_MME
-		float milkCur = MME_Storage.getMilkCurrent(playerRef)
-		float milkMax = MME_Storage.getMilkMaximum(playerRef)
-		if milkMax <= 0
-			milkMax = 1
-		endif
-		milkLevelMME = ((milkCur / milkMax) * 100) as Int
+		milkCur = MME_Storage.getMilkCurrent(playerRef)
+		milkMax = MME_Storage.getMilkMaximum(playerRef)
 	endif
 	if Plugin_SGO4
-		milkLevelSGO = (getMilkPercent(_dse_sgo_QuestDatabase_Main, playerRef) * 100) as Int
+		milkCur = milkCur + getMilkCur(_dse_sgo_QuestDatabase_Main, playerRef)
+		milkMax = milkMax + getMilkMax(_dse_sgo_QuestDatabase_Main, playerRef)
 	endif
-		return percentToState9(milkLevelMME + milkLevelSGO)
+	if milkMax <= 0
+		milkMax = 1
+	endif
+	return percentToState9(Math.Ceiling(milkCur/milkMax * 100))
 EndFunction
 
 Int Function getLactacidLevel()
