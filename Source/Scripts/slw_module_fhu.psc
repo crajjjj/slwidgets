@@ -55,22 +55,22 @@ Event onWidgetReload(iWant_Status_Bars iBars)
 	cum_anal_state_prv = EMPTY
  	cum_vaginal_state_prv = EMPTY
  	cum_oral_state_prv = EMPTY
-	if(config.module_fhu_cum && isInterfaceActive())
+	if(config.isOn(config.module_fhu_cum) && isInterfaceActive())
 		_loadCumIcons(iBars)
 	else
 		iBars.releaseIcon(slwGetModName(),CUM_STATE)
 	endif
-	if(config.module_fhu_cum_anal && isInterfaceActive())
+	if(config.isOn(config.module_fhu_cum_anal) && isInterfaceActive())
 		_loadCumAnalIcons(iBars)
 	else
 		iBars.releaseIcon(slwGetModName(),CUM_ANAL_STATE)
 	endif
-	if(config.module_fhu_cum_vaginal && isInterfaceActive())
+	if(config.isOn(config.module_fhu_cum_vaginal) && isInterfaceActive())
 		_loadCumVaginalIcons(iBars)
 	else
 		iBars.releaseIcon(slwGetModName(),CUM_VAGINAL_STATE)
 	endif
-	if(config.module_fhu_cum_oral && isInterfaceActive())
+	if(config.isOn(config.module_fhu_cum_oral) && isInterfaceActive())
 		_loadCumOralIcons(iBars)
 	else
 		iBars.releaseIcon(slwGetModName(),CUM_ORAL_STATE)
@@ -82,28 +82,28 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 	if !isInterfaceActive()
 		return
 	endif
-	if config.module_fhu_cum 
+	if config.isOn(config.module_fhu_cum)
 		int cum_state_curr = GetCumAmount(PlayerRef, FhuInflateQuest)
 		if cum_state_prv == EMPTY || cum_state_prv != cum_state_curr
 			iBars.setIconStatus(slwGetModName(), CUM_STATE, cum_state_curr)
 			cum_state_prv = cum_state_curr
 		endif
 	endIf
-	if config.module_fhu_cum_anal 
+	if config.isOn(config.module_fhu_cum_anal)
 		int cum_anal_state_curr = GetCumAmountAnal(PlayerRef, FhuInflateQuest)
 		if cum_anal_state_prv == EMPTY || cum_anal_state_prv != cum_anal_state_curr
 			iBars.setIconStatus(slwGetModName(), CUM_ANAL_STATE, cum_anal_state_curr)
 			cum_anal_state_prv = cum_anal_state_curr
 		endif
 	endIf
-	if config.module_fhu_cum_vaginal 
+	if config.isOn(config.module_fhu_cum_vaginal)
 		int cum_vag_state_curr = GetCumAmountVag(PlayerRef, FhuInflateQuest)
 		if cum_vaginal_state_prv == EMPTY || cum_vaginal_state_prv != cum_vag_state_curr
 			iBars.setIconStatus(slwGetModName(), CUM_VAGINAL_STATE, cum_vag_state_curr)
 			cum_vaginal_state_prv = cum_vag_state_curr
 		endif
 	endIf
-	if config.module_fhu_cum_oral 
+	if config.isOn(config.module_fhu_cum_oral)
 		int cum_oral_state_curr = GetCumAmountOral(PlayerRef, FhuInflateQuest)
 		if cum_oral_state_prv == EMPTY || cum_oral_state_prv != cum_oral_state_curr
 			iBars.setIconStatus(slwGetModName(), CUM_ORAL_STATE, cum_oral_state_curr)

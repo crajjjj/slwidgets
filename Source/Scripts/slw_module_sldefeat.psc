@@ -38,14 +38,14 @@ EndFunction
 
 ;override
 Event onWidgetReload(iWant_Status_Bars iBars)
-	if(!config.module_defeat_enabled || !isInterfaceActive())
+	if(!config.isOn(config.module_defeat_enabled) || !isInterfaceActive())
 		_releaseDefeatIcons(iBars)
 	endif
 EndEvent
 
 ;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
-	if (config.module_defeat_enabled && isInterfaceActive())
+	if (config.isOn(config.module_defeat_enabled) && isInterfaceActive())
 		_reloadDefeatIcons(iBars)
 	endIf
 EndEvent

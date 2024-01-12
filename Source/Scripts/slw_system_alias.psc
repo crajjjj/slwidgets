@@ -5,5 +5,6 @@ slw_config Property config Auto
 
 Event onPlayerLoadGame()
 	slw_log.trace("System_alias: Game reload event")
-	config.widget_controller.setup()
+	config.moduleSetup()
+	config.widget_controller.startUpdates()
 endEvent

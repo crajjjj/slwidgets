@@ -215,3 +215,7 @@ Bool function SaveUserSettingsPapyrus()
 	endIf
 	return true
 endFunction
+
+Bool function isOn(bool prop)
+	return !slw_stopped && prop 
+endFunction

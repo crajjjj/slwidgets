@@ -43,7 +43,7 @@ Function initInterface()
 			return
 		endif
 
-		Module_Ready = true 
+		Module_Ready = true
 		if GetAproposAlias(PlayerRef, ActorsQuest) == None
 			String akActorName = playerRef.GetLeveledActorBase().GetName()
 			slw_log.WriteLog("Actor "+ akActorName + " is not yet registered in Apropos2")
@@ -56,7 +56,7 @@ Event onWidgetReload(iWant_Status_Bars iBars)
 	vag_prv = EMPTY
 	oral_prv = EMPTY
    	anal_prv = EMPTY
-	if(config.module_apropos_two_wt && isInterfaceActive())
+	if(config.isOn(config.module_apropos_two_wt) && isInterfaceActive())
 		_loadApropos2Oral(iBars)
 		_loadApropos2Anal(iBars)
 		_loadApropos2Vag(iBars)
@@ -69,7 +69,7 @@ EndEvent
 
 ;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
-	if (config.module_apropos_two_wt && isInterfaceActive())
+	if (config.isOn(config.module_apropos_two_wt) && isInterfaceActive())
 		int oral_curr = GetWearStateOral(PlayerRef, ActorsQuest)
 		if oral_prv == EMPTY || oral_curr != oral_prv
 			iBars.setIconStatus(slwGetModName(), ORAL_STATE, oral_curr)

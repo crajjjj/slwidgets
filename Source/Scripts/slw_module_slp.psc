@@ -43,14 +43,14 @@ EndFunction
 
 ;override
 Event onWidgetReload(iWant_Status_Bars iBars)
-	if(!config.module_parasites_enabled || !isInterfaceActive())
+	if(!config.isOn(config.module_parasites_enabled) || !isInterfaceActive())
 		_releaseParasiteIcons(iBars)
 	endif
 EndEvent
 
 ;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
-	if (config.module_parasites_enabled && isInterfaceActive())
+	if (config.isOn(config.module_parasites_enabled) && isInterfaceActive())
 		_reloadParasiteIcons(iBars)
 	endIf
 EndEvent

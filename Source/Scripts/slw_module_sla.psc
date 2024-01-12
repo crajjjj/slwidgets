@@ -43,7 +43,7 @@ Function initInterface()
 			Module_Ready = true
 		else
 			slw_log.WriteLog("ModuleSLA: slaFrameworkScr not found", 2)
-			Module_Ready = false 
+			Module_Ready = false
 		endif
 	endif
 EndFunction
@@ -52,13 +52,13 @@ EndFunction
 Event onWidgetReload(iWant_Status_Bars iBars)
 	arousal_state_prv = EMPTY
 	exposure_state_prv = EMPTY
-	if(config.module_sla_arousal && isInterfaceActive())
+	if(config.isOn(config.module_sla_arousal) && isInterfaceActive())
 		_loadArousedIcons(iBars)
 	else
 		iBars.releaseIcon(slwGetModName(),AROUSAL_STATE)
 	endif
 		
-	if(config.module_sla_exposure && isInterfaceActive())
+	if(config.isOn(config.module_sla_exposure) && isInterfaceActive())
 		_loadExposureIcons(iBars)
 	else
 		iBars.releaseIcon(slwGetModName(),EXPOSURE_STATE)
@@ -67,14 +67,14 @@ EndEvent
 
 ;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
-	if (config.module_sla_arousal && isInterfaceActive())
+	if (config.isOn(config.module_sla_arousal) && isInterfaceActive())
 		int arousal_state_curr = getArousalLevel(pArousalFaction, sla, PlayerRef)
 		if arousal_state_prv == EMPTY || arousal_state_prv != arousal_state_curr
 			iBars.setIconStatus(slwGetModName(), AROUSAL_STATE, arousal_state_curr )
 			arousal_state_prv = arousal_state_curr
 		endif
 	endIf
-	if (config.module_sla_exposure && isInterfaceActive())
+	if (config.isOn(config.module_sla_exposure) && isInterfaceActive())
 		int exposure_state_curr = getExposureLevel(pExposureFaction, sla, PlayerRef)
 		if exposure_state_prv == EMPTY || exposure_state_prv != exposure_state_curr
 			iBars.setIconStatus(slwGetModName(), EXPOSURE_STATE, exposure_state_curr )

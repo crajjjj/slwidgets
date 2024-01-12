@@ -160,22 +160,19 @@ EndFunction
 
 ;override
 Event onWidgetReload(iWant_Status_Bars iBars)
-	if(!config.module_pregnancy_enabled || !isInterfaceActive())
+	if(!config.isOn(config.module_pregnancy_enabled) || !isInterfaceActive())
 		_releasePregnancyIcons(iBars)
 	endif
 EndEvent
 
 ;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
-	if (config.module_pregnancy_enabled && isInterfaceActive())
+	if (config.isOn(config.module_pregnancy_enabled) && isInterfaceActive())
 		_reloadPregnancyIcons(iBars)
 	endIf
 EndEvent
 
 Function _releasePregnancyIcons(iWant_Status_Bars iBars)
-	if !isInterfaceActive()
-		return
-	endif
 	iBars.releaseIcon(slwGetModName(),Pregnancy_Basic)
 	iBars.releaseIcon(slwGetModName(),Pregnancy_CumInflation)
 	iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)
@@ -189,10 +186,6 @@ EndFunction
 
 
  Function _reloadPregnancyIcons(iWant_Status_Bars iBars)
-	if !isInterfaceActive()
-		return
-	endif
-
 	if Plugin_FertilityMode3
 		handleFertilityMode3(iBars)
 	elseif Plugin_HentaiPregnancy

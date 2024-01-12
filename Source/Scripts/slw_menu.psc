@@ -37,7 +37,7 @@ Event OnConfigInit()
 EndEvent
 
 Event OnConfigClose()
-		widget_controller.reloadWidgets()
+	widget_controller.reloadWidgets()
 EndEvent
 
 Event OnConfigOpen()
@@ -48,7 +48,7 @@ Event OnConfigOpen()
 EndEvent
 
 Event OnPageReset(string page)
-	config.moduleSyncConfig()
+	;config.moduleSyncConfig()
 
 	if (page == "$SLW_General_Page")
 		General()
@@ -289,18 +289,21 @@ State TOGGLE_MOD_STATE
 		config.slw_stopped = !config.slw_stopped
 		if config.slw_stopped
 			;disable flow
-			config.DisableWidgets()
+			widget_controller.stopUpdates()
+			;config.DisableWidgets()
 			config.moduleReset()
-			widget_controller.UnregisterForUpdate()
 			SetTextOptionValueST("$SLW_Enable")
 			widget_controller.reloadWidgets()
+			Utility.WaitMenuMode(1)
 			ShowMessage("$SLW_Disabled", false)
 		Else
 			;enable flow
 			config.moduleReset()
-			widget_controller.setup()
-			SetTextOptionValueST("$SLW_Disable")
+			config.moduleSetup()
 			widget_controller.reloadWidgets()
+			Utility.WaitMenuMode(1)
+			widget_controller.startUpdates()
+			SetTextOptionValueST("$SLW_Disable")
 			ShowMessage("$SLW_Enabled", false)
 		endif
         SetOptionFlagsST(OPTION_FLAG_NONE)
@@ -324,9 +327,9 @@ state SAVE_USER_SETTINGS_STATE
 			endIf
 		endIf
 		if config.SaveUserSettingsPapyrus()
-			ShowMessage("$SLW_Settings_Saved_Status", false, "$Accept", "$Cancel")
+			ShowMessage("$SLW_Settings_Saved_Status", false, "$Accept")
 		else
-			ShowMessage("$SLW_Save_Settings_Failed_Status", false, "$Accept", "$Cancel")
+			ShowMessage("$SLW_Save_Settings_Failed_Status", false, "$Accept")
 		endIf
 	endFunction
 
@@ -340,11 +343,14 @@ state LOAD_USER_SETTINGS_STATE
 		if ShowMessage("$SLW_Load_Settings_Question", true, "$Accept", "$Cancel")
 			if config.LoadUserSettingsPapyrus()
 				config.moduleReset()
-				widget_controller.setup()
+				config.moduleSetup()
+				Utility.WaitMenuMode(1)
 				widget_controller.reloadWidgets()
-				ShowMessage("$SLW_Settings_Loaded_Status", false, "$Accept", "$Cancel")
+				widget_controller.startUpdates()
+				Utility.WaitMenuMode(2)
+				ShowMessage("$SLW_Settings_Loaded_Status", false, "$Accept")
 			else
-				ShowMessage("$SLW_Load_Settings_Failed_Status", false, "$Accept", "$Cancel")
+				ShowMessage("$SLW_Load_Settings_Failed_Status", false, "$Accept")
 			endIf
 		endIf
 	endFunction

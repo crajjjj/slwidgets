@@ -18,7 +18,7 @@ MCM for flexible configuration
 
 - vFill her up (baka) - cum icons (total + vaginal + anal + oral pool icons)
 
-- MME - milk (breast) and lactacid (bottle) icons
+- MME/SGO4 - milk (breast) and lactacid (bottle) icons.
 
 - PAF, MiniNeeds, AlivePeeing - piss (bladder) and poop (colon) icons
 
