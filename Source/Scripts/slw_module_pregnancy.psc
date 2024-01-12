@@ -192,18 +192,11 @@ EndFunction
 	if !isInterfaceActive()
 		return
 	endif
-	
-	if Plugin_HentaiPregnancy
-		handleHentaiPregnancy(iBars)
-	endif
 
 	if Plugin_FertilityMode3
 		handleFertilityMode3(iBars)
-	endif
-	
-	;Soul Gem Oven 4
-	if Plugin_SGO4
-		handleSGO4(iBars)
+	elseif Plugin_HentaiPregnancy
+		handleHentaiPregnancy(iBars)
 	endif
 
 	;BeeingFemale
@@ -214,6 +207,13 @@ EndFunction
 			iBars.releaseIcon(slwGetModName(),Pregnancy_Basic)
 		endif
 	endif
+	
+	;Soul Gem Oven 4
+	if Plugin_SGO4
+		handleSGO4(iBars)
+	endif
+
+
 	
 	;EggFactory
 	If Plugin_EggFactory

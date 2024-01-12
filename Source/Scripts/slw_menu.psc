@@ -71,10 +71,6 @@ Function General()
 	Int sliderFlag = _getFlag()
 	_update_interval_slider = AddSliderOption("$SLW_Update_Interval", config.updateInterval, "{0}", sliderFlag)
 	
-	AddHeaderOption("$SLW_User_Settings")
-	Int loadSettingsFlagPapyrus = _getFlag(jsonutil.JsonExists(config.slw_settings_path))
-	AddTextOptionST("LOAD_USER_SETTINGS_STATE", "$SLW_Load_Settings", "$SLW_GO", loadSettingsFlagPapyrus)
-	AddTextOptionST("SAVE_USER_SETTINGS_STATE", "$SLW_Save_Settings", "$SLW_GO", 0)
 EndFunction
 
 Function Toggles()
@@ -124,6 +120,11 @@ Function Debug()
 	AddHeaderOption("SLWidgets. Version: " + GetVersionString())
 	AddEmptyOption()
 	AddTextOptionST("UPDATE_DEPENDENCIES_STATE","$SLW_Recheck","$SLW_GO", OPTION_FLAG_NONE)
+	
+	AddHeaderOption("$SLW_User_Settings")
+	Int loadSettingsFlagPapyrus = _getFlag(jsonutil.JsonExists(config.slw_settings_path) && widget_controller.isLoaded())
+	AddTextOptionST("LOAD_USER_SETTINGS_STATE", "$SLW_Load_Settings", "$SLW_GO", loadSettingsFlagPapyrus)
+	AddTextOptionST("SAVE_USER_SETTINGS_STATE", "$SLW_Save_Settings", "$SLW_GO", 0)
 	
 	AddHeaderOption("$SLW_Dependency_check")
 	AddTextOption("$SLW_Iwant_SB_Check", StringIfElse( widget_controller.isLoaded() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
@@ -338,6 +339,9 @@ state LOAD_USER_SETTINGS_STATE
 	function OnSelectST()
 		if ShowMessage("$SLW_Load_Settings_Question", true, "$Accept", "$Cancel")
 			if config.LoadUserSettingsPapyrus()
+				config.moduleReset()
+				widget_controller.setup()
+				widget_controller.reloadWidgets()
 				ShowMessage("$SLW_Settings_Loaded_Status", false, "$Accept", "$Cancel")
 			else
 				ShowMessage("$SLW_Load_Settings_Failed_Status", false, "$Accept", "$Cancel")

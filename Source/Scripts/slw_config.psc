@@ -1,7 +1,6 @@
 Scriptname slw_config extends Quest
 import slw_util
 import slw_log
-import FISSFactory
 
 slw_widget_controller Property widget_controller auto
 
@@ -174,6 +173,7 @@ Bool function LoadUserSettingsPapyrus()
 		WriteLog("SLWidgets: Can't load user settings. Errors: {" + jsonutil.getErrors(slw_settings_path) + "}", 2)
 		return false
 	endIf
+	slw_stopped = false
 	updateInterval = jsonutil.GetPathIntValue(slw_settings_path, "updateInterval", updateInterval)
 	module_sla_arousal = jsonutil.GetPathBoolValue(slw_settings_path, "module_sla_arousal", module_sla_arousal)
 	module_sla_exposure = jsonutil.GetPathBoolValue(slw_settings_path, "module_sla_exposure", module_sla_exposure)
