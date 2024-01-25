@@ -58,7 +58,7 @@ Event onWidgetReload(iWant_Status_Bars iBars)
 		iBars.releaseIcon(slwGetModName(),MILK_STATE)
 	endif
 
-	if(config.isOn(config.module_mme_lactacid) && isInterfaceActive())
+	if(config.isOn(config.module_mme_lactacid) && Plugin_MME)
 		_loadLactacidIcons(iBars)
 	else
 		iBars.releaseIcon(slwGetModName(),LACTACID_STATE)
@@ -75,7 +75,7 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 		endif
 	endIf
 
-	if (config.isOn(config.module_mme_lactacid) && isInterfaceActive())
+	if (config.isOn(config.module_mme_lactacid) && Plugin_MME)
 		int lactacid_state_curr = getLactacidLevel()
 		if milk_state_prv == EMPTY || lactacid_state_prv != lactacid_state_curr
 			iBars.setIconStatus(slwGetModName(), LACTACID_STATE, lactacid_state_curr )

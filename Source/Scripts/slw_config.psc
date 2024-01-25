@@ -84,6 +84,7 @@ Function moduleWidgetStateUpdate(iWant_Status_Bars iBars)
 EndFunction
 
 ;disable toggles if module is not ready because of dependency check
+;deprecated
 Function moduleSyncConfig()
 	if !module_sla.isInterfaceActive() 
 		module_sla_arousal = false
