@@ -19,7 +19,7 @@ Int Function getArousalLevel(Faction arousalFaction, Quest sla, Actor act) globa
 			 arousal = (sla as slaFrameworkScr).GetActorArousal(act)
 		EndIf
 	endif
-	return percentToState9(arousal)
+	return percentToState9NotStrict(arousal)
 EndFunction
 
 Int Function getExposureLevel(Faction exposureFaction, Quest sla, Actor akTarget) Global
@@ -27,5 +27,5 @@ Int Function getExposureLevel(Faction exposureFaction, Quest sla, Actor akTarget
 	If (exposure < 0)
 		exposure = (sla as slaFrameworkScr).GetActorExposure(akTarget)
 	EndIf
-	return percentToState9(exposure)
+	return percentToState9NotStrict(exposure)
 EndFunction

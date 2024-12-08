@@ -13,11 +13,11 @@ Int Function GetVersion() Global
     ; 1.1.0   -> 10100
     ; 1.1.1  -> 10101
     ; 1.61  -> 16100
-    ; 10.61.20 -> 106120 
+    ; 10.61.20 -> 106120
 EndFunction
 
 String Function GetVersionString() Global
-    Return "2.0.15"
+    Return "2.0.16"
 EndFunction
 
 String Function StringIfElse(Bool isTrue, String returnTrue, String returnFalse = "") Global
@@ -100,6 +100,10 @@ Bool Function isSGO4Ready() Global
 	Return  isDependencyReady("dse-soulgem-oven.esp")
 EndFunction
 
+Bool Function isCurseOfLifeReady() Global
+	Return isDependencyReady("CurseOfLife.esp")
+EndFunction
+
 Bool Function isDependencyReady(String modname) Global
 	int index = Game.GetModByName(modname)
 	if index == 255 || index == -1
@@ -110,6 +114,34 @@ Bool Function isDependencyReady(String modname) Global
 EndFunction
 
 Int Function percentToState9(int percent) Global
+	if percent < 0
+		percent = 0
+	elseif percent > 100
+		percent = 100
+	endIf
+
+	If percent == 0
+		return 0
+	ElseIf percent < 10
+		return 1
+	ElseIf percent < 25
+		return 2
+	ElseIf percent < 40
+		return 3
+	ElseIf percent < 55
+		return 4
+	ElseIf percent < 70
+		return 5
+	ElseIf percent < 85
+		return 6
+	ElseIf percent < 100
+		return 7
+	Else
+		return 8
+	EndIf
+EndFunction
+
+Int Function percentToState9NotStrict(int percent) Global
 	if percent < 0
 		percent = 0
 	elseif percent > 100
@@ -135,7 +167,7 @@ Int Function percentToState9(int percent) Global
 	Else
 		return 8
 	EndIf
-EndFunction			
+EndFunction	
 
 Int Function percentToState5(int percent) Global
     If percent < 0

@@ -36,7 +36,9 @@ EndFunction
 Function initInterface()
 	If (!Module_Ready && isAprReady())
 		slw_log.WriteLog("ModuleAPR: Apropos2.esp found")
-		ActorsQuest = Game.GetFormFromFile(0x02902C, "Apropos2.esp") as Quest
+
+		;ActorsQuest = Game.GetFormFromFile(0x02902C, "Apropos2.esp") as Quest
+		ActorsQuest = Quest.GetQuest("Apropos2Actors")
 		
 		if !ActorsQuest
 			slw_log.WriteLog("ModuleAPR: Apropos2.esp is not yet initialised")

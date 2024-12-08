@@ -142,13 +142,14 @@ Function Debug()
 	AddTextOption("$SLW_ES_Check", StringIfElse( isESReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddTextOption("$SLW_ED_Check", StringIfElse( isEDReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddTextOption("$SLW_SGO4_Check", StringIfElse( isSGO4Ready() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_COF_Check", StringIfElse( isCurseOfLifeReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddHeaderOption("$SLW_Dependency_check_needs")
 	AddTextOption("$SLW_PAF_Check", StringIfElse( isPAFReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddTextOption("$SLW_MND_Check", StringIfElse( isMiniNeedsReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddTextOption("$SLW_ALP_Check", StringIfElse( isAlivePeeingReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddHeaderOption("$SLW_Dependency_check_defeat")
 	AddTextOption("$SLW_SLD_Check", StringIfElse( isSLDefeatReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
-
+	
 	AddTextOptionST("ADD_EMPTY_ICON_STATE","$SLW_Empty_Icon_Add","$SLW_Add", OPTION_FLAG_NONE)
 EndFunction
 

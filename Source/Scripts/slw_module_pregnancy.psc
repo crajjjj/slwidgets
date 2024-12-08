@@ -16,6 +16,7 @@ Bool Property Plugin_BeeingFemale = false auto hidden
 Bool Property Plugin_FertilityMode3 = false auto hidden
 Bool Property Plugin_HentaiPregnancy = false auto hidden
 Bool Property Plugin_SGO4 = false auto hidden
+Bool Property Plugin_CurseOfLife = false auto hidden
 
 Spell _BFStatePregnant 
 Faction _HentaiPregnantFaction
@@ -139,11 +140,16 @@ Function initInterface()
 		endif
 	endif
 
+	If (!Plugin_CurseOfLife && isCurseOfLifeReady())
+		WriteLog("ModulePregnancy: Curse of life found")
+		Plugin_CurseOfLife = true
+	endif
+
 EndFunction
 
 ;override
 Bool Function isInterfaceActive()
-	Return (Plugin_EstrusSpider || 	Plugin_EstrusChaurus || Plugin_EstrusDwemer || Plugin_BeeingFemale || Plugin_HentaiPregnancy || Plugin_EggFactory || Plugin_FertilityMode3 || Plugin_SGO4)
+	Return (Plugin_EstrusSpider || 	Plugin_EstrusChaurus || Plugin_EstrusDwemer || Plugin_BeeingFemale || Plugin_HentaiPregnancy || Plugin_EggFactory || Plugin_FertilityMode3 || Plugin_SGO4 || Plugin_CurseOfLife)
 EndFunction
 
 ;override
@@ -156,6 +162,7 @@ Function resetInterface()
 	Plugin_EggFactory = false
 	Plugin_FertilityMode3 = false
 	Plugin_SGO4 = false
+	Plugin_CurseOfLife = false
 EndFunction
 
 ;override
@@ -206,7 +213,6 @@ EndFunction
 		handleSGO4(iBars)
 	endif
 
-
 	
 	;EggFactory
 	If Plugin_EggFactory
@@ -242,6 +248,11 @@ EndFunction
 		else
 			iBars.releaseIcon(slwGetModName(),Pregnancy_Dwemer_Spheres)
 		endif
+	endif
+
+	;Curse Of Life
+	if Plugin_CurseOfLife
+		handleCOF(iBars)
 	endif
 
 EndFunction
@@ -281,6 +292,33 @@ Function handleSGO4(iWant_Status_Bars iBars)
 	else
 		iBars.releaseIcon(slwGetModName(), Pregnancy_Gems)
 	endif
+EndFunction
+
+Function handleCOF(iWant_Status_Bars iBars)
+	; Overall Status
+	float CharusCurrentSize = StorageUtil.GetFloatValue(none, "CurseOfLife_CharusCurrentSize", 0.0)
+	float SpiderCurrentSize = StorageUtil.GetFloatValue(none, "CurseOfLife_SpiderCurrentSize", 0.0)
+	float DragonCurrentSize = StorageUtil.GetFloatValue(none, "CurseOfLife_DragonCurrentSize", 0.0)
+	float BlessingCurrentSize = StorageUtil.GetFloatValue(none, "CurseOfLife_BlessingCurrentSize", 0.0)
+
+	if (CharusCurrentSize > 0)
+		_loadChaurusEggsIcon(iBars)
+	Else
+		iBars.releaseIcon(slwGetModName(),Pregnancy_Chaurus_Eggs)
+	endif
+
+	if (SpiderCurrentSize > 0)
+		_loadSpiderEggsIcon(iBars)
+	else
+		iBars.releaseIcon(slwGetModName(),Pregnancy_Spider_Eggs)
+	endif
+
+	if (DragonCurrentSize > 0 || BlessingCurrentSize > 0)
+		_loadEggsIcon(iBars)
+	else
+		iBars.releaseIcon(slwGetModName(),Pregnancy_Eggs)
+	endif
+
 EndFunction
 
 ;Hentai pregnancy LE/SE

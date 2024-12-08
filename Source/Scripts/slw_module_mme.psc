@@ -98,7 +98,7 @@ Int Function getMilkLevel()
 	if milkMax <= 0
 		milkMax = 1
 	endif
-	return percentToState9(Math.Ceiling(milkCur/milkMax * 100))
+	return percentToState9NotStrict(Math.Ceiling(milkCur/milkMax * 100))
 EndFunction
 
 Int Function getLactacidLevel()
@@ -108,7 +108,7 @@ Int Function getLactacidLevel()
 			lactMax = 1
 		endif
 		Int lactacidLevel = ((lactCur / lactMax) * 100) as Int
-		return percentToState9(lactacidLevel)
+		return percentToState9NotStrict(lactacidLevel)
 EndFunction
 
 
