@@ -6,7 +6,8 @@ import slw_util
 ;PAF/MiniNeeds/ALP
 ;--------------------------------------
 Int Function getPoopLevelPAF( Quest paf) Global
-	int pafstate = (paf as PAF_MainQuestScript).PoopState
+	int pafstate = PAF_MainQuestScript.GetAPI().PoopState
+	
 	if pafstate >= 4
 		return  4
 	Else
@@ -15,7 +16,8 @@ Int Function getPoopLevelPAF( Quest paf) Global
 EndFunction
 
 Int Function getPeeLevelPAF(Quest paf) Global
-	int pafstate = (paf as PAF_MainQuestScript).PeeState
+	int pafstate = PAF_MainQuestScript.GetAPI().PeeState
+	
 	if pafstate >= 4
 		return  4
 	Else
