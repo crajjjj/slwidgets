@@ -8,7 +8,7 @@ EndFunction
 
 ;SemVer support
 Int Function GetVersion() Global
-    Return 20017
+    Return 20018
     ; 1.0.0   -> 10000
     ; 1.1.0   -> 10100
     ; 1.1.1  -> 10101
@@ -17,7 +17,7 @@ Int Function GetVersion() Global
 EndFunction
 
 String Function GetVersionString() Global
-    Return "2.0.17"
+    Return "2.0.18"
 EndFunction
 
 String Function StringIfElse(Bool isTrue, String returnTrue, String returnFalse = "") Global
@@ -81,8 +81,17 @@ Bool Function isEFReady() Global
 EndFunction
 
 Bool Function isPAFReady() Global
+	Return  isPAFLegacyReady() || isPAFAIOReady()
+EndFunction
+
+Bool Function isPAFLegacyReady() Global
 	Return  isDependencyReady("PeeAndFart.esp")
 EndFunction
+
+Bool Function isPAFAIOReady() Global
+	Return  isDependencyReady("Paf Fixes and Addons.esp")
+EndFunction
+
 
 Bool Function isMiniNeedsReady() Global
 	Return  isDependencyReady("MiniNeeds.esp")
