@@ -40,10 +40,13 @@ EndFunction
 ;override
 Function initInterface()
 	If (!Module_Ready && isPAFReady())
-		slw_log.WriteLog("ModulePAF: PeeAndFart.esp found")
+		slw_log.WriteLog("ModulePAF: PeeAndFart.esp/Paf Fixes and Addons.esp found")
 		paf = Game.GetFormFromFile(0x0012C8, "PeeAndFart.esp") As Quest
+		if !paf
+			paf = Game.GetFormFromFile(0x000008FB, "Paf Fixes and Addons.esp") As Quest
+		endif
 		if paf
-			Module_Ready = true 
+			Module_Ready = true
 		else
 			slw_log.WriteLog("ModulePAF: PAF_MainQuestScript not found", 2)
 		endif
