@@ -101,6 +101,10 @@ Bool Function isAlivePeeingReady() Global
 	Return  isDependencyReady("AlivePeeingSE.esp")
 EndFunction
 
+Bool Function isPNOReady() Global
+	Return  isDependencyReady("Private Needs - Orgasm.esp")
+EndFunction
+
 Bool Function isSLDefeatReady() Global
 	Return  isDependencyReady("SexLabDefeat.esp")
 EndFunction
