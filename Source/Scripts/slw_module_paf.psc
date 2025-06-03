@@ -4,7 +4,7 @@ import slw_util
 import slw_interface_paf
 import slw_interface_mnd
 import slw_interface_alp
-
+import slw_interface_pno
 
 Bool Property Module_Ready = false auto hidden
 
@@ -16,6 +16,7 @@ Actor Property PlayerRef Auto
 Quest paf
 ;MiniNeeds
 Quest mnd
+Quest pno
 ;Alive peeing
 GlobalVariable apb
 GlobalVariable apbm
@@ -43,7 +44,7 @@ Function initInterface()
 		slw_log.WriteLog("ModulePAF: PeeAndFart.esp/Paf Fixes and Addons.esp found")
 		paf = Game.GetFormFromFile(0x0012C8, "PeeAndFart.esp") As Quest
 		if !paf
-			paf = Game.GetFormFromFile(0x000008FB, "Paf Fixes and Addons.esp") As Quest
+		paf = Game.GetFormFromFile(0x000008FB, "Paf Fixes and Addons.esp") As Quest
 		endif
 		if paf
 			Module_Ready = true
@@ -73,6 +74,15 @@ Function initInterface()
 		endif
 	endif
 
+	If (!Module_Ready && isPNOReady())
+		slw_log.WriteLog("ModulePAF: Private Needs - Orgasm.esp found")
+		pno = Game.GetFormFromFile(0x87B, "Private Needs - Orgasm.esp") As Quest
+		if pno
+			Module_Ready = true
+		else
+			slw_log.WriteLog("ModulePAF: PNO_MainQuest not found", 2)
+		endif
+	endif
 	
 EndFunction
 
@@ -119,6 +129,9 @@ Int Function getPeeLevel()
 	if paf
 		return getPeeLevelPAF(paf)
 	endif	
+	if pno
+		return getPeeLevelPNO(pno)
+	endif	
 	if mnd
 		return getPeeLevelMND(mnd)
 	endif
@@ -134,6 +147,9 @@ Int Function getPoopLevel()
 	if paf
 		return getPoopLevelPAF(paf)
 	endif
+	if pno
+		return getPoopLevelPNO(pno)
+	endif	
 	if mnd
 		return getPoopLevelMND(mnd)
 	endif
