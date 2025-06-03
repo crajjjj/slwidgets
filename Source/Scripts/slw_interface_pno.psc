@@ -6,7 +6,7 @@ import slw_util
 ;PAF/MiniNeeds/ALP
 ;--------------------------------------
 Int Function getPoopLevelPNO( Quest pno) Global
-	int pnoState = (pno as PNO_QF_MainQuest).bowel_lastlevel
+	int pnoState = (pno as PNO_QF_MainQuest).bowel_lastlevel - 1
 	if pnoState < 0
 		return  0
 	Elseif pnoState >= 4
