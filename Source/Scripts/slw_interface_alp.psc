@@ -4,7 +4,10 @@ Import Debug
 import slw_util
 
 Int Function getPeeLevelALP(GlobalVariable apb, GlobalVariable apbm ) Global
-	int p = (apb.GetValue()/apbm.GetValue() * 100) as Int
-	
+	float val = apbm.GetValue()
+	if val == 0
+		return percentToState5(0)
+	endif
+	int p = (apb.GetValue()/val * 100) as Int
 	return percentToState5(p)
 EndFunction

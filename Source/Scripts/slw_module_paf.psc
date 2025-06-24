@@ -138,6 +138,7 @@ Int Function getPeeLevel()
 	if apb && apbm
 		return getPeeLevelALP(apb, apbm)
 	endif
+	return 0
 EndFunction
 ;states 0-4
 Int Function getPoopLevel()
@@ -153,6 +154,7 @@ Int Function getPoopLevel()
 	if mnd
 		return getPoopLevelMND(mnd)
 	endif
+	return 0
 EndFunction
 
 

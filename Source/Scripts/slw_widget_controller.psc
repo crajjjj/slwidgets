@@ -81,7 +81,6 @@ Function loadEmptyIcon()
 	Int[] b = new Int[1]
 	Int[] a = new Int[1]
 	
-	string iconbasepath = "widgets/iwant/widgets/library/misc/"
 	s[0] = "placeholder.dds"
 	d[0] = EMPTY_STATE + _emptyIconIndex
 	r[0] = 255

@@ -3,7 +3,7 @@ SexLab Widgets SSE
 
 A  plugin for iWant Status Bars to add sexlab related widgets to Skyrim. Supports 2 mechanics
 - Icons that have 9 stages and change dynamically
-- Icons that appear/dissapear on condition
+- Icons that appear/disappear on condition
 113+ icons included.
 MCM for flexible configuration
 
