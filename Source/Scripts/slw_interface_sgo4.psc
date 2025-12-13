@@ -5,8 +5,8 @@ import slw_util
 
 ;SGO4
 ;--------------------------------------
-bool function gotGems( Quest sgo, Actor akTarget) Global
-	return (sgo as dse_sgo_QuestDatabase_Main).ActorGemCount(akTarget) > 0
+Int function gotGems( Quest sgo, Actor akTarget) Global
+	return (sgo as dse_sgo_QuestDatabase_Main).ActorCurrentGemCount(akTarget)
 endFunction
 
 Float Function getMilkMax( Quest sgo, Actor akTarget) Global
