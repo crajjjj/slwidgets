@@ -36,13 +36,21 @@ Keyword _zzEstrusSpiderParasiteKWD
 
 Spell _DwemerBreederSpell
 Keyword _zzEstrusDwemerParasiteKWD
-
+;FM
 Quest _FMStorage
+Spell _JSW_BB_Trimester1
+Spell _JSW_BB_Trimester2
+Spell _JSW_BB_Trimester3
+Spell _JSW_BB_Ovulation
 
+;BF
 Quest _dse_sgo_QuestDatabase_Main
 
 ;Pregnancy
 String Pregnancy_Basic = "Pregnancy_Basic"
+String Pregnancy_Trimester1 = "Pregnancy_Trimester1"
+String Pregnancy_Trimester2 = "Pregnancy_Trimester2"
+String Pregnancy_Trimester3 = "Pregnancy_Trimester3"
 String Pregnancy_CumInflation = "Pregnancy_CumInflation"
 String Pregnancy_Ovulation = "Pregnancy_Ovulation"
 String Pregnancy_Fetus = "Pregnancy_Fetus"
@@ -127,7 +135,11 @@ Function initInterface()
 
 	If (!Plugin_FertilityMode3 && isFM3Ready())
 		WriteLog("ModulePregnancy: Fertility Mode found")
-		_FMStorage = Game.GetFormFromFile(0x000D62,"Fertility Mode.esm") as Quest 
+		_FMStorage = Game.GetFormFromFile(0x000D62,"Fertility Mode.esm") as Quest
+		_JSW_BB_Trimester1 = Game.GetFormFromFile(0x01B816,"Fertility Mode.esm") as Spell
+ 		_JSW_BB_Trimester2 = Game.GetFormFromFile(0x01B818,"Fertility Mode.esm") as Spell
+ 		_JSW_BB_Trimester3 = Game.GetFormFromFile(0x01B81A,"Fertility Mode.esm") as Spell
+		_JSW_BB_Ovulation = Game.GetFormFromFile(0x0181E2,"Fertility Mode.esm") as Spell
 		Plugin_FertilityMode3 = true
 		if !_FMStorage
 			WriteLog("ModulePregnancy: _JSW_BB_Storage not found", 2)
@@ -193,6 +205,9 @@ Function _releasePregnancyIcons(iWant_Status_Bars iBars)
 	iBars.releaseIcon(slwGetModName(),Pregnancy_Chaurus_Eggs)
 	iBars.releaseIcon(slwGetModName(),Pregnancy_Dwemer_Spheres)
 	iBars.releaseIcon(slwGetModName(),Pregnancy_Gems)
+	iBars.releaseIcon(slwGetModName(),Pregnancy_Trimester1)
+	iBars.releaseIcon(slwGetModName(),Pregnancy_Trimester2)
+	iBars.releaseIcon(slwGetModName(),Pregnancy_Trimester3)
 EndFunction
 
 
@@ -201,15 +216,8 @@ EndFunction
 		handleFertilityMode3(iBars)
 	elseif Plugin_HentaiPregnancy
 		handleHentaiPregnancy(iBars)
-	endif
-
-	;BeeingFemale
-	if Plugin_BeeingFemale
-		if PlayerRef.HasSpell(_BFStatePregnant) ;_BFStatePregnant spell
-			_loadBasicIcon(iBars)
-		Else
-			iBars.releaseIcon(slwGetModName(),Pregnancy_Basic)
-		endif
+	elseif Plugin_BeeingFemale
+		handleBeeingFemale(iBars)
 	endif
 	
 	;Soul Gem Oven 4
@@ -261,33 +269,117 @@ EndFunction
 
 EndFunction
 
+;BeeingFemale
+; $FW_MENU_INFO_StateName0	Follicular phase
+; $FW_MENU_INFO_StateName1	Ovulating
+; $FW_MENU_INFO_StateName2	Luteal phase
+; $FW_MENU_INFO_StateName3	Menstruation
+; $FW_MENU_INFO_StateName4	1st Trimester
+; $FW_MENU_INFO_StateName5	2nd Trimester
+; $FW_MENU_INFO_StateName6	3rd Trimester
+; $FW_MENU_INFO_StateName7	Labor pains
+; $FW_MENU_INFO_StateName8	Replanish
+; $FW_MENU_INFO_StateName20	Pregnant
+; $FW_MENU_INFO_StateName21	Pregnant by chaurus
+Function handleBeeingFemale(iWant_Status_Bars iBars)
+		int s = StorageUtil.GetIntValue(PlayerRef,"FW.CurrentState",0)
+		int sa= StorageUtil.FormListCount(PlayerRef, "FW.SpermName")
+		bool isCumInside = false
+		while sa>0
+			sa-=1
+			float amo = StorageUtil.FloatListGet(PlayerRef, "FW.SpermAmount", sa)
+			if amo>0.3
+				isCumInside=true
+			endif
+		endwhile
+
+		if s==1 || s==2
+			_loadOvulationIcon(iBars)
+		else
+			iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)
+		endif
+
+		if s < 4 && isCumInside
+			_loadCumInflationIcon(iBars)
+		else
+			iBars.releaseIcon(slwGetModName(),Pregnancy_CumInflation)
+		endif
+
+		if s==20
+			_loadBasicIcon(iBars)
+  		else
+			iBars.releaseIcon(slwGetModName(),Pregnancy_Basic)
+		endif
+
+		if s==4
+			_loadTrimester1Icon(iBars)
+  		else
+			iBars.releaseIcon(slwGetModName(),Pregnancy_Trimester1)
+		endif
+
+		if s==5
+			_loadTrimester2Icon(iBars)
+  		else
+			iBars.releaseIcon(slwGetModName(),Pregnancy_Trimester2)
+		endif
+
+		if s==6 || s==7
+			_loadTrimester3Icon(iBars)
+  		else
+			iBars.releaseIcon(slwGetModName(),Pregnancy_Trimester3)
+		endif
+
+		if s==21
+			_loadChaurusEggsIcon(iBars)
+  		else
+			iBars.releaseIcon(slwGetModName(),Pregnancy_Chaurus_Eggs)
+		endif
+
+EndFunction
 Function handleFertilityMode3(iWant_Status_Bars iBars)
 	int actorIndex = getFMActorIndex(_FMStorage,PlayerRef)
 	if (actorIndex == -1)
 		iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)
+		iBars.releaseIcon(slwGetModName(),Pregnancy_Trimester1)
+		iBars.releaseIcon(slwGetModName(),Pregnancy_Trimester2)
+		iBars.releaseIcon(slwGetModName(),Pregnancy_Trimester3)
 		iBars.releaseIcon(slwGetModName(),Pregnancy_Fetus)
 		iBars.releaseIcon(slwGetModName(),Pregnancy_CumInflation)
 		return
 	endIf
-	if isFMPregnant(_FMStorage,actorIndex)
-		; Fired for pregnant actors
-		iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)
-		_loadFetusIcon(iBars)
-  	elseIf isFMOvulating(_FMStorage, actorIndex)
-		 ; Fired for ovulating actors
-		 iBars.releaseIcon(slwGetModName(),Pregnancy_Fetus)
-		 _loadOvulationIcon(iBars)
+	
+	if PlayerRef.HasSpell(_JSW_BB_Ovulation)
+		_loadTrimester1Icon(iBars)
 	else
-		iBars.releaseIcon(slwGetModName(),Pregnancy_Fetus)
-		iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)
-   endIf
+		iBars.releaseIcon(slwGetModName(), Pregnancy_Trimester1)
+	endif
+
+	if PlayerRef.HasSpell(_JSW_BB_Trimester1)
+		_loadTrimester1Icon(iBars)
+	else
+		iBars.releaseIcon(slwGetModName(), Pregnancy_Trimester1)
+	endif
+
+	if PlayerRef.HasSpell(_JSW_BB_Trimester2)
+		_loadTrimester2Icon(iBars)
+	else
+		iBars.releaseIcon(slwGetModName(), Pregnancy_Trimester2)
+	endif
+
+	if PlayerRef.HasSpell(_JSW_BB_Trimester3)
+		_loadTrimester3Icon(iBars)
+	else
+		iBars.releaseIcon(slwGetModName(), Pregnancy_Trimester3)
+	endif
+
 	; Mismatch error can be shown cause tweaks mod changed SpermCount array to int
-   If hasFMSperm(_FMStorage, actorIndex)
+  	If hasFMSperm(_FMStorage, actorIndex)
 	; Fired for inflated actors
 		_loadCumInflationIcon(iBars)
-   else
-		iBars.releaseIcon(slwGetModName(),Pregnancy_CumInflation)
-   endIf
+    else
+		iBars.releaseIcon(slwGetModName(), Pregnancy_CumInflation)
+    endIf
+
 EndFunction
 
 Function handleSGO4(iWant_Status_Bars iBars)
@@ -376,6 +468,63 @@ Function _loadBasicIcon(iWant_Status_Bars iBars)
 	
 	; This will fail silently if the icon is already loaded
 	iBars.loadIcon(slwGetModName(), Pregnancy_Basic, d, s, r, g, b, a)
+EndFunction
+
+Function _loadTrimester1Icon(iWant_Status_Bars iBars)
+	String[] s = new String[1]
+	String[] d = new String[1]
+	Int[] r = new Int[1]
+	Int[] g = new Int[1]
+	Int[] b = new Int[1]
+	Int[] a = new Int[1]
+	
+	s[0] = iconbasepath + "preg1.dds"
+	d[0] = "Pregnancy_Trimester1"
+	r[0] = 255
+	g[0] = 255
+	b[0] = 255
+	a[0] = 100
+	
+	; This will fail silently if the icon is already loaded
+	iBars.loadIcon(slwGetModName(), Pregnancy_Trimester1, d, s, r, g, b, a)
+EndFunction	
+
+Function _loadTrimester2Icon(iWant_Status_Bars iBars)
+	String[] s = new String[1]
+	String[] d = new String[1]
+	Int[] r = new Int[1]
+	Int[] g = new Int[1]
+	Int[] b = new Int[1]
+	Int[] a = new Int[1]
+	
+	s[0] = iconbasepath + "preg2.dds"
+	d[0] = "Pregnancy_Trimester2"
+	r[0] = 255
+	g[0] = 255
+	b[0] = 255
+	a[0] = 100
+	
+	; This will fail silently if the icon is already loaded
+	iBars.loadIcon(slwGetModName(), Pregnancy_Trimester2, d, s, r, g, b, a)
+EndFunction
+
+Function _loadTrimester3Icon(iWant_Status_Bars iBars)
+	String[] s = new String[1]
+	String[] d = new String[1]
+	Int[] r = new Int[1]
+	Int[] g = new Int[1]
+	Int[] b = new Int[1]
+	Int[] a = new Int[1]
+	
+	s[0] = iconbasepath + "preg3.dds"
+	d[0] = "Pregnancy_Trimester3"
+	r[0] = 255
+	g[0] = 255
+	b[0] = 255
+	a[0] = 100
+	
+	; This will fail silently if the icon is already loaded
+	iBars.loadIcon(slwGetModName(), Pregnancy_Trimester3, d, s, r, g, b, a)
 EndFunction	
 
 Function _loadEggsIcon(iWant_Status_Bars iBars)
@@ -386,7 +535,6 @@ Function _loadEggsIcon(iWant_Status_Bars iBars)
 	Int[] b = new Int[1]
 	Int[] a = new Int[1]
 	
-	; HentaiPregnant
 	s[0] = iconbasepath + "eggs.dds"
 	d[0] = "PregnantEggs"
 	r[0] = 255
@@ -426,7 +574,6 @@ Function _loadChaurusEggsIcon(iWant_Status_Bars iBars)
 	Int[] b = new Int[1]
 	Int[] a = new Int[1]
 	
-	; HentaiPregnant
 	s[0] = iconbasepath + "chaurusEggs.dds"
 	d[0] = "PregnantChaurus"
 	r[0] = 255
@@ -446,7 +593,6 @@ Function _loadSpiderEggsIcon(iWant_Status_Bars iBars)
 	Int[] b = new Int[1]
 	Int[] a = new Int[1]
 	
-	; HentaiPregnant
 	s[0] = iconbasepath + "spiderEggs.dds"
 	d[0] = "PregnantSpider"
 	r[0] = 255
@@ -466,7 +612,6 @@ Function _loadSphereIcon(iWant_Status_Bars iBars)
 	Int[] b = new Int[1]
 	Int[] a = new Int[1]
 	
-	; HentaiPregnant
 	s[0] = iconbasepath + "spheres.dds"
 	d[0] = "PregnantSpheres"
 	r[0] = 255
@@ -486,8 +631,13 @@ Function _loadCumInflationIcon(iWant_Status_Bars iBars)
 	Int[] b = new Int[1]
 	Int[] a = new Int[1]
 	
-	; HentaiPregnant
-	s[0] = iconbasepath + "cum.dds"
+	int random = Utility.RandomInt(1,100)
+	If (random>=50)
+		s[0] = iconbasepath + "cum.dds"
+	Else
+		s[0] = iconbasepath + "cum1.dds"
+	EndIf
+	
 	d[0] = "PregnantCum"
 	r[0] = 255
 	g[0] = 255
@@ -506,7 +656,6 @@ Function _loadOvulationIcon(iWant_Status_Bars iBars)
 	Int[] b = new Int[1]
 	Int[] a = new Int[1]
 	
-	; HentaiPregnant
 	s[0] = iconbasepath + "ovulation.dds"
 	d[0] = "PregnantOvulation"
 	r[0] = 255
@@ -526,7 +675,6 @@ Function _loadGemsIcon(iWant_Status_Bars iBars)
 	Int[] b = new Int[6]
 	Int[] a = new Int[6]
 
-	; HentaiPregnant
 	s[0] = iconbasepath + "gems.dds"
 	d[0] = "PregnantGems"
 	r[0] = 255
