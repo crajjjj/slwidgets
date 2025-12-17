@@ -10,6 +10,7 @@ Actor Property PlayerRef Auto
 
 int EMPTY = -1
 int gems_state_prv = -1
+Float GemPrePercent = 0.00
 
 Bool Property Plugin_EstrusChaurus = false auto hidden
 Bool Property Plugin_EstrusSpider = false auto hidden
@@ -189,7 +190,6 @@ EndEvent
 
 ;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
-	gems_state_prv = EMPTY
 	if (config.isOn(config.module_pregnancy_enabled) && isInterfaceActive())
 		_reloadPregnancyIcons(iBars)
 	endIf
@@ -384,15 +384,21 @@ EndFunction
 
 Function handleSGO4(iWant_Status_Bars iBars)
 	int gems_state_curr = gotGems(_dse_sgo_QuestDatabase_Main,PlayerRef)
+	Float GemTotalPercent = gotGemTotalPercent(_dse_sgo_QuestDatabase_Main,PlayerRef)
+	GemTotalPercent = ((GemTotalPercent*100.0) as Int) /100.0
+	PrintConsole((gems_state_prv as string)+","+(gems_state_curr as string)+","+(GemPrePercent as string)+","+(GemTotalPercent as string));
 	if gems_state_curr > 0
-		_loadGemsIcon(iBars)
-		if gems_state_prv == EMPTY || gems_state_prv != gems_state_curr
+		_loadGemsIcon(iBars,GemTotalPercent)
+		if  gems_state_prv != gems_state_curr|| GemPrePercent != GemTotalPercent
+			iBars.releaseIcon(slwGetModName(), Pregnancy_Gems)
+			_loadGemsIcon(iBars,GemTotalPercent)
 			if gems_state_curr >= 6
 				iBars.setIconStatus(slwGetModName(), Pregnancy_Gems, 5)  ;
 			else
 				iBars.setIconStatus(slwGetModName(), Pregnancy_Gems, gems_state_curr - 1)  ;
 			endif
 			gems_state_prv = gems_state_curr
+			GemPrePercent = GemTotalPercent
 		endif
 	else
 		iBars.releaseIcon(slwGetModName(), Pregnancy_Gems)
@@ -667,7 +673,7 @@ Function _loadOvulationIcon(iWant_Status_Bars iBars)
 	iBars.loadIcon(slwGetModName(), Pregnancy_Ovulation, d, s, r, g, b, a)
 EndFunction
 
-Function _loadGemsIcon(iWant_Status_Bars iBars)
+Function _loadGemsIcon(iWant_Status_Bars iBars ,Float GemPercent)
 	String[] s = new String[6]
 	String[] d = new String[6]
 	Int[] r = new Int[6]
@@ -677,47 +683,67 @@ Function _loadGemsIcon(iWant_Status_Bars iBars)
 
 	s[0] = iconbasepath + "gems.dds"
 	d[0] = "PregnantGems"
-	r[0] = 255
-	g[0] = 255
-	b[0] = 255
-	a[0] = 100
 
 	s[1] = iconbasepath + "gems2.dds"
 	d[1] = "PregnantGems_2"
-	r[1] = 255
-	g[1] = 255
-	b[1] = 255
-	a[1] = 100
 
 	s[2] = iconbasepath + "gems3.dds"
 	d[2] = "PregnantGems_3"
-	r[2] = 255
-	g[2] = 255
-	b[2] = 255
-	a[2] = 100
 
 	s[3] = iconbasepath + "gems4.dds"
 	d[3] = "PregnantGems_4"
-	r[3] = 255
-	g[3] = 255
-	b[3] = 255
-	a[3] = 100
 
 	s[4] = iconbasepath + "gems5.dds"
 	d[4] = "PregnantGems_5"
-	r[4] = 255
-	g[4] = 255
-	b[4] = 255
-	a[4] = 100
 
 	s[5] = iconbasepath + "gems6.dds"
 	d[5] = "PregnantGems_6"
-	r[5] = 255
-	g[5] = 255
-	b[5] = 255
-	a[5] = 100
 
-
+	int i = 0
+	While (i < 6)
+		if GemPercent < 0.1
+			r[i] = 255
+			g[i] = 255
+			b[i] = 255
+			a[i] = 100
+		Elseif GemPercent < 0.2
+			r[i] = 255
+			g[i] = 192
+			b[i] = 224
+			a[i] = 100
+		Elseif GemPercent < 0.3
+			r[i] = 255
+			g[i] = 171
+			b[i] = 212
+			a[i] = 100
+		Elseif GemPercent < 0.4
+			r[i] = 255
+			g[i] = 140
+			b[i] = 202
+			a[i] = 100
+		Elseif GemPercent < 0.5
+			r[i] = 255
+			g[i] = 112
+			b[i] = 192
+			a[i] = 100
+		Elseif GemPercent < 0.6
+			r[i] = 255
+			g[i] = 84
+			b[i] = 167
+			a[i] = 100
+		Elseif GemPercent < 1.0
+			r[i] = 255
+			g[i] = 8
+			b[i] = 127
+			a[i] = 100
+		Else
+			r[i] = 255
+			g[i] = 0
+			b[i] = 0
+			a[i] = 100
+		endif
+		i += 1
+	EndWhile
 	; This will fail silently if the icon is already loaded
 	iBars.loadIcon(slwGetModName(), Pregnancy_Gems, d, s, r, g, b, a)
-EndFunction	
+EndFunction
