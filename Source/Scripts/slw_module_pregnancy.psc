@@ -349,9 +349,9 @@ Function handleFertilityMode3(iWant_Status_Bars iBars)
 	endIf
 	
 	if PlayerRef.HasSpell(_JSW_BB_Ovulation)
-		_loadTrimester1Icon(iBars)
+		_loadOvulationIcon(iBars)
 	else
-		iBars.releaseIcon(slwGetModName(), Pregnancy_Trimester1)
+		iBars.releaseIcon(slwGetModName(), Pregnancy_Ovulation)
 	endif
 
 	if PlayerRef.HasSpell(_JSW_BB_Trimester1)
