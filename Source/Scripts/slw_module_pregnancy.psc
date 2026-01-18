@@ -28,6 +28,8 @@ Faction _HentaiPregnantFaction
 Faction _EggFactoryPregnantFaction
 ;EggFactory
 Quest EggFactoryMasterTimerQuest
+;BeeingFemale
+Quest fwControllerQuest
 
 Spell _ChaurusBreederSpell
 Keyword _zzEstrusParasiteKeyword
@@ -106,9 +108,14 @@ Function initInterface()
 	If (!Plugin_BeeingFemale && isBFReady())
 		WriteLog("ModulePregnancy: BeeingFemale.esm found")
 		_BFStatePregnant = Game.GetFormFromFile(0x28a0, "BeeingFemale.esm") as Spell
+		fwControllerQuest = Game.GetFormFromFile(0x182A, "BeeingFemale.esm") as Quest
 		Plugin_BeeingFemale = true
 		if !_BFStatePregnant
 			WriteLog("ModulePregnancy: _BFStatePregnant not found", 2)
+			Plugin_BeeingFemale = false
+		endif
+		if !fwControllerQuest
+			WriteLog("ModulePregnancy: fwControllerQuest not found", 2)
 			Plugin_BeeingFemale = false
 		endif
 	endif
@@ -143,7 +150,24 @@ Function initInterface()
 		_JSW_BB_Ovulation = Game.GetFormFromFile(0x0181E2,"Fertility Mode.esm") as Spell
 		Plugin_FertilityMode3 = true
 		if !_FMStorage
-			WriteLog("ModulePregnancy: _JSW_BB_Storage not found", 2)
+			WriteLog("ModulePregnancy: _FMStorage not found", 2)
+			Plugin_FertilityMode3 = false
+		endif
+		if !_JSW_BB_Trimester1
+			WriteLog("ModulePregnancy: _JSW_BB_Trimester1 not found", 2)
+			Plugin_FertilityMode3 = false
+		endif
+		if !_JSW_BB_Trimester2
+			WriteLog("ModulePregnancy: _JSW_BB_Trimester2 not found", 2)
+			Plugin_FertilityMode3 = false
+		endif
+		if !_JSW_BB_Trimester3
+			WriteLog("ModulePregnancy: _JSW_BB_Trimester3 not found", 2)
+			Plugin_FertilityMode3 = false
+		endif
+		if !_JSW_BB_Ovulation
+			WriteLog("ModulePregnancy: _JSW_BB_Ovulation not found", 2)
+			Plugin_FertilityMode3 = false
 		endif
 	endif
 
@@ -153,6 +177,7 @@ Function initInterface()
 		Plugin_SGO4 = true
 		if !_dse_sgo_QuestDatabase_Main
 			WriteLog("ModulePregnancy: _dse_sgo_QuestDatabase_Main not found", 2)
+			Plugin_SGO4 = false
 		endif
 	endif
 
@@ -179,6 +204,8 @@ Function resetInterface()
 	Plugin_FertilityMode3 = false
 	Plugin_SGO4 = false
 	Plugin_CurseOfLife = false
+	gems_state_prv = EMPTY
+	GemPrePercent = 0.0
 EndFunction
 
 ;override
@@ -282,58 +309,58 @@ EndFunction
 ; $FW_MENU_INFO_StateName20	Pregnant
 ; $FW_MENU_INFO_StateName21	Pregnant by chaurus
 Function handleBeeingFemale(iWant_Status_Bars iBars)
-		int s = StorageUtil.GetIntValue(PlayerRef,"FW.CurrentState",0)
-		int sa= StorageUtil.FormListCount(PlayerRef, "FW.SpermName")
-		bool isCumInside = false
-		while sa>0
-			sa-=1
-			float amo = StorageUtil.FloatListGet(PlayerRef, "FW.SpermAmount", sa)
-			if amo>0.3
-				isCumInside=true
-			endif
-		endwhile
+	int st = StorageUtil.GetIntValue(PlayerRef, "FW.CurrentState", 0)
+	bool isCumInside = slw_interface_bf.HasRelevantSperm(fwControllerQuest, PlayerRef)
 
-		if s==1 || s==2
-			_loadOvulationIcon(iBars)
-		else
-			iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)
-		endif
+	bool showOvulation = (st == 1 || st == 2)
+	bool showCumInflation = (st < 4 && isCumInside)
+	bool showBasic = (st == 20)
+	bool showTrimester1 = (st == 4)
+	bool showTrimester2 = (st == 5)
+	bool showTrimester3 = (st == 6 || st == 7)
+	bool showChaurusEggs = (st == 21)
 
-		if s < 4 && isCumInside
-			_loadCumInflationIcon(iBars)
-		else
-			iBars.releaseIcon(slwGetModName(),Pregnancy_CumInflation)
-		endif
+	if showOvulation
+		_loadOvulationIcon(iBars)
+	else
+		iBars.releaseIcon(slwGetModName(), Pregnancy_Ovulation)
+	endif
 
-		if s==20
-			_loadBasicIcon(iBars)
-  		else
-			iBars.releaseIcon(slwGetModName(),Pregnancy_Basic)
-		endif
+	if showCumInflation
+		_loadCumInflationIcon(iBars)
+	else
+		iBars.releaseIcon(slwGetModName(), Pregnancy_CumInflation)
+	endif
 
-		if s==4
-			_loadTrimester1Icon(iBars)
-  		else
-			iBars.releaseIcon(slwGetModName(),Pregnancy_Trimester1)
-		endif
+	if showBasic
+		_loadBasicIcon(iBars)
+	else
+		iBars.releaseIcon(slwGetModName(), Pregnancy_Basic)
+	endif
 
-		if s==5
-			_loadTrimester2Icon(iBars)
-  		else
-			iBars.releaseIcon(slwGetModName(),Pregnancy_Trimester2)
-		endif
+	if showTrimester1
+		_loadTrimester1Icon(iBars)
+	else
+		iBars.releaseIcon(slwGetModName(), Pregnancy_Trimester1)
+	endif
 
-		if s==6 || s==7
-			_loadTrimester3Icon(iBars)
-  		else
-			iBars.releaseIcon(slwGetModName(),Pregnancy_Trimester3)
-		endif
+	if showTrimester2
+		_loadTrimester2Icon(iBars)
+	else
+		iBars.releaseIcon(slwGetModName(), Pregnancy_Trimester2)
+	endif
 
-		if s==21
-			_loadChaurusEggsIcon(iBars)
-  		else
-			iBars.releaseIcon(slwGetModName(),Pregnancy_Chaurus_Eggs)
-		endif
+	if showTrimester3
+		_loadTrimester3Icon(iBars)
+	else
+		iBars.releaseIcon(slwGetModName(), Pregnancy_Trimester3)
+	endif
+
+	if showChaurusEggs
+		_loadChaurusEggsIcon(iBars)
+	else
+		iBars.releaseIcon(slwGetModName(), Pregnancy_Chaurus_Eggs)
+	endif
 
 EndFunction
 Function handleFertilityMode3(iWant_Status_Bars iBars)
@@ -386,16 +413,14 @@ Function handleSGO4(iWant_Status_Bars iBars)
 	int gems_state_curr = gotGems(_dse_sgo_QuestDatabase_Main,PlayerRef)
 	Float GemTotalPercent = gotGemTotalPercent(_dse_sgo_QuestDatabase_Main,PlayerRef)
 	GemTotalPercent = ((GemTotalPercent*100.0) as Int) /100.0
-	PrintConsole((gems_state_prv as string)+","+(gems_state_curr as string)+","+(GemPrePercent as string)+","+(GemTotalPercent as string));
 	if gems_state_curr > 0
-		_loadGemsIcon(iBars,GemTotalPercent)
-		if  gems_state_prv != gems_state_curr|| GemPrePercent != GemTotalPercent
+		if gems_state_prv == EMPTY || gems_state_prv != gems_state_curr || GemPrePercent != GemTotalPercent
 			iBars.releaseIcon(slwGetModName(), Pregnancy_Gems)
 			_loadGemsIcon(iBars,GemTotalPercent)
 			if gems_state_curr >= 6
-				iBars.setIconStatus(slwGetModName(), Pregnancy_Gems, 5)  ;
+				iBars.setIconStatus(slwGetModName(), Pregnancy_Gems, 5)
 			else
-				iBars.setIconStatus(slwGetModName(), Pregnancy_Gems, gems_state_curr - 1)  ;
+				iBars.setIconStatus(slwGetModName(), Pregnancy_Gems, gems_state_curr - 1)
 			endif
 			gems_state_prv = gems_state_curr
 			GemPrePercent = GemTotalPercent
@@ -403,6 +428,7 @@ Function handleSGO4(iWant_Status_Bars iBars)
 	else
 		iBars.releaseIcon(slwGetModName(), Pregnancy_Gems)
 		gems_state_prv = EMPTY
+		GemPrePercent = 0.0
 	endif
 EndFunction
 
