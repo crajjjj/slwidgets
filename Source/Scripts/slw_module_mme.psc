@@ -7,6 +7,7 @@ Bool Property Module_Ready = false auto hidden
 
 Bool Property Plugin_SGO4 = false auto hidden
 Bool Property Plugin_MME = false auto hidden
+Bool Property Plugin_MAL = false auto hidden
 
 slw_config Property config Auto
 Actor Property PlayerRef Auto
@@ -19,9 +20,14 @@ String LACTACID_STATE = "MMELactacid"
 int EMPTY = -1
 int milk_state_prv = -1
 int lactacid_state_prv = -1
+
+;MAL cached values (populated via return events)
+float _mal_milk_cur = 0.0
+float _mal_milk_max = 0.0
+
 ;override
 Bool Function isInterfaceActive()
-	Return Plugin_MME || Plugin_SGO4
+	Return Plugin_MME || Plugin_SGO4 || Plugin_MAL
 EndFunction
 
 ;override
@@ -30,6 +36,9 @@ Function resetInterface()
 	lactacid_state_prv = EMPTY
 	Plugin_MME = false
 	Plugin_SGO4 = false
+	Plugin_MAL = false
+	_mal_milk_cur = 0.0
+	_mal_milk_max = 0.0
 EndFunction
 
 ;override
@@ -40,18 +49,34 @@ Function initInterface()
 	endif
 	If (!Plugin_SGO4 && isSGO4Ready())
 		WriteLog("ModuleMilk: SGO4 found")
-		_dse_sgo_QuestDatabase_Main = Game.GetFormFromFile(0x00182A,"dse-soulgem-oven.esp") as Quest 
+		_dse_sgo_QuestDatabase_Main = Game.GetFormFromFile(0x00182A,"dse-soulgem-oven.esp") as Quest
 		Plugin_SGO4 = true
 		if !_dse_sgo_QuestDatabase_Main
 			WriteLog("ModuleMilk: _dse_sgo_QuestDatabase_Main not found", 2)
 		endif
 	endif
+	If (!Plugin_MAL && isMALReady())
+		WriteLog("ModuleMilk: Mammaries And Lactation found")
+		Plugin_MAL = true
+		RegisterForModEvent("MAL_ReturnPlayerStoredMilk", "OnMALReturnPlayerStoredMilk")
+		RegisterForModEvent("MAL_ReturnPlayerMilkLimit", "OnMALReturnPlayerMilkLimit")
+	endif
 EndFunction
+
+Event OnMALReturnPlayerStoredMilk(Float value)
+	_mal_milk_cur = value
+EndEvent
+
+Event OnMALReturnPlayerMilkLimit(Float value)
+	_mal_milk_max = value
+EndEvent
 
 ;override
 Event onWidgetReload(iWant_Status_Bars iBars)
 	milk_state_prv = EMPTY
 	lactacid_state_prv = EMPTY
+	_mal_milk_cur = 0.0
+	_mal_milk_max = 0.0
 	if(config.isOn(config.module_mme_milk) && isInterfaceActive())
 		_loadMilkIcons(iBars)
 	else
@@ -67,6 +92,9 @@ EndEvent
 
 ;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
+	if Plugin_MAL && config.isOn(config.module_mme_milk)
+		_requestMALUpdate()
+	endif
 	if (config.isOn(config.module_mme_milk) && isInterfaceActive())
 		int milk_state_curr = getMilkLevel()
 		if milk_state_prv == EMPTY || milk_state_prv != milk_state_curr
@@ -77,7 +105,7 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 
 	if (config.isOn(config.module_mme_lactacid) && Plugin_MME)
 		int lactacid_state_curr = getLactacidLevel()
-		if milk_state_prv == EMPTY || lactacid_state_prv != lactacid_state_curr
+		if lactacid_state_prv == EMPTY || lactacid_state_prv != lactacid_state_curr
 			iBars.setIconStatus(slwGetModName(), LACTACID_STATE, lactacid_state_curr )
 			lactacid_state_prv = lactacid_state_curr
 		endif
@@ -95,10 +123,21 @@ Int Function getMilkLevel()
 		milkCur = milkCur + getMilkCur(_dse_sgo_QuestDatabase_Main, playerRef)
 		milkMax = milkMax + getMilkMax(_dse_sgo_QuestDatabase_Main, playerRef)
 	endif
+	if Plugin_MAL
+		milkCur = milkCur + _mal_milk_cur
+		milkMax = milkMax + _mal_milk_max
+	endif
 	if milkMax <= 0
 		milkMax = 1
 	endif
 	return percentToState9NotStrict(Math.Ceiling(milkCur/milkMax * 100))
+EndFunction
+
+Function _requestMALUpdate()
+	int eh = ModEvent.Create("MAL_GetPlayerStoredMilk")
+	ModEvent.Send(eh)
+	eh = ModEvent.Create("MAL_GetPlayerMilkLimit")
+	ModEvent.Send(eh)
 EndFunction
 
 Int Function getLactacidLevel()

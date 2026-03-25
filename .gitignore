@@ -23,3 +23,5 @@ cmake-build*
 
 # Skyrim archive files
 *.bsa
+.claude/settings.local.json
+Build/SLWidgets.zip

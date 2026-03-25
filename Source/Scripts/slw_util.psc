@@ -8,7 +8,7 @@ EndFunction
 
 ;SemVer support
 Int Function GetVersion() Global
-    Return 20025
+    Return 20026
     ; 1.0.0   -> 10000
     ; 1.1.0   -> 10100
     ; 1.1.1  -> 10101
@@ -17,7 +17,7 @@ Int Function GetVersion() Global
 EndFunction
 
 String Function GetVersionString() Global
-    Return "2.0.25"
+    Return "2.0.26"
 EndFunction
 
 String Function StringIfElse(Bool isTrue, String returnTrue, String returnFalse = "") Global
@@ -111,6 +111,10 @@ EndFunction
 
 Bool Function isSGO4Ready() Global
 	Return  isDependencyReady("dse-soulgem-oven.esp")
+EndFunction
+
+Bool Function isMALReady() Global
+	Return  isDependencyReady("Mammaries And Lactation.esp")
 EndFunction
 
 Bool Function isCurseOfLifeReady() Global
