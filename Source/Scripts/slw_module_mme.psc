@@ -61,6 +61,12 @@ Function initInterface()
 		RegisterForModEvent("MAL_ReturnPlayerStoredMilk", "OnMALReturnPlayerStoredMilk")
 		RegisterForModEvent("MAL_ReturnPlayerMilkLimit", "OnMALReturnPlayerMilkLimit")
 	endif
+
+	if isInterfaceActive()
+		WriteLog("ModuleMilk: active plugins - MME:" + Plugin_MME + " SGO4:" + Plugin_SGO4 + " MAL:" + Plugin_MAL)
+	else
+		WriteLog("ModuleMilk: no milk mods detected")
+	endif
 EndFunction
 
 Event OnMALReturnPlayerStoredMilk(Float value)

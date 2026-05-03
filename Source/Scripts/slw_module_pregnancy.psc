@@ -169,6 +169,11 @@ Function initInterface()
 			WriteLog("ModulePregnancy: _JSW_BB_Ovulation not found", 2)
 			Plugin_FertilityMode3 = false
 		endif
+		if Plugin_FertilityMode3
+			WriteLog("ModulePregnancy: FM3 fully initialized, all forms resolved")
+		else
+			WriteLog("ModulePregnancy: FM3 init failed, one or more forms missing", 2)
+		endif
 	endif
 
 	If (!Plugin_SGO4 && isSGO4Ready())
@@ -184,6 +189,12 @@ Function initInterface()
 	If (!Plugin_CurseOfLife && isCurseOfLifeReady())
 		WriteLog("ModulePregnancy: Curse of life found")
 		Plugin_CurseOfLife = true
+	endif
+
+	if isInterfaceActive()
+		WriteLog("ModulePregnancy: active plugins - EC:" + Plugin_EstrusChaurus + " ES:" + Plugin_EstrusSpider + " ED:" + Plugin_EstrusDwemer + " BF:" + Plugin_BeeingFemale + " HP:" + Plugin_HentaiPregnancy + " EF:" + Plugin_EggFactory + " FM3:" + Plugin_FertilityMode3 + " SGO4:" + Plugin_SGO4 + " COL:" + Plugin_CurseOfLife)
+	else
+		WriteLog("ModulePregnancy: no pregnancy mods detected")
 	endif
 
 EndFunction
@@ -206,6 +217,9 @@ Function resetInterface()
 	Plugin_CurseOfLife = false
 	gems_state_prv = EMPTY
 	GemPrePercent = 0.0
+	_fm3_actorIndex_prv = -2
+	_bf_state_prv = -1
+	_hp_rank_prv = -1
 EndFunction
 
 ;override
@@ -308,9 +322,15 @@ EndFunction
 ; $FW_MENU_INFO_StateName8	Replanish
 ; $FW_MENU_INFO_StateName20	Pregnant
 ; $FW_MENU_INFO_StateName21	Pregnant by chaurus
+int _bf_state_prv = -1
+
 Function handleBeeingFemale(iWant_Status_Bars iBars)
 	int st = StorageUtil.GetIntValue(PlayerRef, "FW.CurrentState", 0)
 	bool isCumInside = slw_interface_bf.HasRelevantSperm(fwControllerQuest, PlayerRef)
+	if st != _bf_state_prv
+		WriteLog("ModulePregnancy: BF state changed " + _bf_state_prv + " -> " + st + ", cum:" + isCumInside)
+		_bf_state_prv = st
+	endif
 
 	bool showOvulation = (st == 1 || st == 2)
 	bool showCumInflation = (st < 4 && isCumInside)
@@ -363,8 +383,18 @@ Function handleBeeingFemale(iWant_Status_Bars iBars)
 	endif
 
 EndFunction
+int _fm3_actorIndex_prv = -2
+
 Function handleFertilityMode3(iWant_Status_Bars iBars)
 	int actorIndex = getFMActorIndex(_FMStorage,PlayerRef)
+	if actorIndex != _fm3_actorIndex_prv
+		if actorIndex == -1
+			WriteLog("ModulePregnancy: FM3 player not in TrackedActors, releasing icons", 1)
+		else
+			WriteLog("ModulePregnancy: FM3 player tracked at index " + actorIndex)
+		endif
+		_fm3_actorIndex_prv = actorIndex
+	endif
 	if (actorIndex == -1)
 		iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)
 		iBars.releaseIcon(slwGetModName(),Pregnancy_Trimester1)
@@ -459,10 +489,16 @@ Function handleCOF(iWant_Status_Bars iBars)
 
 EndFunction
 
+int _hp_rank_prv = -1
+
 ;Hentai pregnancy LE/SE
 	;You can check pregnancy through "HentaiPregnantFaction" its ranks are: 1- actor is cuminflated 2- actor is cuminflated and will be pregnant 3- actor is pregnant
 Function handleHentaiPregnancy(iWant_Status_Bars iBars)
 	int _HentaiPregnantFactionRank = PlayerRef.GetFactionRank(_HentaiPregnantFaction)
+	if _HentaiPregnantFactionRank != _hp_rank_prv
+		WriteLog("ModulePregnancy: HP faction rank changed " + _hp_rank_prv + " -> " + _HentaiPregnantFactionRank)
+		_hp_rank_prv = _HentaiPregnantFactionRank
+	endif
 	if _HentaiPregnantFactionRank == 1 
 			_loadCumInflationIcon(iBars)
 			iBars.releaseIcon(slwGetModName(),Pregnancy_Fetus)

@@ -8,4 +8,5 @@ Event onPlayerLoadGame()
 	slw_log.WriteLog("System_alias: Game reload event")
 	config.moduleSetup()
 	config.widget_controller.startUpdates()
+	slw_log.WriteLog("System_alias: startup complete, updates started")
 endEvent

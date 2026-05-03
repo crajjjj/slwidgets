@@ -28,6 +28,11 @@ EndEvent
 Event OniWantStatusBarsReady(String eventName, String strArg, Float numArg, Form sender)
 	If eventName == STATUS_BARS_EVENT_NAME
 		iBars = sender As iWant_Status_Bars
+		if iBars
+			WriteLog("WidgetController: iBars ready")
+		else
+			WriteLog("WidgetController: iBars cast failed from sender", 2)
+		endif
 	EndIf
 EndEvent
 
