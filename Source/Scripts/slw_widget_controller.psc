@@ -19,6 +19,7 @@ EndFunction
 
 ; Assumed lifecycle: menu OnInit() -> OniWantStatusBarsReady......mcm enable -> setup() (Modules initialisation) -> UpdateIcons() -> ||controller_initialised|| -> UpdateIconStateStatus(in a loop)
 Event OnInit()
+	slw_log.InitLog()
 	RegisterForModEvent(STATUS_BARS_EVENT_NAME, "OniWantStatusBarsReady")
 	controller_initialised = true
 EndEvent

@@ -3,13 +3,17 @@ Scriptname slw_log Hidden
 
 Import Debug
 
-Function WriteLog(String asMessage, Int aiPriority = 0) Global
+Function InitLog() Global
 	String asModName = "SLWidgets"
 	Utility.SetINIBool("bEnableTrace:Papyrus", true)
 	if OpenUserLog(asModName)
 		Trace(asModName + " Debugging Started.")
 		TraceUser(asModName,"[---"+ asModName +" DEBUG LOG STARTED---]")
 	endif
+EndFunction
+
+Function WriteLog(String asMessage, Int aiPriority = 0) Global
+	String asModName = "SLWidgets"
 	String sPrefix
 	if aiPriority == 2
 		sPrefix = "(!ERROR!) "
@@ -20,7 +24,7 @@ Function WriteLog(String asMessage, Int aiPriority = 0) Global
 	endif
 
 	asMessage = sPrefix + asMessage
-	
+
 	TraceUser(asModName, asMessage, aiPriority)
 EndFunction
 
