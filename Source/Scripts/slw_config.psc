@@ -250,34 +250,45 @@ Function ApplyIconColors(String iconKey, Int[] r, Int[] g, Int[] b, Int[] a)
 	Int jB = JValue.solveObj(jIcon, ".b")
 	Int jA = JValue.solveObj(jIcon, ".a")
 	Int i = 0
-	Int v = -1
-	While i < r.Length
-		If jR
-			v = JArray.getInt(jR, i, -1)
-			If v >= 0
-				r[i] = v
+	If jR
+		Int[] pR = JArray.asIntArray(jR)
+		While i < r.Length && i < pR.Length
+			If pR[i] >= 0
+				r[i] = pR[i]
 			EndIf
-		EndIf
-		If jG
-			v = JArray.getInt(jG, i, -1)
-			If v >= 0
-				g[i] = v
+			i = i + 1
+		EndWhile
+	EndIf
+	i = 0
+	If jG
+		Int[] pG = JArray.asIntArray(jG)
+		While i < g.Length && i < pG.Length
+			If pG[i] >= 0
+				g[i] = pG[i]
 			EndIf
-		EndIf
-		If jB
-			v = JArray.getInt(jB, i, -1)
-			If v >= 0
-				b[i] = v
+			i = i + 1
+		EndWhile
+	EndIf
+	i = 0
+	If jB
+		Int[] pB = JArray.asIntArray(jB)
+		While i < b.Length && i < pB.Length
+			If pB[i] >= 0
+				b[i] = pB[i]
 			EndIf
-		EndIf
-		If jA
-			v = JArray.getInt(jA, i, -1)
-			If v >= 0
-				a[i] = v
+			i = i + 1
+		EndWhile
+	EndIf
+	i = 0
+	If jA
+		Int[] pA = JArray.asIntArray(jA)
+		While i < a.Length && i < pA.Length
+			If pA[i] >= 0
+				a[i] = pA[i]
 			EndIf
-		EndIf
-		i = i + 1
-	EndWhile
+			i = i + 1
+		EndWhile
+	EndIf
 EndFunction
 
 String[] Function getPresetNames()
