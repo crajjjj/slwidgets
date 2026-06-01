@@ -8,6 +8,8 @@ Skyrim SE mod. Scripts are written in **Papyrus** (`.psc`), compiled to `.pex`.
 
 ## Build
 
+The user builds manually — do **not** attempt to invoke the compiler or build tools.
+
 ```sh
 # Papyrus scripts (Skyrim SE compiler)
 # Project file: skyrimse.ppj

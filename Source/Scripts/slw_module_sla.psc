@@ -128,8 +128,8 @@ Function _loadArousedIcons(iWant_Status_Bars iBars)
 	a[4] = 100
 	; Completely Aroused
 	s[5] =  iconbasepath + "5.dds"
-	d[5] = "Completely Aroused" 
-	r[5] = 255 
+	d[5] = "Completely Aroused"
+	r[5] = 255
 	g[5] = 84
 	b[5] = 167
 	a[5] = 100
@@ -154,8 +154,9 @@ Function _loadArousedIcons(iWant_Status_Bars iBars)
 	g[8] = 0
 	b[8] = 0
 	a[8] = 100
-	
-	; This will fail silently if the icon is already loaded 
+
+	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(AROUSAL_STATE, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), AROUSAL_STATE, d, s, r, g, b, a)
 
 EndFunction
@@ -205,8 +206,8 @@ Function _loadExposureIcons(iWant_Status_Bars iBars)
 	a[4] = 100
 	; Completely Exposed
 	s[5] = iconbasepath + "5.dds"
-	d[5] = "Completely Exposed" ; 
-	r[5] = 115 
+	d[5] = "Completely Exposed" ;
+	r[5] = 115
 	g[5] = 80
 	b[5] = 255
 	a[5] = 100
@@ -224,15 +225,16 @@ Function _loadExposureIcons(iWant_Status_Bars iBars)
 	g[7] = 51
 	b[7] = 255
 	a[7] = 100
-	; Mega Exposed 
+	; Mega Exposed
 	s[8] = iconbasepath + "8.dds"
 	d[8] = "Mega Exposed"
 	r[8] = 51
 	g[8] = 0
 	b[8] = 255
 	a[8] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(EXPOSURE_STATE, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), EXPOSURE_STATE, d, s, r, g, b, a)
 
 EndFunction

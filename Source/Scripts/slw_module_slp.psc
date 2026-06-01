@@ -99,6 +99,7 @@ Function _loadSpiderIcon(iWant_Status_Bars iBars)
 	a[0] = 100
 	
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(Parasites_SpiderEggs, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), Parasites_SpiderEggs, d, s, r, g, b, a)
 EndFunction	
 
@@ -119,6 +120,7 @@ Function _loadChaurusWormVagIcon(iWant_Status_Bars iBars)
 	a[0] = 100
 	
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(Parasites_ChaurusWormVag, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), Parasites_ChaurusWormVag, d, s, r, g, b, a)
 EndFunction	
 
@@ -139,6 +141,7 @@ Function _loadChaurusWormIcon(iWant_Status_Bars iBars)
 	a[0] = 100
 	
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(Parasites_ChaurusWorm, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), Parasites_ChaurusWorm, d, s, r, g, b, a)
 EndFunction	
 

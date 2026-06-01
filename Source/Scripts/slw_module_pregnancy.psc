@@ -533,8 +533,9 @@ Function _loadBasicIcon(iWant_Status_Bars iBars)
 	g[0] = 255
 	b[0] = 255
 	a[0] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(Pregnancy_Basic, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), Pregnancy_Basic, d, s, r, g, b, a)
 EndFunction
 
@@ -552,8 +553,9 @@ Function _loadTrimester1Icon(iWant_Status_Bars iBars)
 	g[0] = 255
 	b[0] = 255
 	a[0] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(Pregnancy_Trimester1, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), Pregnancy_Trimester1, d, s, r, g, b, a)
 EndFunction	
 
@@ -571,8 +573,9 @@ Function _loadTrimester2Icon(iWant_Status_Bars iBars)
 	g[0] = 255
 	b[0] = 255
 	a[0] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(Pregnancy_Trimester2, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), Pregnancy_Trimester2, d, s, r, g, b, a)
 EndFunction
 
@@ -590,8 +593,9 @@ Function _loadTrimester3Icon(iWant_Status_Bars iBars)
 	g[0] = 255
 	b[0] = 255
 	a[0] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(Pregnancy_Trimester3, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), Pregnancy_Trimester3, d, s, r, g, b, a)
 EndFunction	
 
@@ -609,8 +613,9 @@ Function _loadEggsIcon(iWant_Status_Bars iBars)
 	g[0] = 255
 	b[0] = 255
 	a[0] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(Pregnancy_Eggs, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), Pregnancy_Eggs, d, s, r, g, b, a)
 EndFunction	
 
@@ -629,8 +634,9 @@ Function _loadFetusIcon(iWant_Status_Bars iBars)
 	g[0] = 255
 	b[0] = 255
 	a[0] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(Pregnancy_Fetus, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), Pregnancy_Fetus, d, s, r, g, b, a)
 EndFunction	
 
@@ -648,8 +654,9 @@ Function _loadChaurusEggsIcon(iWant_Status_Bars iBars)
 	g[0] = 255
 	b[0] = 255
 	a[0] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(Pregnancy_Chaurus_Eggs, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), Pregnancy_Chaurus_Eggs, d, s, r, g, b, a)
 EndFunction	
 
@@ -667,8 +674,9 @@ Function _loadSpiderEggsIcon(iWant_Status_Bars iBars)
 	g[0] = 255
 	b[0] = 255
 	a[0] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(Pregnancy_Spider_Eggs, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), Pregnancy_Spider_Eggs, d, s, r, g, b, a)
 EndFunction	
 
@@ -686,8 +694,9 @@ Function _loadSphereIcon(iWant_Status_Bars iBars)
 	g[0] = 255
 	b[0] = 255
 	a[0] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(Pregnancy_Dwemer_Spheres, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), Pregnancy_Dwemer_Spheres, d, s, r, g, b, a)
 EndFunction	
 
@@ -711,8 +720,9 @@ Function _loadCumInflationIcon(iWant_Status_Bars iBars)
 	g[0] = 255
 	b[0] = 255
 	a[0] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(Pregnancy_CumInflation, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), Pregnancy_CumInflation, d, s, r, g, b, a)
 EndFunction	
 
@@ -730,8 +740,9 @@ Function _loadOvulationIcon(iWant_Status_Bars iBars)
 	g[0] = 255
 	b[0] = 255
 	a[0] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(Pregnancy_Ovulation, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), Pregnancy_Ovulation, d, s, r, g, b, a)
 EndFunction
 
@@ -763,49 +774,43 @@ Function _loadGemsIcon(iWant_Status_Bars iBars ,Float GemPercent)
 
 	int i = 0
 	While (i < 6)
+		a[i] = 100
 		if GemPercent < 0.1
 			r[i] = 255
 			g[i] = 255
 			b[i] = 255
-			a[i] = 100
 		Elseif GemPercent < 0.2
 			r[i] = 255
 			g[i] = 192
 			b[i] = 224
-			a[i] = 100
 		Elseif GemPercent < 0.3
 			r[i] = 255
 			g[i] = 171
 			b[i] = 212
-			a[i] = 100
 		Elseif GemPercent < 0.4
 			r[i] = 255
 			g[i] = 140
 			b[i] = 202
-			a[i] = 100
 		Elseif GemPercent < 0.5
 			r[i] = 255
 			g[i] = 112
 			b[i] = 192
-			a[i] = 100
 		Elseif GemPercent < 0.6
 			r[i] = 255
 			g[i] = 84
 			b[i] = 167
-			a[i] = 100
 		Elseif GemPercent < 1.0
 			r[i] = 255
 			g[i] = 8
 			b[i] = 127
-			a[i] = 100
 		Else
 			r[i] = 255
 			g[i] = 0
 			b[i] = 0
-			a[i] = 100
 		endif
 		i += 1
 	EndWhile
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(Pregnancy_Gems, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), Pregnancy_Gems, d, s, r, g, b, a)
 EndFunction

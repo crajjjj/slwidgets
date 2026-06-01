@@ -138,8 +138,8 @@ Function _loadApropos2Oral(iWant_Status_Bars iBars)
 	a[4] = 100
 	; Completely Damaged
 	s[5] = iconbasepath + "5.dds"
-	d[5] = "Completely Damaged" ; 
-	r[5] = 255 
+	d[5] = "Completely Damaged"
+	r[5] = 255
 	g[5] = 85
 	b[5] = 85
 	a[5] = 100
@@ -157,16 +157,16 @@ Function _loadApropos2Oral(iWant_Status_Bars iBars)
 	g[7] = 28
 	b[7] = 28
 	a[7] = 100
-	; Mega Damaged 
+	; Mega Damaged
 	s[8] = iconbasepath + "8.dds"
 	d[8] = "Mega Damaged"
 	r[8] = 255
 	g[8] = 0
 	b[8] = 0
 	a[8] = 100
-	
 
-	 ; This will fail silently if the icon is already loaded
+	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(ORAL_STATE, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), ORAL_STATE, d, s, r, g, b, a)
 EndFunction
 
@@ -186,7 +186,7 @@ Function _loadApropos2Anal(iWant_Status_Bars iBars)
 	g[0] = 255
 	b[0] = 255
 	a[0] = 33
-	; Slightly Exposed
+	; Slightly Damaged
 	s[1] = iconbasepath + "1.dds"
 	d[1] = "Slightly Damaged"
 	r[1] = 255
@@ -216,8 +216,8 @@ Function _loadApropos2Anal(iWant_Status_Bars iBars)
 	a[4] = 100
 	; Completely Damaged
 	s[5] = iconbasepath + "5.dds"
-	d[5] = "Completely Damaged" ; 
-	r[5] = 255 
+	d[5] = "Completely Damaged"
+	r[5] = 255
 	g[5] = 85
 	b[5] = 85
 	a[5] = 100
@@ -235,16 +235,16 @@ Function _loadApropos2Anal(iWant_Status_Bars iBars)
 	g[7] = 28
 	b[7] = 28
 	a[7] = 100
-	; Mega Damaged 
+	; Mega Damaged
 	s[8] = iconbasepath + "8.dds"
 	d[8] = "Mega Damaged"
 	r[8] = 255
 	g[8] = 0
 	b[8] = 0
 	a[8] = 100
-	
 
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(ANAL_STATE, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), ANAL_STATE, d, s, r, g, b, a)
 
 EndFunction
@@ -257,7 +257,7 @@ Function _loadApropos2Vag(iWant_Status_Bars iBars)
 	Int[] b = new Int[9]
 	Int[] a = new Int[9]
 	string iconbasepath = "widgets/iwant/widgets/library/apropos2/vaginal/vag"
-   ; Vaginal
+	; Vaginal
 	; Not Damaged
 	s[0] = iconbasepath + "0.dds"
 	d[0] = "Normal"
@@ -265,7 +265,7 @@ Function _loadApropos2Vag(iWant_Status_Bars iBars)
 	g[0] = 255
 	b[0] = 255
 	a[0] = 33
-	; Slightly Exposed
+	; Slightly Damaged
 	s[1] = iconbasepath + "1.dds"
 	d[1] = "Slightly Damaged"
 	r[1] = 255
@@ -295,8 +295,8 @@ Function _loadApropos2Vag(iWant_Status_Bars iBars)
 	a[4] = 100
 	; Completely Damaged
 	s[5] = iconbasepath + "5.dds"
-	d[5] = "Completely Damaged" ; 
-	r[5] = 255 
+	d[5] = "Completely Damaged"
+	r[5] = 255
 	g[5] = 85
 	b[5] = 85
 	a[5] = 100
@@ -314,7 +314,7 @@ Function _loadApropos2Vag(iWant_Status_Bars iBars)
 	g[7] = 28
 	b[7] = 28
 	a[7] = 100
-	; Mega Damaged 
+	; Mega Damaged
 	s[8] = iconbasepath + "8.dds"
 	d[8] = "Mega Damaged"
 	r[8] = 255
@@ -323,6 +323,7 @@ Function _loadApropos2Vag(iWant_Status_Bars iBars)
 	a[8] = 100
 
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(VAG_STATE, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), VAG_STATE, d, s, r, g, b, a)
 EndFunction
 

@@ -83,8 +83,9 @@ Function _loadDefeatRapedIcon(iWant_Status_Bars iBars)
 	g[0] = 255
 	b[0] = 255
 	a[0] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(DEFEAT_RAPED_STATE, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), DEFEAT_RAPED_STATE, d, s, r, g, b, a)
 EndFunction	
 

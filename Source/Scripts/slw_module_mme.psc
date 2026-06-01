@@ -165,7 +165,7 @@ Function _loadMilkIcons(iWant_Status_Bars iBars)
 	Int[] b = new Int[9]
 	Int[] a = new Int[9]
 	string iconbasepath = "widgets/iwant/widgets/library/mme/milk/milk"
-	string status = " Filled" 
+	string status = " Filled"
 	; Empty
 	s[0] = iconbasepath + "0.dds"
 	d[0] = "Empty"
@@ -204,7 +204,7 @@ Function _loadMilkIcons(iWant_Status_Bars iBars)
 	; Completely Filled
 	s[5] = iconbasepath + "5.dds"
 	d[5] = "Completely" + status
-	r[5] = 253 
+	r[5] = 253
 	g[5] = 255
 	b[5] = 245
 	a[5] = 100
@@ -229,8 +229,9 @@ Function _loadMilkIcons(iWant_Status_Bars iBars)
 	g[8] = 255
 	b[8] = 245
 	a[8] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(MILK_STATE, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), MILK_STATE, d, s, r, g, b, a)
 EndFunction
 
@@ -242,7 +243,7 @@ Function _loadLactacidIcons(iWant_Status_Bars iBars)
 	Int[] b = new Int[9]
 	Int[] a = new Int[9]
 	string iconbasepath = "widgets/iwant/widgets/library/mme/lactacid/lact"
-	string status = " Filled" 
+	string status = " Filled"
 	; Empty
 	s[0] = iconbasepath + "0.dds"
 	d[0] = "Empty"
@@ -281,7 +282,7 @@ Function _loadLactacidIcons(iWant_Status_Bars iBars)
 	; Completely Filled
 	s[5] = iconbasepath + "5.dds"
 	d[5] = "Completely" + status
-	r[5] = 255 
+	r[5] = 255
 	g[5] = 255
 	b[5] = 255
 	a[5] = 100
@@ -306,9 +307,10 @@ Function _loadLactacidIcons(iWant_Status_Bars iBars)
 	g[8] = 255
 	b[8] = 255
 	a[8] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(LACTACID_STATE, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), LACTACID_STATE, d, s, r, g, b, a)
 
-EndFunction	
+EndFunction
 

@@ -167,7 +167,7 @@ Function _loadPeeIcons(iWant_Status_Bars iBars)
 	Int[] b = new Int[5]
 	Int[] a = new Int[5]
 	string iconbasepath = "widgets/iwant/widgets/library/paf/pee/pee"
-	string status = " Filled" 
+	string status = " Filled"
 	; Empty
 	s[0] = iconbasepath + "0.dds"
 	d[0] = "Empty"
@@ -203,8 +203,9 @@ Function _loadPeeIcons(iWant_Status_Bars iBars)
 	g[4] = 183
 	b[4] = 83
 	a[4] = 100
-	
-	; This will fail silently if the icon is already loaded 
+
+	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(PEE_STATE, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), PEE_STATE, d, s, r, g, b, a)
 
 EndFunction
@@ -217,14 +218,14 @@ Function _loadPooIcons(iWant_Status_Bars iBars)
 	Int[] b = new Int[5]
 	Int[] a = new Int[5]
 	string iconbasepath = "widgets/iwant/widgets/library/paf/poop/poop"
-	string status = " Filled" 
+	string status = " Filled"
 	; Empty
 	s[0] = iconbasepath + "0.dds"
 	d[0] = "Empty"
 	r[0] = 100
 	g[0] = 70
 	b[0] = 36
-	a[0] = 50
+	a[0] = 33
 	; Slightly Filled
 	s[1] = iconbasepath + "1.dds"
 	d[1] = "Slightly" + status
@@ -253,8 +254,9 @@ Function _loadPooIcons(iWant_Status_Bars iBars)
 	g[4] = 70
 	b[4] = 36
 	a[4] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(POOP_STATE, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), POOP_STATE, d, s, r, g, b, a)
 
 EndFunction

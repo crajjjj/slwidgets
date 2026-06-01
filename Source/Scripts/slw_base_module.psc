@@ -12,6 +12,11 @@ Function moduleReset()
 EndFunction
 
 ; @interface
+Bool Function isInterfaceActive()
+	Return False
+EndFunction
+
+; @interface
 Event onWidgetReload(iWant_Status_Bars iBars)
 	WriteLog("slw_base_module UIUpdate() not overriden", 2)
 EndEvent

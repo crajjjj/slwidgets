@@ -22,6 +22,7 @@ Event OnInit()
 	slw_log.InitLog()
 	RegisterForModEvent(STATUS_BARS_EVENT_NAME, "OniWantStatusBarsReady")
 	controller_initialised = true
+	config.loadPreset(config.activePreset)
 EndEvent
 
 ;init ibars
@@ -30,6 +31,7 @@ Event OniWantStatusBarsReady(String eventName, String strArg, Float numArg, Form
 		iBars = sender As iWant_Status_Bars
 		if iBars
 			WriteLog("WidgetController: iBars ready")
+			config.loadPreset(config.activePreset)
 		else
 			WriteLog("WidgetController: iBars cast failed from sender", 2)
 		endif
@@ -57,6 +59,9 @@ EndFunction
 ;Main update function
 Event OnUpdate()
 	if config.slw_stopped
+		return
+	endif
+	if !iBars || !iBars.isReady()
 		return
 	endif
 	config.moduleWidgetStateUpdate(iBars)
@@ -96,8 +101,7 @@ Function loadEmptyIcon()
 	
 	; This will fail silently if the icon is already loaded
 	int res = iBars.loadIcon(slwGetModName(), EMPTY_STATE + _emptyIconIndex, d, s, r, g, b, a)
-	; returns -1 on no spots available
-	if res != -1
+	if res >= 0
 		_emptyIconIndex += 1
 	endif
 	

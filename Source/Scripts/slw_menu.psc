@@ -8,6 +8,10 @@ slw_widget_controller Property widget_controller auto
 
 int _update_interval_slider
 int _sla_arousal_Toggle
+
+String[] _presetNames
+Int _presetCount = 0
+Int _presetIndex = 0
 int _sla_exposure_Toggle
 int _apropos_two_wt_Toggle
 int _fhu_cum_Toggle
@@ -64,13 +68,28 @@ event OnVersionUpdate(int a_version)
 endEvent
 
 Function General()
-    SetCursorFillMode(TOP_TO_BOTTOM)
+	SetCursorFillMode(TOP_TO_BOTTOM)
 	AddHeaderOption("$SLW_General")
 	int enableflag = _getFlag(widget_controller.isLoaded())
 	AddTextOptionST("TOGGLE_MOD_STATE","$SLW_Mod_Toggle", StringIfElse(config.slw_stopped , "$SLW_Enable", "$SLW_Disable"), enableflag)
 	Int sliderFlag = _getFlag()
 	_update_interval_slider = AddSliderOption("$SLW_Update_Interval", config.updateInterval, "{0}", sliderFlag)
-	
+
+	_presetNames = config.getPresetNames()
+	_presetCount = 0
+	While _presetCount < _presetNames.Length && _presetNames[_presetCount] != ""
+		_presetCount = _presetCount + 1
+	EndWhile
+	_presetIndex = 0
+	Int pi = 0
+	While pi < _presetCount
+		If _presetNames[pi] == config.activePreset
+			_presetIndex = pi
+		EndIf
+		pi = pi + 1
+	EndWhile
+	AddTextOptionST("CYCLE_PRESET_STATE", "$SLW_Color_Preset", config.activePreset, sliderFlag)
+	AddTextOptionST("RELOAD_COLORS_STATE", "$SLW_Reload_Colors", "$SLW_Reload_Colors_Label", sliderFlag)
 EndFunction
 
 Function Toggles()
@@ -192,48 +211,63 @@ Event onOptionHighlight(int mcm_option)
 EndEvent
 
 Event onOptionSelect(int mcm_option)
+	Bool _v = False
 	if(mcm_option == _sla_arousal_Toggle)
-		config.module_sla_arousal = !config.module_sla_arousal
-		setToggleOptionValue(mcm_option, config.module_sla_arousal) 
+		_v = !config.module_sla_arousal
+		config.module_sla_arousal = _v
+		setToggleOptionValue(mcm_option, _v) 
 	elseIf(mcm_option == _sla_exposure_Toggle)
-		config.module_sla_exposure = !config.module_sla_exposure
-		setToggleOptionValue(mcm_option, config.module_sla_exposure)
+		_v = !config.module_sla_exposure
+		config.module_sla_exposure = _v
+		setToggleOptionValue(mcm_option, _v)
 	elseIf(mcm_option == _apropos_two_wt_Toggle)
-		config.module_apropos_two_wt = !config.module_apropos_two_wt
-		setToggleOptionValue(mcm_option, config.module_apropos_two_wt)
+		_v = !config.module_apropos_two_wt
+		config.module_apropos_two_wt = _v
+		setToggleOptionValue(mcm_option, _v)
 	elseIf(mcm_option == _fhu_cum_Toggle)
-		config.module_fhu_cum = !config.module_fhu_cum
-		setToggleOptionValue(mcm_option, config.module_fhu_cum)
+		_v = !config.module_fhu_cum
+		config.module_fhu_cum = _v
+		setToggleOptionValue(mcm_option, _v)
 	elseIf(mcm_option == _fhu_cum_Vaginal_Toggle)
-		config.module_fhu_cum_vaginal = !config.module_fhu_cum_vaginal
-		setToggleOptionValue(mcm_option, config.module_fhu_cum_vaginal)
+		_v = !config.module_fhu_cum_vaginal
+		config.module_fhu_cum_vaginal = _v
+		setToggleOptionValue(mcm_option, _v)
 	elseIf(mcm_option == _fhu_cum_Anal_Toggle)
-		config.module_fhu_cum_anal = !config.module_fhu_cum_anal
-		setToggleOptionValue(mcm_option, config.module_fhu_cum_anal)
+		_v = !config.module_fhu_cum_anal
+		config.module_fhu_cum_anal = _v
+		setToggleOptionValue(mcm_option, _v)
 	elseIf(mcm_option == _fhu_cum_Oral_Toggle)
-		config.module_fhu_cum_oral = !config.module_fhu_cum_oral
-		setToggleOptionValue(mcm_option, config.module_fhu_cum_oral)
+		_v = !config.module_fhu_cum_oral
+		config.module_fhu_cum_oral = _v
+		setToggleOptionValue(mcm_option, _v)
 	elseIf(mcm_option == _mme_milk_Toggle)
-		config.module_mme_milk = !config.module_mme_milk
-		setToggleOptionValue(mcm_option, config.module_mme_milk)
+		_v = !config.module_mme_milk
+		config.module_mme_milk = _v
+		setToggleOptionValue(mcm_option, _v)
 	elseIf(mcm_option == _mme_lactacid_Toggle)
-		config.module_mme_lactacid = !config.module_mme_lactacid
-		setToggleOptionValue(mcm_option, config.module_mme_lactacid)
+		_v = !config.module_mme_lactacid
+		config.module_mme_lactacid = _v
+		setToggleOptionValue(mcm_option, _v)
 	elseIf(mcm_option == _paf_pee_Toggle)
-		config.module_paf_pee = !config.module_paf_pee
-		setToggleOptionValue(mcm_option, config.module_paf_pee)
+		_v = !config.module_paf_pee
+		config.module_paf_pee = _v
+		setToggleOptionValue(mcm_option, _v)
 	elseIf(mcm_option == _paf_poo_Toggle)
-		config.module_paf_poo = !config.module_paf_poo
-		setToggleOptionValue(mcm_option, config.module_paf_poo)
+		_v = !config.module_paf_poo
+		config.module_paf_poo = _v
+		setToggleOptionValue(mcm_option, _v)
 	elseIf(mcm_option == _parasites_mod_Toggle)
-		config.module_parasites_enabled = !config.module_parasites_enabled
-		setToggleOptionValue(mcm_option, config.module_parasites_enabled)
+		_v = !config.module_parasites_enabled
+		config.module_parasites_enabled = _v
+		setToggleOptionValue(mcm_option, _v)
 	elseIf(mcm_option == _pregnancy_mod_Toggle)
-		config.module_pregnancy_enabled = !config.module_pregnancy_enabled
-		setToggleOptionValue(mcm_option, config.module_pregnancy_enabled)
+		_v = !config.module_pregnancy_enabled
+		config.module_pregnancy_enabled = _v
+		setToggleOptionValue(mcm_option, _v)
 	elseIf(mcm_option == _defeat_mod_Toggle)
-		config.module_defeat_enabled = !config.module_defeat_enabled
-		setToggleOptionValue(mcm_option, config.module_defeat_enabled)
+		_v = !config.module_defeat_enabled
+		config.module_defeat_enabled = _v
+		setToggleOptionValue(mcm_option, _v)
 	endIf
 EndEvent
 
@@ -248,7 +282,7 @@ EndEvent
 
 Event OnOptionSliderAccept(Int mcm_option, Float Value)
 	If (mcm_option == _update_interval_slider)
-		config.updateInterval=Value as Int
+		config.updateInterval = Value as Int
 		SetSliderOptionValue(mcm_option, Value, "{0}")
 	EndIf
 EndEvent
@@ -348,7 +382,6 @@ state LOAD_USER_SETTINGS_STATE
 				config.moduleReset()
 				config.moduleSetup()
 				Utility.WaitMenuMode(1)
-				widget_controller.reloadWidgets()
 				widget_controller.startUpdates()
 				Utility.WaitMenuMode(2)
 				ShowMessage("$SLW_Settings_Loaded_Status", false, "$Accept")
@@ -367,10 +400,48 @@ state LOAD_USER_SETTINGS_STATE
 	endFunction
 endState
 
+State CYCLE_PRESET_STATE
+	Event OnSelectST()
+		If _presetCount < 1
+			Return
+		EndIf
+		SetOptionFlagsST(OPTION_FLAG_DISABLED)
+		_presetIndex = _presetIndex + 1
+		If _presetIndex >= _presetCount
+			_presetIndex = 0
+		EndIf
+		config.activePreset = _presetNames[_presetIndex]
+		config.loadPreset(config.activePreset)
+		config.SaveUserSettingsPapyrus()
+		widget_controller.reloadWidgets()
+		SetTextOptionValueST(config.activePreset)
+		SetOptionFlagsST(OPTION_FLAG_NONE)
+	EndEvent
+
+	Event OnHighlightST()
+		SetInfoText("$SLW_Color_Preset_Info")
+	EndEvent
+EndState
+
+State RELOAD_COLORS_STATE
+	Event OnSelectST()
+		SetOptionFlagsST(OPTION_FLAG_DISABLED)
+		SetTextOptionValueST("$SLW_Working")
+		config.loadPreset(config.activePreset)
+		widget_controller.reloadWidgets()
+		SetTextOptionValueST("$SLW_Reload_Colors_Label")
+		SetOptionFlagsST(OPTION_FLAG_NONE)
+	EndEvent
+
+	Event OnHighlightST()
+		SetInfoText("$SLW_Reload_Colors_Info")
+	EndEvent
+EndState
+
 int Function _getFlag(Bool cond = true)
-	If  !cond 	
-   		return OPTION_FLAG_DISABLED  
+	If  !cond
+   		return OPTION_FLAG_DISABLED
 	Else
    		return OPTION_FLAG_NONE
-	EndIf  
+	EndIf
 EndFunction

@@ -120,7 +120,6 @@ Function _loadCumIcons(iWant_Status_Bars iBars)
 	Int[] g = new Int[9]
 	Int[] b = new Int[9]
 	Int[] a = new Int[9]
-
 	string iconbasepath = "widgets/iwant/widgets/library/fhu/total/cum"
 	; Empty
 	s[0] = iconbasepath + "0.dds"
@@ -159,8 +158,8 @@ Function _loadCumIcons(iWant_Status_Bars iBars)
 	a[4] = 100
 	; Completely Filled
 	s[5] = iconbasepath + "5.dds"
-	d[5] = "Completely Filled" 
-	r[5] = 251 
+	d[5] = "Completely Filled"
+	r[5] = 251
 	g[5] = 245
 	b[5] = 233
 	a[5] = 100
@@ -185,8 +184,9 @@ Function _loadCumIcons(iWant_Status_Bars iBars)
 	g[8] = 245
 	b[8] = 233
 	a[8] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(CUM_STATE, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), CUM_STATE, d, s, r, g, b, a)
 
 EndFunction
@@ -236,8 +236,8 @@ Function _loadCumAnalIcons(iWant_Status_Bars iBars)
 	a[4] = 100
 	; Completely Filled
 	s[5] = iconbasepath + "5.dds"
-	d[5] = "Completely Filled" 
-	r[5] = 251 
+	d[5] = "Completely Filled"
+	r[5] = 251
 	g[5] = 245
 	b[5] = 233
 	a[5] = 100
@@ -262,8 +262,9 @@ Function _loadCumAnalIcons(iWant_Status_Bars iBars)
 	g[8] = 245
 	b[8] = 233
 	a[8] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(CUM_ANAL_STATE, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), CUM_ANAL_STATE, d, s, r, g, b, a)
 
 EndFunction
@@ -313,7 +314,7 @@ Function _loadCumVaginalIcons(iWant_Status_Bars iBars)
 	a[4] = 100
 	; Completely Filled
 	s[5] = iconbasepath + "5.dds"
-	d[5] = "Completely Filled" 
+	d[5] = "Completely Filled"
 	r[5] = 251
 	g[5] = 245
 	b[5] = 233
@@ -339,8 +340,9 @@ Function _loadCumVaginalIcons(iWant_Status_Bars iBars)
 	g[8] = 245
 	b[8] = 233
 	a[8] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(CUM_VAGINAL_STATE, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), CUM_VAGINAL_STATE, d, s, r, g, b, a)
 
 EndFunction
@@ -390,7 +392,7 @@ Function _loadCumOralIcons(iWant_Status_Bars iBars)
 	a[4] = 100
 	; Completely Filled
 	s[5] = iconbasepath + "5.dds"
-	d[5] = "Completely Filled" 
+	d[5] = "Completely Filled"
 	r[5] = 251
 	g[5] = 245
 	b[5] = 233
@@ -416,8 +418,9 @@ Function _loadCumOralIcons(iWant_Status_Bars iBars)
 	g[8] = 245
 	b[8] = 233
 	a[8] = 100
-	
+
 	; This will fail silently if the icon is already loaded
+	config.ApplyIconColors(CUM_ORAL_STATE, r, g, b, a)
 	iBars.loadIcon(slwGetModName(), CUM_ORAL_STATE, d, s, r, g, b, a)
 
 EndFunction

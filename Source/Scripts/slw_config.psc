@@ -15,8 +15,11 @@ slw_module_sldefeat property module_defeat auto
 
 
 Int property updateInterval = 5 auto hidden
+String property activePreset = "Default" auto hidden
 Bool property slw_stopped = True auto hidden
 String property slw_settings_path = "..\\SlWidgets\\UserSettings" auto hidden
+
+Int _iconColors = 0
 
 Bool property module_sla_arousal = True auto hidden
 Bool property module_sla_exposure = True auto hidden
@@ -176,6 +179,7 @@ Bool function LoadUserSettingsPapyrus()
 	endIf
 	slw_stopped = false
 	updateInterval = jsonutil.GetPathIntValue(slw_settings_path, "updateInterval", updateInterval)
+	activePreset = jsonutil.GetPathStringValue(slw_settings_path, "activePreset", activePreset)
 	module_sla_arousal = jsonutil.GetPathBoolValue(slw_settings_path, "module_sla_arousal", module_sla_arousal)
 	module_sla_exposure = jsonutil.GetPathBoolValue(slw_settings_path, "module_sla_exposure", module_sla_exposure)
 	module_apropos_two_wt = jsonutil.GetPathBoolValue(slw_settings_path, "module_apropos_two_wt", module_apropos_two_wt)
@@ -196,6 +200,7 @@ endFunction
 Bool function SaveUserSettingsPapyrus()
 	
 	jsonutil.SetPathIntValue(slw_settings_path, "updateInterval", updateInterval as Int)
+	jsonutil.SetPathStringValue(slw_settings_path, "activePreset", activePreset)
 	jsonutil.SetPathIntValue(slw_settings_path, "module_sla_arousal", module_sla_arousal as Int)
 	jsonutil.SetPathIntValue(slw_settings_path, "module_sla_exposure", module_sla_exposure as Int)
 	jsonutil.SetPathIntValue(slw_settings_path, "module_apropos_two_wt", module_apropos_two_wt as Int)
@@ -218,5 +223,80 @@ Bool function SaveUserSettingsPapyrus()
 endFunction
 
 Bool function isOn(bool prop)
-	return !slw_stopped && prop 
+	return !slw_stopped && prop
 endFunction
+
+Function loadPreset(String presetName)
+	If _iconColors
+		JValue.release(_iconColors)
+		_iconColors = 0
+	EndIf
+	_iconColors = JValue.readFromFile("Data/SKSE/Plugins/SlWidgets/Presets/" + presetName + ".json")
+	If _iconColors
+		JValue.retain(_iconColors)
+	EndIf
+EndFunction
+
+Function ApplyIconColors(String iconKey, Int[] r, Int[] g, Int[] b, Int[] a)
+	If !_iconColors
+		Return
+	EndIf
+	Int jIcon = JValue.solveObj(_iconColors, "." + iconKey)
+	If !jIcon
+		Return
+	EndIf
+	Int jR = JValue.solveObj(jIcon, ".r")
+	Int jG = JValue.solveObj(jIcon, ".g")
+	Int jB = JValue.solveObj(jIcon, ".b")
+	Int jA = JValue.solveObj(jIcon, ".a")
+	Int i = 0
+	Int v = -1
+	While i < r.Length
+		If jR
+			v = JArray.getInt(jR, i, -1)
+			If v >= 0
+				r[i] = v
+			EndIf
+		EndIf
+		If jG
+			v = JArray.getInt(jG, i, -1)
+			If v >= 0
+				g[i] = v
+			EndIf
+		EndIf
+		If jB
+			v = JArray.getInt(jB, i, -1)
+			If v >= 0
+				b[i] = v
+			EndIf
+		EndIf
+		If jA
+			v = JArray.getInt(jA, i, -1)
+			If v >= 0
+				a[i] = v
+			EndIf
+		EndIf
+		i = i + 1
+	EndWhile
+EndFunction
+
+String[] Function getPresetNames()
+	Int jDir = JValue.readFromDirectory("Data/SKSE/Plugins/SlWidgets/Presets", "json")
+	If !jDir
+		String[] fallback = new String[1]
+		fallback[0] = "Default"
+		Return fallback
+	EndIf
+	String[] names = JMap.allKeysPArray(jDir)
+	JValue.release(jDir)
+	Int i = 0
+	While i < names.Length
+		String fn = names[i]
+		Int len = StringUtil.GetLength(fn)
+		If len > 5
+			names[i] = StringUtil.Substring(fn, 0, len - 5)
+		EndIf
+		i = i + 1
+	EndWhile
+	Return names
+EndFunction
