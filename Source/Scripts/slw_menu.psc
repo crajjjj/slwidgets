@@ -379,6 +379,7 @@ state LOAD_USER_SETTINGS_STATE
 	function OnSelectST()
 		if ShowMessage("$SLW_Load_Settings_Question", true, "$Accept", "$Cancel")
 			if config.LoadUserSettingsPapyrus()
+				config.loadPreset(config.activePreset)
 				config.moduleReset()
 				config.moduleSetup()
 				Utility.WaitMenuMode(1)
