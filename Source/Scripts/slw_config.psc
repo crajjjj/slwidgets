@@ -292,14 +292,24 @@ Function ApplyIconColors(String iconKey, Int[] r, Int[] g, Int[] b, Int[] a)
 EndFunction
 
 String[] Function getPresetNames()
-	Int jDir = JValue.readFromDirectory("Data/SKSE/Plugins/SlWidgets/Presets", "json")
+	String dir = "Data/SKSE/Plugins/SlWidgets/Presets"
+	Int jDir = JValue.readFromDirectory(dir, "json")
+	WriteLog("getPresetNames: jDir=" + jDir + " path=" + dir)
 	If !jDir
+		WriteLog("getPresetNames: directory read failed, using fallback", 2)
 		String[] fallback = new String[1]
 		fallback[0] = "Default"
 		Return fallback
 	EndIf
 	String[] names = JMap.allKeysPArray(jDir)
 	JValue.release(jDir)
+	If !names || names.Length == 0
+		WriteLog("getPresetNames: no files found, using fallback", 2)
+		String[] fallback = new String[1]
+		fallback[0] = "Default"
+		Return fallback
+	EndIf
+	WriteLog("getPresetNames: found " + names.Length + " files, first=" + names[0])
 	Int i = 0
 	While i < names.Length
 		String fn = names[i]
@@ -309,5 +319,6 @@ String[] Function getPresetNames()
 		EndIf
 		i = i + 1
 	EndWhile
+	WriteLog("getPresetNames: first name after strip=" + names[0])
 	Return names
 EndFunction
