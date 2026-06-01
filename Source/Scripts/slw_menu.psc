@@ -89,7 +89,6 @@ Function General()
 		pi = pi + 1
 	EndWhile
 	AddMenuOptionST("PRESET_MENU_STATE", "$SLW_Color_Preset", config.activePreset, sliderFlag)
-	AddTextOptionST("RELOAD_COLORS_STATE", "$SLW_Reload_Colors", "$SLW_Reload_Colors_Label", sliderFlag)
 EndFunction
 
 Function Toggles()
@@ -434,20 +433,7 @@ State PRESET_MENU_STATE
 	EndEvent
 EndState
 
-State RELOAD_COLORS_STATE
-	Event OnSelectST()
-		SetOptionFlagsST(OPTION_FLAG_DISABLED)
-		SetTextOptionValueST("$SLW_Working")
-		config.loadPreset(config.activePreset)
-		widget_controller.reloadWidgets()
-		SetTextOptionValueST("$SLW_Reload_Colors_Label")
-		SetOptionFlagsST(OPTION_FLAG_NONE)
-	EndEvent
 
-	Event OnHighlightST()
-		SetInfoText("$SLW_Reload_Colors_Info")
-	EndEvent
-EndState
 
 int Function _getFlag(Bool cond = true)
 	If  !cond
