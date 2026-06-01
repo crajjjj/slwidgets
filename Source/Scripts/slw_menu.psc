@@ -403,6 +403,16 @@ endState
 
 State PRESET_MENU_STATE
 	Event OnMenuOpenST()
+		_presetNames = config.getPresetNames()
+		_presetCount = _presetNames.Length
+		_presetIndex = 0
+		Int pi = 0
+		While pi < _presetCount
+			If _presetNames[pi] == config.activePreset
+				_presetIndex = pi
+			EndIf
+			pi = pi + 1
+		EndWhile
 		SetMenuDialogOptions(_presetNames)
 		SetMenuDialogStartIndex(_presetIndex)
 	EndEvent
