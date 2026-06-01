@@ -88,7 +88,7 @@ Function General()
 		EndIf
 		pi = pi + 1
 	EndWhile
-	AddTextOptionST("CYCLE_PRESET_STATE", "$SLW_Color_Preset", config.activePreset, sliderFlag)
+	AddMenuOptionST("PRESET_MENU_STATE", "$SLW_Color_Preset", config.activePreset, sliderFlag)
 	AddTextOptionST("RELOAD_COLORS_STATE", "$SLW_Reload_Colors", "$SLW_Reload_Colors_Label", sliderFlag)
 EndFunction
 
@@ -400,22 +400,22 @@ state LOAD_USER_SETTINGS_STATE
 	endFunction
 endState
 
-State CYCLE_PRESET_STATE
-	Event OnSelectST()
-		If _presetCount < 1
+State PRESET_MENU_STATE
+	Event OnMenuOpenST()
+		SetMenuDialogOptions(_presetNames)
+		SetMenuDialogStartIndex(_presetIndex)
+	EndEvent
+
+	Event OnMenuAcceptST(Int index)
+		If index < 0 || index >= _presetCount
 			Return
 		EndIf
-		SetOptionFlagsST(OPTION_FLAG_DISABLED)
-		_presetIndex = _presetIndex + 1
-		If _presetIndex >= _presetCount
-			_presetIndex = 0
-		EndIf
-		config.activePreset = _presetNames[_presetIndex]
+		_presetIndex = index
+		config.activePreset = _presetNames[index]
 		config.loadPreset(config.activePreset)
 		config.SaveUserSettingsPapyrus()
 		widget_controller.reloadWidgets()
-		SetTextOptionValueST(config.activePreset)
-		SetOptionFlagsST(OPTION_FLAG_NONE)
+		SetMenuOptionValueST(config.activePreset)
 	EndEvent
 
 	Event OnHighlightST()
