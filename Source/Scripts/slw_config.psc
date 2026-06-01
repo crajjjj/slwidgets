@@ -241,14 +241,14 @@ Function ApplyIconColors(String iconKey, Int[] r, Int[] g, Int[] b, Int[] a)
 	If !_iconColors
 		Return
 	EndIf
-	Int jIcon = JValue.solveObj(_iconColors, "." + iconKey)
-	If !jIcon
+	String base = "." + iconKey + "."
+	Int jR = JValue.solveObj(_iconColors, base + "r")
+	Int jG = JValue.solveObj(_iconColors, base + "g")
+	Int jB = JValue.solveObj(_iconColors, base + "b")
+	Int jA = JValue.solveObj(_iconColors, base + "a")
+	If !jR && !jG && !jB && !jA
 		Return
 	EndIf
-	Int jR = JValue.solveObj(jIcon, ".r")
-	Int jG = JValue.solveObj(jIcon, ".g")
-	Int jB = JValue.solveObj(jIcon, ".b")
-	Int jA = JValue.solveObj(jIcon, ".a")
 	Int i = 0
 	If jR
 		Int[] pR = JArray.asIntArray(jR)
