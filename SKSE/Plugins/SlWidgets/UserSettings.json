@@ -1,6 +1,7 @@
 {
 	"slw_stopped" : 0,
 	"updateInterval" : 5,
+	"activePreset" : "Default",
 	"module_apropos_two_wt" : 1,
 	"module_defeat_enabled" : 1,
 	"module_fhu_cum" : 1,
