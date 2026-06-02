@@ -10,8 +10,7 @@ int _update_interval_slider
 int _sla_arousal_Toggle
 
 String[] _presetNames
-Int _presetCount = 0
-Int _presetIndex = 0
+String[] _settingsPresetNames
 int _sla_exposure_Toggle
 int _apropos_two_wt_Toggle
 int _fhu_cum_Toggle
@@ -75,19 +74,8 @@ Function General()
 	Int sliderFlag = _getFlag()
 	_update_interval_slider = AddSliderOption("$SLW_Update_Interval", config.updateInterval, "{0}", sliderFlag)
 
-	_presetNames = config.getPresetNames()
-	_presetCount = 0
-	While _presetCount < _presetNames.Length && _presetNames[_presetCount] != ""
-		_presetCount = _presetCount + 1
-	EndWhile
-	_presetIndex = 0
-	Int pi = 0
-	While pi < _presetCount
-		If _presetNames[pi] == config.activePreset
-			_presetIndex = pi
-		EndIf
-		pi = pi + 1
-	EndWhile
+	AddMenuOptionST("SETTINGS_PRESET_MENU_STATE", "$SLW_Settings_Preset", config.activeSettingsPreset, sliderFlag)
+	AddTextOptionST("SAVE_SETTINGS_PRESET_STATE", "$SLW_Save_Settings_Preset", "$SLW_GO", 0)
 	AddMenuOptionST("PRESET_MENU_STATE", "$SLW_Color_Preset", config.activePreset, sliderFlag)
 EndFunction
 
@@ -138,11 +126,6 @@ Function Debug()
 	AddHeaderOption("SLWidgets. Version: " + GetVersionString())
 	AddEmptyOption()
 	AddTextOptionST("UPDATE_DEPENDENCIES_STATE","$SLW_Recheck","$SLW_GO", OPTION_FLAG_NONE)
-	
-	AddHeaderOption("$SLW_User_Settings")
-	Int loadSettingsFlagPapyrus = _getFlag(jsonutil.JsonExists(config.slw_settings_path) && widget_controller.isLoaded())
-	AddTextOptionST("LOAD_USER_SETTINGS_STATE", "$SLW_Load_Settings", "$SLW_GO", loadSettingsFlagPapyrus)
-	AddTextOptionST("SAVE_USER_SETTINGS_STATE", "$SLW_Save_Settings", "$SLW_GO", 0)
 	
 	AddHeaderOption("$SLW_Dependency_check")
 	AddTextOption("$SLW_Iwant_SB_Check", StringIfElse( widget_controller.isLoaded() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
@@ -355,77 +338,32 @@ State TOGGLE_MOD_STATE
     EndEvent
 EndState
 
-state SAVE_USER_SETTINGS_STATE
-	function OnSelectST()
-		if jsonutil.JsonExists(config.slw_settings_path)
-			if !ShowMessage("$SLW_Overwrite_Settings_Question", true, "$Accept", "$Cancel")
-				return 
-			endIf
-		endIf
-		if config.SaveUserSettingsPapyrus()
-			ShowMessage("$SLW_Settings_Saved_Status", false, "$Accept")
-		else
-			ShowMessage("$SLW_Save_Settings_Failed_Status", false, "$Accept")
-		endIf
-	endFunction
-
-	function OnHighlightST()
-		SetInfoText("$SLW_Save_Settings_Info")
-	endFunction
-endState
-
-state LOAD_USER_SETTINGS_STATE
-	function OnSelectST()
-		if ShowMessage("$SLW_Load_Settings_Question", true, "$Accept", "$Cancel")
-			if config.LoadUserSettingsPapyrus()
-				config.loadPreset(config.activePreset)
-				config.moduleReset()
-				config.moduleSetup()
-				Utility.WaitMenuMode(1)
-				widget_controller.startUpdates()
-				Utility.WaitMenuMode(2)
-				ShowMessage("$SLW_Settings_Loaded_Status", false, "$Accept")
-			else
-				ShowMessage("$SLW_Load_Settings_Failed_Status", false, "$Accept")
-			endIf
-		endIf
-	endFunction
-
-	function OnHighlightST()
-		if jsonutil.JsonExists(config.slw_settings_path)
-			SetInfoText("$SLW_Load_Settings_Info")
-		else
-			SetInfoText("$SLW_Load_Settings_Info_Not_Exist")
-		endIf
-	endFunction
-endState
-
 State PRESET_MENU_STATE
 	Event OnMenuOpenST()
 		_presetNames = config.getPresetNames()
-		_presetCount = _presetNames.Length
-		_presetIndex = 0
+		Int si = 0
 		Int pi = 0
-		While pi < _presetCount
+		While pi < _presetNames.Length
 			If _presetNames[pi] == config.activePreset
-				_presetIndex = pi
+				si = pi
 			EndIf
 			pi = pi + 1
 		EndWhile
 		SetMenuDialogOptions(_presetNames)
-		SetMenuDialogStartIndex(_presetIndex)
+		SetMenuDialogStartIndex(si)
 	EndEvent
 
 	Event OnMenuAcceptST(Int index)
-		If index < 0 || index >= _presetCount
+		If !_presetNames || index < 0 || index >= _presetNames.Length
 			Return
 		EndIf
-		_presetIndex = index
+		SetOptionFlagsST(OPTION_FLAG_DISABLED)
+		SetMenuOptionValueST("$SLW_Working")
 		config.activePreset = _presetNames[index]
 		config.loadPreset(config.activePreset)
-		config.SaveUserSettingsPapyrus()
 		widget_controller.reloadWidgets()
 		SetMenuOptionValueST(config.activePreset)
+		SetOptionFlagsST(OPTION_FLAG_NONE)
 	EndEvent
 
 	Event OnHighlightST()
@@ -433,6 +371,65 @@ State PRESET_MENU_STATE
 	EndEvent
 EndState
 
+State SETTINGS_PRESET_MENU_STATE
+	Event OnMenuOpenST()
+		_settingsPresetNames = config.getSettingsPresetNames()
+		Int si = 0
+		Int pi = 0
+		While pi < _settingsPresetNames.Length
+			If _settingsPresetNames[pi] == config.activeSettingsPreset
+				si = pi
+			EndIf
+			pi = pi + 1
+		EndWhile
+		SetMenuDialogOptions(_settingsPresetNames)
+		SetMenuDialogStartIndex(si)
+	EndEvent
+
+	Event OnMenuAcceptST(Int index)
+		If !_settingsPresetNames || index < 0 || index >= _settingsPresetNames.Length
+			Return
+		EndIf
+		SetOptionFlagsST(OPTION_FLAG_DISABLED)
+		SetMenuOptionValueST("$SLW_Working")
+		If !config.loadSettingsPreset(_settingsPresetNames[index])
+			SetMenuOptionValueST(config.activeSettingsPreset)
+			SetOptionFlagsST(OPTION_FLAG_NONE)
+			Return
+		EndIf
+		config.activeSettingsPreset = _settingsPresetNames[index]
+		config.loadPreset(config.activePreset)
+		config.moduleReset()
+		config.moduleSetup()
+		widget_controller.reloadWidgets()
+		SetMenuOptionValueST(config.activeSettingsPreset)
+		SetOptionFlagsST(OPTION_FLAG_NONE)
+	EndEvent
+
+	Event OnHighlightST()
+		SetInfoText("$SLW_Settings_Preset_Info")
+	EndEvent
+EndState
+
+State SAVE_SETTINGS_PRESET_STATE
+	Function OnSelectST()
+		String path = "..\\SlWidgets\\SettingsPresets\\" + config.activeSettingsPreset
+		If jsonutil.JsonExists(path)
+			If !ShowMessage("$SLW_Overwrite_Settings_Preset_Question", true, "$Accept", "$Cancel")
+				Return
+			EndIf
+		EndIf
+		If config.saveSettingsPreset(config.activeSettingsPreset)
+			ShowMessage("$SLW_Settings_Preset_Saved", false, "$Accept")
+		Else
+			ShowMessage("$SLW_Settings_Preset_Save_Failed", false, "$Accept")
+		EndIf
+	EndFunction
+
+	Function OnHighlightST()
+		SetInfoText("$SLW_Save_Settings_Preset_Info")
+	EndFunction
+EndState
 
 
 int Function _getFlag(Bool cond = true)

@@ -16,8 +16,8 @@ slw_module_sldefeat property module_defeat auto
 
 Int property updateInterval = 5 auto hidden
 String property activePreset = "Default" auto hidden
+String property activeSettingsPreset = "Default" auto hidden
 Bool property slw_stopped = True auto hidden
-String property slw_settings_path = "..\\SlWidgets\\UserSettings" auto hidden
 
 Int _iconColors = 0
 
@@ -163,6 +163,7 @@ Function DisableWidgets()
 	module_fhu_cum = false
 	module_fhu_cum_anal = false
 	module_fhu_cum_vaginal = false
+	module_fhu_cum_oral = false
 	module_mme_milk = false
 	module_mme_lactacid = false
 	module_parasites_enabled = false
@@ -171,56 +172,6 @@ Function DisableWidgets()
 	module_paf_poo = false
 	module_defeat_enabled = false
 EndFunction
-
-Bool function LoadUserSettingsPapyrus()
-	if !jsonutil.IsGood(slw_settings_path)
-		WriteLog("SLWidgets: Can't load user settings. Errors: {" + jsonutil.getErrors(slw_settings_path) + "}", 2)
-		return false
-	endIf
-	slw_stopped = false
-	updateInterval = jsonutil.GetPathIntValue(slw_settings_path, "updateInterval", updateInterval)
-	activePreset = jsonutil.GetPathStringValue(slw_settings_path, "activePreset", activePreset)
-	module_sla_arousal = jsonutil.GetPathBoolValue(slw_settings_path, "module_sla_arousal", module_sla_arousal)
-	module_sla_exposure = jsonutil.GetPathBoolValue(slw_settings_path, "module_sla_exposure", module_sla_exposure)
-	module_apropos_two_wt = jsonutil.GetPathBoolValue(slw_settings_path, "module_apropos_two_wt", module_apropos_two_wt)
-	module_fhu_cum = jsonutil.GetPathBoolValue(slw_settings_path, "module_fhu_cum", module_fhu_cum)
-	module_fhu_cum_anal = jsonutil.GetPathBoolValue(slw_settings_path, "module_fhu_cum_anal", module_fhu_cum_anal)
-	module_fhu_cum_vaginal = jsonutil.GetPathBoolValue(slw_settings_path, "module_fhu_cum_vaginal", module_fhu_cum_vaginal)
-	module_fhu_cum_oral = jsonutil.GetPathBoolValue(slw_settings_path, "module_fhu_cum_oral", module_fhu_cum_oral)
-	module_mme_milk = jsonutil.GetPathBoolValue(slw_settings_path, "module_mme_milk", module_mme_milk)
-	module_mme_lactacid = jsonutil.GetPathBoolValue(slw_settings_path, "module_mme_lactacid", module_mme_lactacid)
-	module_parasites_enabled = jsonutil.GetPathBoolValue(slw_settings_path, "module_parasites_enabled", module_parasites_enabled)
-	module_pregnancy_enabled = jsonutil.GetPathBoolValue(slw_settings_path, "module_pregnancy_enabled", module_pregnancy_enabled)
-	module_paf_pee = jsonutil.GetPathBoolValue(slw_settings_path, "module_paf_pee", module_paf_pee)
-	module_paf_poo = jsonutil.GetPathBoolValue(slw_settings_path, "module_paf_poo", module_paf_poo)
-	module_defeat_enabled = jsonutil.GetPathBoolValue(slw_settings_path, "module_defeat_enabled", module_defeat_enabled)
-	return true
-endFunction
-
-Bool function SaveUserSettingsPapyrus()
-	
-	jsonutil.SetPathIntValue(slw_settings_path, "updateInterval", updateInterval as Int)
-	jsonutil.SetPathStringValue(slw_settings_path, "activePreset", activePreset)
-	jsonutil.SetPathIntValue(slw_settings_path, "module_sla_arousal", module_sla_arousal as Int)
-	jsonutil.SetPathIntValue(slw_settings_path, "module_sla_exposure", module_sla_exposure as Int)
-	jsonutil.SetPathIntValue(slw_settings_path, "module_apropos_two_wt", module_apropos_two_wt as Int)
-	jsonutil.SetPathIntValue(slw_settings_path, "module_fhu_cum", module_fhu_cum as Int)
-	jsonutil.SetPathIntValue(slw_settings_path, "module_fhu_cum_anal", module_fhu_cum_anal as Int)
-	jsonutil.SetPathIntValue(slw_settings_path, "module_fhu_cum_vaginal", module_fhu_cum_vaginal as Int)
-	jsonutil.SetPathIntValue(slw_settings_path, "module_fhu_cum_oral", module_fhu_cum_oral as Int)
-	jsonutil.SetPathIntValue(slw_settings_path, "module_mme_milk", module_mme_milk as Int)
-	jsonutil.SetPathIntValue(slw_settings_path, "module_mme_lactacid", module_mme_lactacid as Int)
-	jsonutil.SetPathIntValue(slw_settings_path, "module_parasites_enabled", module_parasites_enabled as Int)
-	jsonutil.SetPathIntValue(slw_settings_path, "module_pregnancy_enabled", module_pregnancy_enabled as Int)
-	jsonutil.SetPathIntValue(slw_settings_path, "module_paf_pee", module_paf_pee as Int)
-	jsonutil.SetPathIntValue(slw_settings_path, "module_paf_poo", module_paf_poo as Int)
-	jsonutil.SetPathIntValue(slw_settings_path, "module_defeat_enabled", module_defeat_enabled as Int)
-	if !jsonutil.Save(slw_settings_path, false)
-		WriteLog("SLWidgets: Error saving user settings", 2)
-		return false
-	endIf
-	return true
-endFunction
 
 Bool function isOn(bool prop)
 	return !slw_stopped && prop
@@ -231,7 +182,7 @@ Function loadPreset(String presetName)
 		JValue.release(_iconColors)
 		_iconColors = 0
 	EndIf
-	_iconColors = JValue.readFromFile("Data/SKSE/Plugins/SlWidgets/Presets/" + presetName + ".json")
+	_iconColors = JValue.readFromFile("Data/SKSE/Plugins/SlWidgets/IconPresets/" + presetName + ".json")
 	If _iconColors
 		JValue.retain(_iconColors)
 	EndIf
@@ -292,24 +243,13 @@ Function ApplyIconColors(String iconKey, Int[] r, Int[] g, Int[] b, Int[] a)
 EndFunction
 
 String[] Function getPresetNames()
-	String dir = "Data/SKSE/Plugins/SlWidgets/Presets"
-	Int jDir = JValue.readFromDirectory(dir, "json")
-	WriteLog("getPresetNames: jDir=" + jDir + " path=" + dir)
-	If !jDir
-		WriteLog("getPresetNames: directory read failed, using fallback", 2)
-		String[] fallback = new String[1]
-		fallback[0] = "Default"
-		Return fallback
-	EndIf
-	String[] names = JMap.allKeysPArray(jDir)
-	JValue.release(jDir)
+	String dir = "Data/SKSE/Plugins/SlWidgets/IconPresets"
+	String[] names = MiscUtil.FilesInFolder(dir, ".json")
 	If !names || names.Length == 0
-		WriteLog("getPresetNames: no files found, using fallback", 2)
 		String[] fallback = new String[1]
 		fallback[0] = "Default"
 		Return fallback
 	EndIf
-	WriteLog("getPresetNames: found " + names.Length + " files, first=" + names[0])
 	Int i = 0
 	While i < names.Length
 		String fn = names[i]
@@ -319,6 +259,75 @@ String[] Function getPresetNames()
 		EndIf
 		i = i + 1
 	EndWhile
-	WriteLog("getPresetNames: first name after strip=" + names[0])
 	Return names
+EndFunction
+
+String[] Function getSettingsPresetNames()
+	String dir = "Data/SKSE/Plugins/SlWidgets/SettingsPresets"
+	String[] names = MiscUtil.FilesInFolder(dir, ".json")
+	If !names || names.Length == 0
+		String[] fallback = new String[1]
+		fallback[0] = "Default"
+		Return fallback
+	EndIf
+	Int i = 0
+	While i < names.Length
+		String fn = names[i]
+		Int len = StringUtil.GetLength(fn)
+		If len > 5
+			names[i] = StringUtil.Substring(fn, 0, len - 5)
+		EndIf
+		i = i + 1
+	EndWhile
+	Return names
+EndFunction
+
+Bool Function loadSettingsPreset(String presetName)
+	String path = "..\\SlWidgets\\SettingsPresets\\" + presetName
+	If !jsonutil.IsGood(path)
+		WriteLog("SLWidgets: Can't load settings preset '" + presetName + "'. Errors: {" + jsonutil.getErrors(path) + "}", 2)
+		Return false
+	EndIf
+	updateInterval = jsonutil.GetPathIntValue(path, "updateInterval", updateInterval)
+	activePreset = jsonutil.GetPathStringValue(path, "activePreset", activePreset)
+	module_sla_arousal = jsonutil.GetPathBoolValue(path, "module_sla_arousal", module_sla_arousal)
+	module_sla_exposure = jsonutil.GetPathBoolValue(path, "module_sla_exposure", module_sla_exposure)
+	module_apropos_two_wt = jsonutil.GetPathBoolValue(path, "module_apropos_two_wt", module_apropos_two_wt)
+	module_fhu_cum = jsonutil.GetPathBoolValue(path, "module_fhu_cum", module_fhu_cum)
+	module_fhu_cum_anal = jsonutil.GetPathBoolValue(path, "module_fhu_cum_anal", module_fhu_cum_anal)
+	module_fhu_cum_vaginal = jsonutil.GetPathBoolValue(path, "module_fhu_cum_vaginal", module_fhu_cum_vaginal)
+	module_fhu_cum_oral = jsonutil.GetPathBoolValue(path, "module_fhu_cum_oral", module_fhu_cum_oral)
+	module_mme_milk = jsonutil.GetPathBoolValue(path, "module_mme_milk", module_mme_milk)
+	module_mme_lactacid = jsonutil.GetPathBoolValue(path, "module_mme_lactacid", module_mme_lactacid)
+	module_parasites_enabled = jsonutil.GetPathBoolValue(path, "module_parasites_enabled", module_parasites_enabled)
+	module_pregnancy_enabled = jsonutil.GetPathBoolValue(path, "module_pregnancy_enabled", module_pregnancy_enabled)
+	module_paf_pee = jsonutil.GetPathBoolValue(path, "module_paf_pee", module_paf_pee)
+	module_paf_poo = jsonutil.GetPathBoolValue(path, "module_paf_poo", module_paf_poo)
+	module_defeat_enabled = jsonutil.GetPathBoolValue(path, "module_defeat_enabled", module_defeat_enabled)
+	Return true
+EndFunction
+
+Bool Function saveSettingsPreset(String presetName)
+	String path = "..\\SlWidgets\\SettingsPresets\\" + presetName
+	jsonutil.SetPathIntValue(path, "updateInterval", updateInterval)
+	jsonutil.SetPathStringValue(path, "activePreset", activePreset)
+	jsonutil.SetPathIntValue(path, "module_sla_arousal", module_sla_arousal as Int)
+	jsonutil.SetPathIntValue(path, "module_sla_exposure", module_sla_exposure as Int)
+	jsonutil.SetPathIntValue(path, "module_apropos_two_wt", module_apropos_two_wt as Int)
+	jsonutil.SetPathIntValue(path, "module_fhu_cum", module_fhu_cum as Int)
+	jsonutil.SetPathIntValue(path, "module_fhu_cum_anal", module_fhu_cum_anal as Int)
+	jsonutil.SetPathIntValue(path, "module_fhu_cum_vaginal", module_fhu_cum_vaginal as Int)
+	jsonutil.SetPathIntValue(path, "module_fhu_cum_oral", module_fhu_cum_oral as Int)
+	jsonutil.SetPathIntValue(path, "module_mme_milk", module_mme_milk as Int)
+	jsonutil.SetPathIntValue(path, "module_mme_lactacid", module_mme_lactacid as Int)
+	jsonutil.SetPathIntValue(path, "module_parasites_enabled", module_parasites_enabled as Int)
+	jsonutil.SetPathIntValue(path, "module_pregnancy_enabled", module_pregnancy_enabled as Int)
+	jsonutil.SetPathIntValue(path, "module_paf_pee", module_paf_pee as Int)
+	jsonutil.SetPathIntValue(path, "module_paf_poo", module_paf_poo as Int)
+	jsonutil.SetPathIntValue(path, "module_defeat_enabled", module_defeat_enabled as Int)
+	If !jsonutil.Save(path, false)
+		WriteLog("SLWidgets: Error saving settings preset '" + presetName + "'", 2)
+		Return false
+	EndIf
+	Return true
 EndFunction
