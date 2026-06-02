@@ -60,7 +60,7 @@ String[] statusBarType
 Int Function loadIcon(String sourceMod, String iconName, String[] stateNames, String[] files, Int[] r, Int[] g, Int[] b, Int[] a, Bool redraw = True)
 {Loads icon information and places it into the next available bar position, returns -1 on no spots available, -2 on name combination in use}
 	Int waitCount = 0
-	While (!barsReady && waitCount < 30)
+	While (!barsReady && waitCount < 1200)
 		Wait(1.0)
 		waitCount += 1
 	EndWhile
@@ -118,7 +118,7 @@ Function releaseIcon(String sourceMod, String name)
 
 	If id != -1
 		Int waitCount = 0
-		While (!barsReady && waitCount < 30)
+		While (!barsReady && waitCount < 1200)
 			Wait(1.0)
 			waitCount += 1
 		EndWhile
@@ -133,7 +133,7 @@ Function setIconStatus(String sourceMod, String name, Int status)
 
 	If id != -1
 		Int waitCount = 0
-		While (!barsReady && waitCount < 30)
+		While (!barsReady && waitCount < 1200)
 			Wait(1.0)
 			waitCount += 1
 		EndWhile

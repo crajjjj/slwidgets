@@ -62,6 +62,7 @@ Event OnUpdate()
 		return
 	endif
 	if !iBars || !iBars.isReady()
+		RegisterForSingleUpdate(config.updateInterval)
 		return
 	endif
 	config.moduleWidgetStateUpdate(iBars)
