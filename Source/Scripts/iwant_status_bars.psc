@@ -538,7 +538,11 @@ Function _loadIconWidgets(Int id)
 		sourceFile = _getIconSourceFile(id, i)
 		If sourceFile != ""
 			w = iWidgets.loadWidget(sourceFile)
-			iWidgets.setTransparency(w, 0)
+			If _getIconAlpha(id, 0) > 0
+				iWidgets.setTransparency(w, 1)
+			Else
+				iWidgets.setTransparency(w, 0)
+			EndIf
 			iWidgets.setVisible(w, 1)
 		Else
 			w = -1

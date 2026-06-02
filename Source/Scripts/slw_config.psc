@@ -62,6 +62,17 @@ Function moduleReset()
 	module_defeat.moduleReset()
 EndFunction
 
+Function moduleWidgetToggleUpdate(iWant_Status_Bars iBars)
+	module_sla.onWidgetToggleUpdate(iBars)
+	module_apropos_two.onWidgetToggleUpdate(iBars)
+	module_fhu.onWidgetToggleUpdate(iBars)
+	module_mme.onWidgetToggleUpdate(iBars)
+	module_slp.onWidgetToggleUpdate(iBars)
+	module_pregnancy.onWidgetToggleUpdate(iBars)
+	module_paf.onWidgetToggleUpdate(iBars)
+	module_defeat.onWidgetToggleUpdate(iBars)
+EndFunction
+
 ;doesn't work async with ibars
 Function moduleWidgetReload(iWant_Status_Bars iBars)
 	module_sla.onWidgetReload(iBars)

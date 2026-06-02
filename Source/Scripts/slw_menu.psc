@@ -11,6 +11,7 @@ int _sla_arousal_Toggle
 
 String[] _presetNames
 String[] _settingsPresetNames
+Bool _togglesDirty = false
 int _sla_exposure_Toggle
 int _apropos_two_wt_Toggle
 int _fhu_cum_Toggle
@@ -40,7 +41,10 @@ Event OnConfigInit()
 EndEvent
 
 Event OnConfigClose()
-	widget_controller.reloadWidgets()
+	If _togglesDirty
+		_togglesDirty = false
+		widget_controller.toggleUpdateWidgets()
+	EndIf
 EndEvent
 
 Event OnConfigOpen()
@@ -194,6 +198,7 @@ EndEvent
 
 Event onOptionSelect(int mcm_option)
 	Bool _v = False
+	_togglesDirty = true
 	if(mcm_option == _sla_arousal_Toggle)
 		_v = !config.module_sla_arousal
 		config.module_sla_arousal = _v
@@ -313,6 +318,7 @@ State TOGGLE_MOD_STATE
 			config.moduleReset()
 			SetTextOptionValueST("$SLW_Enable")
 			widget_controller.reloadWidgets()
+			_togglesDirty = false
 			Utility.WaitMenuMode(1)
 			ShowMessage("$SLW_Disabled", false)
 		Else
@@ -320,6 +326,7 @@ State TOGGLE_MOD_STATE
 			config.moduleReset()
 			config.moduleSetup()
 			widget_controller.reloadWidgets()
+			_togglesDirty = false
 			Utility.WaitMenuMode(1)
 			widget_controller.startUpdates()
 			SetTextOptionValueST("$SLW_Disable")
@@ -362,6 +369,7 @@ State PRESET_MENU_STATE
 		config.activePreset = _presetNames[index]
 		config.loadPreset(config.activePreset)
 		widget_controller.reloadWidgets()
+		_togglesDirty = false
 		SetMenuOptionValueST(config.activePreset)
 		SetOptionFlagsST(OPTION_FLAG_NONE)
 	EndEvent
@@ -402,6 +410,7 @@ State SETTINGS_PRESET_MENU_STATE
 		config.moduleReset()
 		config.moduleSetup()
 		widget_controller.reloadWidgets()
+		_togglesDirty = false
 		SetMenuOptionValueST(config.activeSettingsPreset)
 		SetOptionFlagsST(OPTION_FLAG_NONE)
 	EndEvent
@@ -412,7 +421,7 @@ State SETTINGS_PRESET_MENU_STATE
 EndState
 
 State SAVE_SETTINGS_PRESET_STATE
-	Function OnSelectST()
+	Event OnSelectST()
 		String path = "..\\SlWidgets\\SettingsPresets\\" + config.activeSettingsPreset
 		If jsonutil.JsonExists(path)
 			If !ShowMessage("$SLW_Overwrite_Settings_Preset_Question", true, "$Accept", "$Cancel")
@@ -424,11 +433,11 @@ State SAVE_SETTINGS_PRESET_STATE
 		Else
 			ShowMessage("$SLW_Settings_Preset_Save_Failed", false, "$Accept")
 		EndIf
-	EndFunction
+	EndEvent
 
-	Function OnHighlightST()
+	Event OnHighlightST()
 		SetInfoText("$SLW_Save_Settings_Preset_Info")
-	EndFunction
+	EndEvent
 EndState
 
 

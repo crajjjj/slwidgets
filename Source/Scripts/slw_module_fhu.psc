@@ -55,26 +55,50 @@ Event onWidgetReload(iWant_Status_Bars iBars)
 	cum_anal_state_prv = EMPTY
  	cum_vaginal_state_prv = EMPTY
  	cum_oral_state_prv = EMPTY
+	iBars.releaseIcon(slwGetModName(), CUM_STATE)
+	iBars.releaseIcon(slwGetModName(), CUM_ANAL_STATE)
+	iBars.releaseIcon(slwGetModName(), CUM_VAGINAL_STATE)
+	iBars.releaseIcon(slwGetModName(), CUM_ORAL_STATE)
 	if(config.isOn(config.module_fhu_cum) && isInterfaceActive())
 		_loadCumIcons(iBars)
-	else
-		iBars.releaseIcon(slwGetModName(),CUM_STATE)
 	endif
 	if(config.isOn(config.module_fhu_cum_anal) && isInterfaceActive())
 		_loadCumAnalIcons(iBars)
-	else
-		iBars.releaseIcon(slwGetModName(),CUM_ANAL_STATE)
 	endif
 	if(config.isOn(config.module_fhu_cum_vaginal) && isInterfaceActive())
 		_loadCumVaginalIcons(iBars)
-	else
-		iBars.releaseIcon(slwGetModName(),CUM_VAGINAL_STATE)
 	endif
 	if(config.isOn(config.module_fhu_cum_oral) && isInterfaceActive())
 		_loadCumOralIcons(iBars)
-	else
-		iBars.releaseIcon(slwGetModName(),CUM_ORAL_STATE)
 	endif
+EndEvent
+
+;override
+Event onWidgetToggleUpdate(iWant_Status_Bars iBars)
+	If config.isOn(config.module_fhu_cum) && isInterfaceActive()
+		_loadCumIcons(iBars)
+	Else
+		iBars.releaseIcon(slwGetModName(), CUM_STATE)
+		cum_state_prv = EMPTY
+	EndIf
+	If config.isOn(config.module_fhu_cum_anal) && isInterfaceActive()
+		_loadCumAnalIcons(iBars)
+	Else
+		iBars.releaseIcon(slwGetModName(), CUM_ANAL_STATE)
+		cum_anal_state_prv = EMPTY
+	EndIf
+	If config.isOn(config.module_fhu_cum_vaginal) && isInterfaceActive()
+		_loadCumVaginalIcons(iBars)
+	Else
+		iBars.releaseIcon(slwGetModName(), CUM_VAGINAL_STATE)
+		cum_vaginal_state_prv = EMPTY
+	EndIf
+	If config.isOn(config.module_fhu_cum_oral) && isInterfaceActive()
+		_loadCumOralIcons(iBars)
+	Else
+		iBars.releaseIcon(slwGetModName(), CUM_ORAL_STATE)
+		cum_oral_state_prv = EMPTY
+	EndIf
 EndEvent
 
 ;override

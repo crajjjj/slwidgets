@@ -22,6 +22,10 @@ Event onWidgetReload(iWant_Status_Bars iBars)
 EndEvent
 
 ; @interface
+Event onWidgetToggleUpdate(iWant_Status_Bars iBars)
+EndEvent
+
+; @interface
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
 	WriteLog("slw_base_module UpdateStatus() not overriden", 2)
 EndEvent

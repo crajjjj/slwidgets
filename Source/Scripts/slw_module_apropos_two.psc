@@ -58,15 +58,30 @@ Event onWidgetReload(iWant_Status_Bars iBars)
 	vag_prv = EMPTY
 	oral_prv = EMPTY
    	anal_prv = EMPTY
+	iBars.releaseIcon(slwGetModName(), ORAL_STATE)
+	iBars.releaseIcon(slwGetModName(), ANAL_STATE)
+	iBars.releaseIcon(slwGetModName(), VAG_STATE)
 	if(config.isOn(config.module_apropos_two_wt) && isInterfaceActive())
 		_loadApropos2Oral(iBars)
 		_loadApropos2Anal(iBars)
 		_loadApropos2Vag(iBars)
-	else
-		iBars.releaseIcon(slwGetModName(),ORAL_STATE)
-		iBars.releaseIcon(slwGetModName(),ANAL_STATE)
-		iBars.releaseIcon(slwGetModName(),VAG_STATE)
 	endif
+EndEvent
+
+;override
+Event onWidgetToggleUpdate(iWant_Status_Bars iBars)
+	If config.isOn(config.module_apropos_two_wt) && isInterfaceActive()
+		_loadApropos2Oral(iBars)
+		_loadApropos2Anal(iBars)
+		_loadApropos2Vag(iBars)
+	Else
+		iBars.releaseIcon(slwGetModName(), ORAL_STATE)
+		iBars.releaseIcon(slwGetModName(), ANAL_STATE)
+		iBars.releaseIcon(slwGetModName(), VAG_STATE)
+		oral_prv = EMPTY
+		anal_prv = EMPTY
+		vag_prv = EMPTY
+	EndIf
 EndEvent
 
 ;override

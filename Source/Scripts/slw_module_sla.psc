@@ -52,17 +52,30 @@ EndFunction
 Event onWidgetReload(iWant_Status_Bars iBars)
 	arousal_state_prv = EMPTY
 	exposure_state_prv = EMPTY
+	iBars.releaseIcon(slwGetModName(), AROUSAL_STATE)
+	iBars.releaseIcon(slwGetModName(), EXPOSURE_STATE)
 	if(config.isOn(config.module_sla_arousal) && isInterfaceActive())
 		_loadArousedIcons(iBars)
-	else
-		iBars.releaseIcon(slwGetModName(),AROUSAL_STATE)
 	endif
-		
 	if(config.isOn(config.module_sla_exposure) && isInterfaceActive())
 		_loadExposureIcons(iBars)
-	else
-		iBars.releaseIcon(slwGetModName(),EXPOSURE_STATE)
 	endif
+EndEvent
+
+;override
+Event onWidgetToggleUpdate(iWant_Status_Bars iBars)
+	If config.isOn(config.module_sla_arousal) && isInterfaceActive()
+		_loadArousedIcons(iBars)
+	Else
+		iBars.releaseIcon(slwGetModName(), AROUSAL_STATE)
+		arousal_state_prv = EMPTY
+	EndIf
+	If config.isOn(config.module_sla_exposure) && isInterfaceActive()
+		_loadExposureIcons(iBars)
+	Else
+		iBars.releaseIcon(slwGetModName(), EXPOSURE_STATE)
+		exposure_state_prv = EMPTY
+	EndIf
 EndEvent
 
 ;override

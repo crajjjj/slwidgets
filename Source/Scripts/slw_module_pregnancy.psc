@@ -224,9 +224,16 @@ EndFunction
 
 ;override
 Event onWidgetReload(iWant_Status_Bars iBars)
-	if(!config.isOn(config.module_pregnancy_enabled) || !isInterfaceActive())
+	_releasePregnancyIcons(iBars)
+EndEvent
+
+;override
+Event onWidgetToggleUpdate(iWant_Status_Bars iBars)
+	If !config.isOn(config.module_pregnancy_enabled) || !isInterfaceActive()
 		_releasePregnancyIcons(iBars)
-	endif
+		gems_state_prv = EMPTY
+		GemPrePercent = 0.0
+	EndIf
 EndEvent
 
 ;override

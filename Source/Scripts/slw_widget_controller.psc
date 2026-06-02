@@ -78,6 +78,13 @@ function reloadWidgets()
 	config.moduleWidgetReload(iBars)
 endFunction
 
+function toggleUpdateWidgets()
+	If (!iBars || !iBars.isReady())
+		Return
+	endIf
+	config.moduleWidgetToggleUpdate(iBars)
+endFunction
+
 ;Debug function to arrange iwant status bars icons better - fill empty spaces in the main bar to load/release toggles in a secondary bar
 Function loadEmptyIcon()
 	If !controller_initialised || !iBars || !iBars.isReady()

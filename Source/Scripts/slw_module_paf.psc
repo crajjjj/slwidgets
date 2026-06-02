@@ -90,17 +90,30 @@ EndFunction
 Event onWidgetReload(iWant_Status_Bars iBars)
 	pee_state_prv = EMPTY
 	poop_state_prv = EMPTY
+	iBars.releaseIcon(slwGetModName(), PEE_STATE)
+	iBars.releaseIcon(slwGetModName(), POOP_STATE)
 	if(config.isOn(config.module_paf_pee) && isInterfaceActive())
 		_loadPeeIcons(iBars)
-	else
-		iBars.releaseIcon(slwGetModName(),PEE_STATE)
 	endif
-		
 	if(config.isOn(config.module_paf_poo) && isInterfaceActive())
 		_loadPooIcons(iBars)
-	else
-		iBars.releaseIcon(slwGetModName(),POOP_STATE)
 	endif
+EndEvent
+
+;override
+Event onWidgetToggleUpdate(iWant_Status_Bars iBars)
+	If config.isOn(config.module_paf_pee) && isInterfaceActive()
+		_loadPeeIcons(iBars)
+	Else
+		iBars.releaseIcon(slwGetModName(), PEE_STATE)
+		pee_state_prv = EMPTY
+	EndIf
+	If config.isOn(config.module_paf_poo) && isInterfaceActive()
+		_loadPooIcons(iBars)
+	Else
+		iBars.releaseIcon(slwGetModName(), POOP_STATE)
+		poop_state_prv = EMPTY
+	EndIf
 EndEvent
 
 ;override

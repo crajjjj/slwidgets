@@ -43,9 +43,14 @@ EndFunction
 
 ;override
 Event onWidgetReload(iWant_Status_Bars iBars)
-	if(!config.isOn(config.module_parasites_enabled) || !isInterfaceActive())
+	_releaseParasiteIcons(iBars)
+EndEvent
+
+;override
+Event onWidgetToggleUpdate(iWant_Status_Bars iBars)
+	If !config.isOn(config.module_parasites_enabled) || !isInterfaceActive()
 		_releaseParasiteIcons(iBars)
-	endif
+	EndIf
 EndEvent
 
 ;override
