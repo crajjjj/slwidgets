@@ -1009,10 +1009,10 @@ Event OniWantWidgetsReset(String eventName, String strArg, Float numArg, Form se
 			_initializeIcons()
 			barsInitialized = True
 		EndIf
+		barsReady = True
 		If _claimedBlankIcon == -1
 			_claimBlankIcon()
 		EndIf
-		barsReady = True
 		_destroyLoadMessage()
 		_drawAllBars()
 		Debug.Trace("iWant Status Bars: Bars Ready")
