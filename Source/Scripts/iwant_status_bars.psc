@@ -946,6 +946,7 @@ EndFunction
 
 Event OnInit()
 	RegisterForModEvent("iWantWidgetsReset", "OniWantWidgetsReset")
+	RegisterForSingleUpdate(15.0)
 EndEvent
 
 Function _versionUpdate(Int ver)
@@ -961,6 +962,38 @@ EndFunction
 Function GameLoad()
 	Debug.Trace("iWant Status Bars: Game load detected")
 	RegisterForModEvent("iWantWidgetsReset", "OniWantWidgetsReset")
+	RegisterForSingleUpdate(15.0)
+EndFunction
+
+Event OnUpdate()
+	If !barsReady && iWidgets
+		Debug.Trace("iWant Status Bars: Fallback initialization (missed iWantWidgetsReset)")
+		_initBars()
+	EndIf
+EndEvent
+
+Function _initBars()
+	Int i
+	barsReady = True
+	If barsInitialized
+		i = 0
+		While i < TOTAL_ICONS
+			_loadIconWidgets(i)
+			_setIconStatusByID(i, iconActiveStatus[i], redraw = False)
+			i += 1
+		EndWhile
+		_resizeAllBars()
+	Else
+		_initializeStatusBars()
+		_initializeIcons()
+		barsInitialized = True
+	EndIf
+	If _claimedBlankIcon == -1
+		_claimBlankIcon()
+	EndIf
+	_drawAllBars()
+	RegisterForModEvent("iWantStatusBarsReady", "OniWantStatusBarsReady")
+	SendModEvent("iWantStatusBarsReady")
 EndFunction
 
 Event OniWantWidgetsReset(String eventName, String strArg, Float numArg, Form sender)

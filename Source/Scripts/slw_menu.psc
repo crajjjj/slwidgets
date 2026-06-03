@@ -5,6 +5,7 @@ import slw_log
 
 slw_config Property config auto
 slw_widget_controller Property widget_controller auto
+iWant_Status_Bars Property iBars Auto
 
 int _update_interval_slider
 int _sla_arousal_Toggle
@@ -38,6 +39,12 @@ endFunction
 Event OnConfigInit()
 	ModName = "SLWidgets"
 	Notification("MCM menu initialized.")
+	; slw_menu initializes before iWant fires its library reset. Calling GameLoad() here
+	; ensures iwant_status_bars is registered for the reset event on first load, before
+	; its own quest has had a chance to start.
+	If iBars && !iBars.isReady()
+		iBars.GameLoad()
+	EndIf
 EndEvent
 
 Event OnConfigClose()
