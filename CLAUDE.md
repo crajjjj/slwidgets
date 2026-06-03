@@ -67,6 +67,7 @@ Script properties filled via the Creation Kit (CK) in the ESP/ESM must NOT be re
 
 - Keep UTF-16 LE BOM encoding for translation files (`Interface/Translations/`).
 - Keep edits ASCII unless the file already contains non-ASCII.
+- Comments: write them when the WHY is non-obvious — a hidden constraint, a subtle invariant, a workaround for a specific bug, or behavior that would surprise a reader. Multi-line comments are fine when the explanation warrants it. Don't explain WHAT the code does; don't reference callers or issue numbers.
 
 ## Key Files
 | File | Purpose |
