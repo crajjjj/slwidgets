@@ -419,8 +419,9 @@ Function _setIconStatusByID(Int id, Int status, Bool redraw = True)
 	If w >= 0
 		iWidgets.setRGB(w, _getIconRed(id, status), _getIconGreen(id, status), _getIconBlue(id, status))
 		; Set alpha to 1 before drawAllBars so hideOnAlpha0 does not skip positioning.
-		; Only when we intend to show the icon (non-zero target, not suppressed by autohide).
-		If (targetAlpha > 0) && ((autohideTime == 0) || change)
+		; Only on state change — the incoming widget may have been at 0. Skipping this on
+		; no-change calls prevents a visible pulse (snap-to-1 + fade-to-target every tick).
+		If (targetAlpha > 0) && change
 			iWidgets.setTransparency(w, 1)
 		EndIf
 	EndIf
