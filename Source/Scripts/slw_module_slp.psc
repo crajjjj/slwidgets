@@ -42,52 +42,55 @@ Function initInterface()
 EndFunction
 
 ;override
-Event onWidgetReload(iWant_Status_Bars iBars)
-	_releaseParasiteIcons(iBars)
+Event onWidgetReload(iWant_Status_Bars iBars, Actor target, Int slot)
+	_releaseParasiteIcons(iBars, slot)
 EndEvent
 
 ;override
-Event onWidgetToggleUpdate(iWant_Status_Bars iBars)
-	If !config.isOn(config.module_parasites_enabled) || !isInterfaceActive()
-		_releaseParasiteIcons(iBars)
+Event onWidgetToggleUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
+	If !target || !config.isOnForSlot(config.module_parasites_enabled, slot, config.MOD_SLP) || !isInterfaceActive()
+		_releaseParasiteIcons(iBars, slot)
 	EndIf
 EndEvent
 
 ;override
-Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
-	if (config.isOn(config.module_parasites_enabled) && isInterfaceActive())
-		_reloadParasiteIcons(iBars)
+Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
+	if !target
+		return
+	endif
+	if (config.isOnForSlot(config.module_parasites_enabled, slot, config.MOD_SLP) && isInterfaceActive())
+		_reloadParasiteIcons(iBars, target, slot)
 	endIf
 EndEvent
 
-Function _releaseParasiteIcons(iWant_Status_Bars iBars)
-	iBars.releaseIcon(slwGetModName(),Parasites_SpiderEggs)
-	iBars.releaseIcon(slwGetModName(),Parasites_ChaurusWorm)
-	iBars.releaseIcon(slwGetModName(),Parasites_ChaurusWormVag)
+Function _releaseParasiteIcons(iWant_Status_Bars iBars, Int slot)
+	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Parasites_SpiderEggs, slot))
+	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Parasites_ChaurusWorm, slot))
+	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Parasites_ChaurusWormVag, slot))
 EndFunction
 
 ;Parasites
- Function _reloadParasiteIcons(iWant_Status_Bars iBars)
-	if isInfectedBySLP(slp, PlayerRef,"SpiderEgg")
-		_loadSpiderIcon(iBars)
+ Function _reloadParasiteIcons(iWant_Status_Bars iBars, Actor target, Int slot)
+	if isInfectedBySLP(slp, target,"SpiderEgg")
+		_loadSpiderIcon(iBars, slot)
 	Else
-		iBars.releaseIcon(slwGetModName(), Parasites_SpiderEggs)
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Parasites_SpiderEggs, slot))
 	endif
 
-	if isInfectedBySLP(slp, PlayerRef,"ChaurusWorm")
-		_loadChaurusWormIcon(iBars)
+	if isInfectedBySLP(slp, target,"ChaurusWorm")
+		_loadChaurusWormIcon(iBars, slot)
 	Else
-		iBars.releaseIcon(slwGetModName(), Parasites_ChaurusWorm)
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Parasites_ChaurusWorm, slot))
 	endif
 
-	if isInfectedBySLP(slp, PlayerRef,"ChaurusWormVag")
-		_loadChaurusWormVagIcon(iBars)
+	if isInfectedBySLP(slp, target,"ChaurusWormVag")
+		_loadChaurusWormVagIcon(iBars, slot)
 	Else
-		iBars.releaseIcon(slwGetModName(), Parasites_ChaurusWormVag)
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Parasites_ChaurusWormVag, slot))
 	endif
 EndFunction
 
-Function _loadSpiderIcon(iWant_Status_Bars iBars)
+Function _loadSpiderIcon(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[1]
 	String[] d = new String[1]
 	Int[] r = new Int[1]
@@ -105,10 +108,10 @@ Function _loadSpiderIcon(iWant_Status_Bars iBars)
 	
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(Parasites_SpiderEggs, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), Parasites_SpiderEggs, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(Parasites_SpiderEggs, slot), d, s, r, g, b, a, slot)
 EndFunction	
 
-Function _loadChaurusWormVagIcon(iWant_Status_Bars iBars)
+Function _loadChaurusWormVagIcon(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[1]
 	String[] d = new String[1]
 	Int[] r = new Int[1]
@@ -126,10 +129,10 @@ Function _loadChaurusWormVagIcon(iWant_Status_Bars iBars)
 	
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(Parasites_ChaurusWormVag, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), Parasites_ChaurusWormVag, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(Parasites_ChaurusWormVag, slot), d, s, r, g, b, a, slot)
 EndFunction	
 
-Function _loadChaurusWormIcon(iWant_Status_Bars iBars)
+Function _loadChaurusWormIcon(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[1]
 	String[] d = new String[1]
 	Int[] r = new Int[1]
@@ -147,6 +150,6 @@ Function _loadChaurusWormIcon(iWant_Status_Bars iBars)
 	
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(Parasites_ChaurusWorm, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), Parasites_ChaurusWorm, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(Parasites_ChaurusWorm, slot), d, s, r, g, b, a, slot)
 EndFunction	
 

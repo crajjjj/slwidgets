@@ -12,6 +12,7 @@ int _sla_arousal_Toggle
 String[] _presetNames
 String[] _settingsPresetNames
 Bool _togglesDirty = false
+Bool _npcDirty = false
 int _sla_exposure_Toggle
 int _apropos_two_wt_Toggle
 int _fhu_cum_Toggle
@@ -25,6 +26,29 @@ int _pregnancy_mod_Toggle
 int _paf_pee_Toggle
 int _paf_poo_Toggle
 int _defeat_mod_Toggle
+
+; NPC Tracking page option IDs (resolved each OnPageReset)
+int _npc_hotkey_option
+int _npc_reset_layout_option
+int _npc_group_x_slider
+int _npc_group_y_slider
+int _npc_label_font_menu
+int _npc_label_size_slider
+int[] _npc_clear_option
+int[] _npc_sla_arousal_toggle
+int[] _npc_sla_exposure_toggle
+int[] _npc_ap2_toggle
+int[] _npc_fhu_cum_toggle
+int[] _npc_fhu_anal_toggle
+int[] _npc_fhu_vaginal_toggle
+int[] _npc_fhu_oral_toggle
+int[] _npc_mme_milk_toggle
+int[] _npc_mme_lactacid_toggle
+int[] _npc_slp_toggle
+int[] _npc_preg_toggle
+int[] _npc_label_x_slider
+int[] _npc_label_y_slider
+int[] _npc_custom_label_option
 
 
 
@@ -41,17 +65,19 @@ Event OnConfigInit()
 EndEvent
 
 Event OnConfigClose()
-	If _togglesDirty
+	If _togglesDirty || _npcDirty
 		_togglesDirty = false
+		_npcDirty = false
 		widget_controller.toggleUpdateWidgets()
 	EndIf
 EndEvent
 
 Event OnConfigOpen()
-		Pages = New String[3]
+		Pages = New String[4]
 		Pages[0] = "$SLW_General_Page"
 		Pages[1] = "$SLW_Toggles_Page"
-		Pages[2] = "$SLW_Debug_Page"
+		Pages[2] = "$SLW_NPC_Page"
+		Pages[3] = "$SLW_Debug_Page"
 EndEvent
 
 Event OnPageReset(string page)
@@ -61,6 +87,8 @@ Event OnPageReset(string page)
 		General()
 	elseIf (page == "$SLW_Toggles_Page")
 		Toggles()
+	elseIf (page == "$SLW_NPC_Page")
+		NpcTracking()
 	elseIf (page == "$SLW_Debug_Page")
 		Debug()
 	endIf
@@ -122,6 +150,125 @@ Function Toggles()
 	AddHeaderOption("$SLW_Defeat")
 	Int defeatFlag = _getFlag(config.module_defeat.isInterfaceActive())
 	_defeat_mod_Toggle = addToggleOption("$SLW_Defeat_Icon", config.module_defeat_enabled, defeatFlag)
+EndFunction
+
+String Function _slotName(Int slot)
+	Actor a = config.getNpcSlot(slot)
+	If a
+		Return a.GetDisplayName()
+	EndIf
+	Return "(empty)"
+EndFunction
+
+Function _initNpcOptionArrays()
+	If !_npc_clear_option
+		_npc_clear_option = Utility.CreateIntArray(4, -1)
+	EndIf
+	If !_npc_sla_arousal_toggle
+		_npc_sla_arousal_toggle = Utility.CreateIntArray(4, -1)
+	EndIf
+	If !_npc_sla_exposure_toggle
+		_npc_sla_exposure_toggle = Utility.CreateIntArray(4, -1)
+	EndIf
+	If !_npc_ap2_toggle
+		_npc_ap2_toggle = Utility.CreateIntArray(4, -1)
+	EndIf
+	If !_npc_fhu_cum_toggle
+		_npc_fhu_cum_toggle = Utility.CreateIntArray(4, -1)
+	EndIf
+	If !_npc_fhu_anal_toggle
+		_npc_fhu_anal_toggle = Utility.CreateIntArray(4, -1)
+	EndIf
+	If !_npc_fhu_vaginal_toggle
+		_npc_fhu_vaginal_toggle = Utility.CreateIntArray(4, -1)
+	EndIf
+	If !_npc_fhu_oral_toggle
+		_npc_fhu_oral_toggle = Utility.CreateIntArray(4, -1)
+	EndIf
+	If !_npc_mme_milk_toggle
+		_npc_mme_milk_toggle = Utility.CreateIntArray(4, -1)
+	EndIf
+	If !_npc_mme_lactacid_toggle
+		_npc_mme_lactacid_toggle = Utility.CreateIntArray(4, -1)
+	EndIf
+	If !_npc_slp_toggle
+		_npc_slp_toggle = Utility.CreateIntArray(4, -1)
+	EndIf
+	If !_npc_preg_toggle
+		_npc_preg_toggle = Utility.CreateIntArray(4, -1)
+	EndIf
+	If !_npc_label_x_slider
+		_npc_label_x_slider = Utility.CreateIntArray(4, -1)
+	EndIf
+	If !_npc_label_y_slider
+		_npc_label_y_slider = Utility.CreateIntArray(4, -1)
+	EndIf
+	If !_npc_custom_label_option
+		_npc_custom_label_option = Utility.CreateIntArray(4, -1)
+	EndIf
+EndFunction
+
+String Function _customLabelDisplay(Int slot)
+	String s = config.getNpcCustomLabel(slot)
+	If s == ""
+		Return "$SLW_NPC_Custom_Label_None"
+	EndIf
+	Return s
+EndFunction
+
+Function NpcTracking()
+	_initNpcOptionArrays()
+	SetCursorFillMode(TOP_TO_BOTTOM)
+	SetCursorPosition(0)
+
+	AddHeaderOption("$SLW_NPC_Tracking")
+	_npc_hotkey_option = AddKeyMapOption("$SLW_NPC_Hotkey", config.npcHotkey)
+	_npc_group_x_slider = AddSliderOption("$SLW_NPC_Group_X", widget_controller.npcGroupX, "{0}", OPTION_FLAG_NONE)
+	_npc_group_y_slider = AddSliderOption("$SLW_NPC_Group_Y", widget_controller.npcGroupY, "{0}", OPTION_FLAG_NONE)
+	_npc_reset_layout_option = AddTextOption("$SLW_NPC_Reset_Layout", "$SLW_GO", OPTION_FLAG_NONE)
+	AddHeaderOption("$SLW_NPC_Label_Style")
+	_npc_label_font_menu = AddMenuOption("$SLW_NPC_Label_Font", _currentFontLabel(), OPTION_FLAG_NONE)
+	_npc_label_size_slider = AddSliderOption("$SLW_NPC_Label_Size", widget_controller.npcLabelSize, "{0}", OPTION_FLAG_NONE)
+	AddColorOptionST("NPC_LABEL_COLOR_STATE", "$SLW_NPC_Label_Color", widget_controller.getNpcLabelColorPacked())
+	AddEmptyOption()
+
+	Int slot = 1
+	While slot <= 3
+		; Header label is built dynamically with the actor name; SkyUI only resolves
+		; $KEY when the whole label is a single key, so the prefix stays in English.
+		AddHeaderOption("NPC Slot " + slot + ":  " + _slotName(slot))
+		Int slotFlag = OPTION_FLAG_NONE
+		If !config.getNpcSlot(slot)
+			slotFlag = OPTION_FLAG_DISABLED
+		EndIf
+		_npc_clear_option[slot] = AddTextOption("$SLW_NPC_Clear", "$SLW_GO", slotFlag)
+		_npc_sla_arousal_toggle[slot] = AddToggleOption("$SLW_Arousal_Icon_Enabled", config.getSlotModuleEnable(slot, config.MOD_SLA_AROUSAL), slotFlag)
+		_npc_sla_exposure_toggle[slot] = AddToggleOption("$SLW_Exposure_Icon_Enabled", config.getSlotModuleEnable(slot, config.MOD_SLA_EXPOSURE), slotFlag)
+		_npc_ap2_toggle[slot] = AddToggleOption("$SLW_WT_Icon_Enabled", config.getSlotModuleEnable(slot, config.MOD_AP2), slotFlag)
+		_npc_fhu_cum_toggle[slot] = AddToggleOption("$SLW_FHU_TI", config.getSlotModuleEnable(slot, config.MOD_FHU_CUM), slotFlag)
+		_npc_fhu_vaginal_toggle[slot] = AddToggleOption("$SLW_FHU_VI", config.getSlotModuleEnable(slot, config.MOD_FHU_VAGINAL), slotFlag)
+		_npc_fhu_anal_toggle[slot] = AddToggleOption("$SLW_FHU_AI", config.getSlotModuleEnable(slot, config.MOD_FHU_ANAL), slotFlag)
+		_npc_fhu_oral_toggle[slot] = AddToggleOption("$SLW_FHU_OI", config.getSlotModuleEnable(slot, config.MOD_FHU_ORAL), slotFlag)
+		_npc_mme_milk_toggle[slot] = AddToggleOption("$SLW_MME_MI", config.getSlotModuleEnable(slot, config.MOD_MME_MILK), slotFlag)
+		_npc_mme_lactacid_toggle[slot] = AddToggleOption("$SLW_MME_LI", config.getSlotModuleEnable(slot, config.MOD_MME_LACTACID), slotFlag)
+		_npc_slp_toggle[slot] = AddToggleOption("$SLW_SLP_Icon", config.getSlotModuleEnable(slot, config.MOD_SLP), slotFlag)
+		_npc_preg_toggle[slot] = AddToggleOption("$SLW_Pregnancy_Icons", config.getSlotModuleEnable(slot, config.MOD_PREG), slotFlag)
+		_npc_label_x_slider[slot] = AddSliderOption("$SLW_NPC_Label_OffsetX", widget_controller.getNpcLabelOffsetX(slot), "{0}", slotFlag)
+		_npc_label_y_slider[slot] = AddSliderOption("$SLW_NPC_Label_OffsetY", widget_controller.getNpcLabelOffsetY(slot), "{0}", slotFlag)
+		_npc_custom_label_option[slot] = AddInputOption("$SLW_NPC_Custom_Label", _customLabelDisplay(slot), slotFlag)
+		slot += 1
+	EndWhile
+EndFunction
+
+Int Function _findNpcSlotForOption(Int opt, Int[] arr)
+	Int i = 1
+	While i <= 3
+		If arr[i] == opt
+			Return i
+		EndIf
+		i += 1
+	EndWhile
+	Return 0
 EndFunction
 
 Function Debug()
@@ -255,7 +402,156 @@ Event onOptionSelect(int mcm_option)
 		_v = !config.module_defeat_enabled
 		config.module_defeat_enabled = _v
 		setToggleOptionValue(mcm_option, _v)
+	Else
+		_handleNpcPageSelect(mcm_option)
 	endIf
+EndEvent
+
+Function _handleNpcPageSelect(Int mcm_option)
+	_initNpcOptionArrays()
+	If mcm_option == _npc_reset_layout_option
+		widget_controller.applyDefaultNpcBarLayout()
+		_npcDirty = true
+		Return
+	EndIf
+	Int slot = _findNpcSlotForOption(mcm_option, _npc_clear_option)
+	If slot > 0
+		config.clearNpcSlot(slot)
+		_npcDirty = true
+		ForcePageReset()
+		Return
+	EndIf
+	If _tryToggleSubCode(mcm_option, _npc_sla_arousal_toggle, config.MOD_SLA_AROUSAL)
+		Return
+	EndIf
+	If _tryToggleSubCode(mcm_option, _npc_sla_exposure_toggle, config.MOD_SLA_EXPOSURE)
+		Return
+	EndIf
+	If _tryToggleSubCode(mcm_option, _npc_ap2_toggle, config.MOD_AP2)
+		Return
+	EndIf
+	If _tryToggleSubCode(mcm_option, _npc_fhu_cum_toggle, config.MOD_FHU_CUM)
+		Return
+	EndIf
+	If _tryToggleSubCode(mcm_option, _npc_fhu_anal_toggle, config.MOD_FHU_ANAL)
+		Return
+	EndIf
+	If _tryToggleSubCode(mcm_option, _npc_fhu_vaginal_toggle, config.MOD_FHU_VAGINAL)
+		Return
+	EndIf
+	If _tryToggleSubCode(mcm_option, _npc_fhu_oral_toggle, config.MOD_FHU_ORAL)
+		Return
+	EndIf
+	If _tryToggleSubCode(mcm_option, _npc_mme_milk_toggle, config.MOD_MME_MILK)
+		Return
+	EndIf
+	If _tryToggleSubCode(mcm_option, _npc_mme_lactacid_toggle, config.MOD_MME_LACTACID)
+		Return
+	EndIf
+	If _tryToggleSubCode(mcm_option, _npc_slp_toggle, config.MOD_SLP)
+		Return
+	EndIf
+	If _tryToggleSubCode(mcm_option, _npc_preg_toggle, config.MOD_PREG)
+		Return
+	EndIf
+EndFunction
+
+Bool Function _tryToggleSubCode(Int mcm_option, Int[] arr, Int subCode)
+	Int slot = _findNpcSlotForOption(mcm_option, arr)
+	If slot <= 0
+		Return False
+	EndIf
+	Bool nv = !config.getSlotModuleEnable(slot, subCode)
+	config.setSlotModuleEnable(slot, subCode, nv)
+	setToggleOptionValue(mcm_option, nv)
+	_npcDirty = true
+	Return True
+EndFunction
+
+; Curated set of fonts that ship with Skyrim and render legibly at HUD sizes.
+; Index 0 is the safe default ($EverywhereFont supports all character ranges).
+String[] Function _getFontKeys()
+	String[] keys = new String[7]
+	keys[0] = "$EverywhereFont"
+	keys[1] = "$EverywhereBoldFont"
+	keys[2] = "$EverywhereMediumFont"
+	keys[3] = "$SkyrimBooks"
+	keys[4] = "$SkyrimBooks_Gaelic"
+	keys[5] = "$HandwrittenFont"
+	keys[6] = "$DragonFont"
+	Return keys
+EndFunction
+
+String[] Function _getFontLabels()
+	String[] labels = new String[7]
+	labels[0] = "Default (Everywhere)"
+	labels[1] = "Everywhere Bold"
+	labels[2] = "Everywhere Medium"
+	labels[3] = "Skyrim Books"
+	labels[4] = "Skyrim Books Gaelic"
+	labels[5] = "Handwritten"
+	labels[6] = "Dragon"
+	Return labels
+EndFunction
+
+Int Function _findFontIndex(String fontKey)
+	String[] keys = _getFontKeys()
+	Int i = 0
+	While i < keys.Length
+		If keys[i] == fontKey
+			Return i
+		EndIf
+		i += 1
+	EndWhile
+	Return 0
+EndFunction
+
+String Function _currentFontLabel()
+	String[] labels = _getFontLabels()
+	Return labels[_findFontIndex(widget_controller.npcLabelFont)]
+EndFunction
+
+Event OnOptionMenuOpen(Int mcm_option)
+	If mcm_option == _npc_label_font_menu
+		SetMenuDialogOptions(_getFontLabels())
+		SetMenuDialogStartIndex(_findFontIndex(widget_controller.npcLabelFont))
+	EndIf
+EndEvent
+
+Event OnOptionMenuAccept(Int mcm_option, Int index)
+	If mcm_option == _npc_label_font_menu
+		String[] keys = _getFontKeys()
+		String[] labels = _getFontLabels()
+		If index >= 0 && index < keys.Length
+			widget_controller.setNpcLabelFont(keys[index])
+			SetMenuOptionValue(mcm_option, labels[index])
+		EndIf
+	EndIf
+EndEvent
+
+Event OnOptionInputOpen(Int mcm_option)
+	_initNpcOptionArrays()
+	Int slot = _findNpcSlotForOption(mcm_option, _npc_custom_label_option)
+	If slot > 0
+		SetInputDialogStartText(config.getNpcCustomLabel(slot))
+	EndIf
+EndEvent
+
+Event OnOptionInputAccept(Int mcm_option, String value)
+	_initNpcOptionArrays()
+	Int slot = _findNpcSlotForOption(mcm_option, _npc_custom_label_option)
+	If slot > 0
+		config.setNpcCustomLabel(slot, value)
+		widget_controller.refreshNpcLabel(slot)
+		SetInputOptionValue(mcm_option, _customLabelDisplay(slot))
+	EndIf
+EndEvent
+
+Event OnOptionKeyMapChange(Int mcm_option, Int newKey, String conflictControl, String conflictName)
+	If mcm_option == _npc_hotkey_option
+		config.setHotkey(newKey)
+		SetKeyMapOptionValue(mcm_option, newKey)
+	EndIf
 EndEvent
 
 Event OnOptionSliderOpen(Int mcm_option)
@@ -264,14 +560,94 @@ Event OnOptionSliderOpen(Int mcm_option)
 		SetSliderDialogRange(1, 60)
 		SetSliderDialogInterval(1.00)
 		SetSliderDialogDefaultValue(5)
+		Return
 	endIf
+	_initNpcOptionArrays()
+	If mcm_option == _npc_group_x_slider
+		SetSliderDialogStartValue(widget_controller.npcGroupX)
+		SetSliderDialogRange(0, 1920)
+		SetSliderDialogInterval(5.0)
+		SetSliderDialogDefaultValue(1700)
+		Return
+	EndIf
+	If mcm_option == _npc_group_y_slider
+		SetSliderDialogStartValue(widget_controller.npcGroupY)
+		SetSliderDialogRange(0, 1080)
+		SetSliderDialogInterval(5.0)
+		SetSliderDialogDefaultValue(900)
+		Return
+	EndIf
+	If mcm_option == _npc_label_size_slider
+		SetSliderDialogStartValue(widget_controller.npcLabelSize)
+		SetSliderDialogRange(10, 60)
+		SetSliderDialogInterval(1.0)
+		SetSliderDialogDefaultValue(24)
+		Return
+	EndIf
+	Int slot = _findNpcSlotForOption(mcm_option, _npc_label_x_slider)
+	If slot > 0
+		SetSliderDialogStartValue(widget_controller.getNpcLabelOffsetX(slot))
+		SetSliderDialogRange(-200, 200)
+		SetSliderDialogInterval(2.0)
+		SetSliderDialogDefaultValue(0)
+		Return
+	EndIf
+	slot = _findNpcSlotForOption(mcm_option, _npc_label_y_slider)
+	If slot > 0
+		SetSliderDialogStartValue(widget_controller.getNpcLabelOffsetY(slot))
+		SetSliderDialogRange(-200, 200)
+		SetSliderDialogInterval(2.0)
+		SetSliderDialogDefaultValue(0)
+		Return
+	EndIf
 EndEvent
+
+Bool Function _handleNpcSliderAccept(Int mcm_option, Float value)
+	_initNpcOptionArrays()
+	If mcm_option == _npc_group_x_slider
+		Int newX = value As Int
+		widget_controller.setNpcGroupPos(newX, widget_controller.npcGroupY)
+		widget_controller._layoutNpcBars()
+		SetSliderOptionValue(mcm_option, newX, "{0}")
+		Return True
+	EndIf
+	If mcm_option == _npc_group_y_slider
+		Int newY = value As Int
+		widget_controller.setNpcGroupPos(widget_controller.npcGroupX, newY)
+		widget_controller._layoutNpcBars()
+		SetSliderOptionValue(mcm_option, newY, "{0}")
+		Return True
+	EndIf
+	If mcm_option == _npc_label_size_slider
+		Int newSize = value As Int
+		widget_controller.setNpcLabelSize(newSize)
+		SetSliderOptionValue(mcm_option, newSize, "{0}")
+		Return True
+	EndIf
+	Int slot = _findNpcSlotForOption(mcm_option, _npc_label_x_slider)
+	If slot > 0
+		Int newX = value As Int
+		widget_controller.setNpcLabelOffset(slot, newX, widget_controller.getNpcLabelOffsetY(slot))
+		SetSliderOptionValue(mcm_option, newX, "{0}")
+		Return True
+	EndIf
+	slot = _findNpcSlotForOption(mcm_option, _npc_label_y_slider)
+	If slot > 0
+		Int newY = value As Int
+		widget_controller.setNpcLabelOffset(slot, widget_controller.getNpcLabelOffsetX(slot), newY)
+		SetSliderOptionValue(mcm_option, newY, "{0}")
+		Return True
+	EndIf
+	Return False
+EndFunction
 
 Event OnOptionSliderAccept(Int mcm_option, Float Value)
 	If (mcm_option == _update_interval_slider)
 		config.updateInterval = Value as Int
 		SetSliderOptionValue(mcm_option, Value, "{0}")
+		Return
 	EndIf
+	_handleNpcSliderAccept(mcm_option, Value)
 EndEvent
 
 State UPDATE_DEPENDENCIES_STATE
@@ -288,6 +664,27 @@ State UPDATE_DEPENDENCIES_STATE
 	Event OnHighlightST()
         SetInfoText("$SLW_UpdateDeps_Info")
     EndEvent   
+EndState
+
+State NPC_LABEL_COLOR_STATE
+	Event OnColorOpenST()
+		SetColorDialogStartColor(widget_controller.getNpcLabelColorPacked())
+		SetColorDialogDefaultColor(0xFFFFFF)
+	EndEvent
+
+	Event OnColorAcceptST(Int color)
+		widget_controller.setNpcLabelColorPacked(color)
+		SetColorOptionValueST(widget_controller.getNpcLabelColorPacked())
+	EndEvent
+
+	Event OnDefaultST()
+		widget_controller.setNpcLabelColorPacked(0xFFFFFF)
+		SetColorOptionValueST(widget_controller.getNpcLabelColorPacked())
+	EndEvent
+
+	Event OnHighlightST()
+		SetInfoText("$SLW_NPC_Label_Color_Info")
+	EndEvent
 EndState
 
 State ADD_EMPTY_ICON_STATE

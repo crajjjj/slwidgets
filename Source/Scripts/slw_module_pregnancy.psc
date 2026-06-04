@@ -9,8 +9,9 @@ slw_config Property config Auto
 Actor Property PlayerRef Auto
 
 int EMPTY = -1
-int gems_state_prv = -1
-Float GemPrePercent = 0.00
+int FM3_EMPTY = -2
+int[] gems_state_prv
+Float[] GemPrePercent
 
 Bool Property Plugin_EstrusChaurus = false auto hidden
 Bool Property Plugin_EstrusSpider = false auto hidden
@@ -69,6 +70,7 @@ string iconbasepath = "widgets/iwant/widgets/library/pregnancymod/"
 
 ;override
 Function initInterface()
+	_ensurePrvArrays()
 	akActorName = playerRef.GetLeveledActorBase().GetName()
 	
 	If (!Plugin_EstrusChaurus && isECReady())
@@ -204,6 +206,24 @@ Bool Function isInterfaceActive()
 	Return (Plugin_EstrusSpider || 	Plugin_EstrusChaurus || Plugin_EstrusDwemer || Plugin_BeeingFemale || Plugin_HentaiPregnancy || Plugin_EggFactory || Plugin_FertilityMode3 || Plugin_SGO4 || Plugin_CurseOfLife)
 EndFunction
 
+Function _ensurePrvArrays()
+	If !gems_state_prv
+		gems_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	EndIf
+	If !GemPrePercent
+		GemPrePercent = Utility.CreateFloatArray(getSlotCount(), 0.0)
+	EndIf
+	If !_fm3_actorIndex_prv
+		_fm3_actorIndex_prv = Utility.CreateIntArray(getSlotCount(), FM3_EMPTY)
+	EndIf
+	If !_bf_state_prv
+		_bf_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	EndIf
+	If !_hp_rank_prv
+		_hp_rank_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	EndIf
+EndFunction
+
 ;override
 Function resetInterface()
 	Plugin_EstrusSpider = false
@@ -215,104 +235,110 @@ Function resetInterface()
 	Plugin_FertilityMode3 = false
 	Plugin_SGO4 = false
 	Plugin_CurseOfLife = false
-	gems_state_prv = EMPTY
-	GemPrePercent = 0.0
-	_fm3_actorIndex_prv = -2
-	_bf_state_prv = -1
-	_hp_rank_prv = -1
+	gems_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	GemPrePercent = Utility.CreateFloatArray(getSlotCount(), 0.0)
+	_fm3_actorIndex_prv = Utility.CreateIntArray(getSlotCount(), FM3_EMPTY)
+	_bf_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	_hp_rank_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
 EndFunction
 
 ;override
-Event onWidgetReload(iWant_Status_Bars iBars)
-	_releasePregnancyIcons(iBars)
+Event onWidgetReload(iWant_Status_Bars iBars, Actor target, Int slot)
+	_ensurePrvArrays()
+	_releasePregnancyIcons(iBars, slot)
 EndEvent
 
 ;override
-Event onWidgetToggleUpdate(iWant_Status_Bars iBars)
-	If !config.isOn(config.module_pregnancy_enabled) || !isInterfaceActive()
-		_releasePregnancyIcons(iBars)
-		gems_state_prv = EMPTY
-		GemPrePercent = 0.0
+Event onWidgetToggleUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
+	_ensurePrvArrays()
+	If !target || !config.isOnForSlot(config.module_pregnancy_enabled, slot, config.MOD_PREG) || !isInterfaceActive()
+		_releasePregnancyIcons(iBars, slot)
+		gems_state_prv[slot] = EMPTY
+		GemPrePercent[slot] = 0.0
 	EndIf
 EndEvent
 
 ;override
-Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
-	if (config.isOn(config.module_pregnancy_enabled) && isInterfaceActive())
-		_reloadPregnancyIcons(iBars)
+Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
+	_ensurePrvArrays()
+	if !target
+		return
+	endif
+	if (config.isOnForSlot(config.module_pregnancy_enabled, slot, config.MOD_PREG) && isInterfaceActive())
+		_reloadPregnancyIcons(iBars, target, slot)
 	endIf
 EndEvent
 
-Function _releasePregnancyIcons(iWant_Status_Bars iBars)
-	iBars.releaseIcon(slwGetModName(),Pregnancy_Basic)
-	iBars.releaseIcon(slwGetModName(),Pregnancy_CumInflation)
-	iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)
-	iBars.releaseIcon(slwGetModName(),Pregnancy_Fetus)
-	iBars.releaseIcon(slwGetModName(),Pregnancy_Eggs)
-	iBars.releaseIcon(slwGetModName(),Pregnancy_Spider_Eggs)
-	iBars.releaseIcon(slwGetModName(),Pregnancy_Chaurus_Eggs)
-	iBars.releaseIcon(slwGetModName(),Pregnancy_Dwemer_Spheres)
-	iBars.releaseIcon(slwGetModName(),Pregnancy_Gems)
-	iBars.releaseIcon(slwGetModName(),Pregnancy_Trimester1)
-	iBars.releaseIcon(slwGetModName(),Pregnancy_Trimester2)
-	iBars.releaseIcon(slwGetModName(),Pregnancy_Trimester3)
+Function _releasePregnancyIcons(iWant_Status_Bars iBars, Int slot)
+	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Basic, slot))
+	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_CumInflation, slot))
+	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Ovulation, slot))
+	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Fetus, slot))
+	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Eggs, slot))
+	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Spider_Eggs, slot))
+	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Chaurus_Eggs, slot))
+	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Dwemer_Spheres, slot))
+	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Gems, slot))
+	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester1, slot))
+	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester2, slot))
+	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester3, slot))
 EndFunction
 
 
- Function _reloadPregnancyIcons(iWant_Status_Bars iBars)
+ Function _reloadPregnancyIcons(iWant_Status_Bars iBars, Actor target, Int slot)
 	if Plugin_FertilityMode3
-		handleFertilityMode3(iBars)
+		handleFertilityMode3(iBars, target, slot)
 	elseif Plugin_HentaiPregnancy
-		handleHentaiPregnancy(iBars)
+		handleHentaiPregnancy(iBars, target, slot)
 	elseif Plugin_BeeingFemale
-		handleBeeingFemale(iBars)
-	endif
-	
-	;Soul Gem Oven 4
-	if Plugin_SGO4
-		handleSGO4(iBars)
+		handleBeeingFemale(iBars, target, slot)
 	endif
 
-	
+	;Soul Gem Oven 4
+	if Plugin_SGO4
+		handleSGO4(iBars, target, slot)
+	endif
+
+
 	;EggFactory
 	If Plugin_EggFactory
-		if isEggFactPregnant(EggFactoryMasterTimerQuest,PlayerRef) ;EggFactoryPregCheck Faction
-			_loadEggsIcon(iBars)
+		if isEggFactPregnant(EggFactoryMasterTimerQuest, target) ;EggFactoryPregCheck Faction
+			_loadEggsIcon(iBars, slot)
 		else
-			iBars.releaseIcon(slwGetModName(),Pregnancy_Eggs)
+			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Eggs, slot))
 		endif
 	endif
 
 	;Estrus Chaurus+
 	if Plugin_EstrusChaurus
-		if PlayerRef.HasSpell(_ChaurusBreederSpell) || PlayerRef.WornHasKeyword(_zzEstrusParasiteKeyword)  
-			_loadChaurusEggsIcon(iBars)
+		if target.HasSpell(_ChaurusBreederSpell) || target.WornHasKeyword(_zzEstrusParasiteKeyword)
+			_loadChaurusEggsIcon(iBars, slot)
 		Else
-			iBars.releaseIcon(slwGetModName(),Pregnancy_Chaurus_Eggs)
-		endif
-	endif
-	
-	;Estrus Spider+
-	if Plugin_EstrusSpider
-		if PlayerRef.HasSpell( _SpiderBreederSpell) || PlayerRef.WornHasKeyword(_zzEstrusSpiderParasiteKWD) ;SpiderBreeder spell
-			_loadSpiderEggsIcon(iBars)
-		else
-			iBars.releaseIcon(slwGetModName(),Pregnancy_Spider_Eggs)
-		endif
-	endif
-	
-	;Estrus Dwemer+
-	if Plugin_EstrusDwemer
-		if PlayerRef.HasSpell(_DwemerBreederSpell) || PlayerRef.WornHasKeyword(_zzEstrusDwemerParasiteKWD)  ;DwemerBreeder spell
-			_loadSphereIcon(iBars)
-		else
-			iBars.releaseIcon(slwGetModName(),Pregnancy_Dwemer_Spheres)
+			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Chaurus_Eggs, slot))
 		endif
 	endif
 
-	;Curse Of Life
-	if Plugin_CurseOfLife
-		handleCOF(iBars)
+	;Estrus Spider+
+	if Plugin_EstrusSpider
+		if target.HasSpell( _SpiderBreederSpell) || target.WornHasKeyword(_zzEstrusSpiderParasiteKWD) ;SpiderBreeder spell
+			_loadSpiderEggsIcon(iBars, slot)
+		else
+			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Spider_Eggs, slot))
+		endif
+	endif
+
+	;Estrus Dwemer+
+	if Plugin_EstrusDwemer
+		if target.HasSpell(_DwemerBreederSpell) || target.WornHasKeyword(_zzEstrusDwemerParasiteKWD)  ;DwemerBreeder spell
+			_loadSphereIcon(iBars, slot)
+		else
+			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Dwemer_Spheres, slot))
+		endif
+	endif
+
+	;Curse Of Life — global state, only meaningful for player
+	if Plugin_CurseOfLife && slot == 0
+		handleCOF(iBars, slot)
 	endif
 
 EndFunction
@@ -329,14 +355,14 @@ EndFunction
 ; $FW_MENU_INFO_StateName8	Replanish
 ; $FW_MENU_INFO_StateName20	Pregnant
 ; $FW_MENU_INFO_StateName21	Pregnant by chaurus
-int _bf_state_prv = -1
+int[] _bf_state_prv
 
-Function handleBeeingFemale(iWant_Status_Bars iBars)
-	int st = StorageUtil.GetIntValue(PlayerRef, "FW.CurrentState", 0)
-	bool isCumInside = slw_interface_bf.HasRelevantSperm(fwControllerQuest, PlayerRef)
-	if st != _bf_state_prv
-		WriteLog("ModulePregnancy: BF state changed " + _bf_state_prv + " -> " + st + ", cum:" + isCumInside)
-		_bf_state_prv = st
+Function handleBeeingFemale(iWant_Status_Bars iBars, Actor target, Int slot)
+	int st = StorageUtil.GetIntValue(target, "FW.CurrentState", 0)
+	bool isCumInside = slw_interface_bf.HasRelevantSperm(fwControllerQuest, target)
+	if st != _bf_state_prv[slot]
+		WriteLog("ModulePregnancy: BF state changed " + _bf_state_prv[slot] + " -> " + st + ", cum:" + isCumInside)
+		_bf_state_prv[slot] = st
 	endif
 
 	bool showOvulation = (st == 1 || st == 2)
@@ -348,128 +374,128 @@ Function handleBeeingFemale(iWant_Status_Bars iBars)
 	bool showChaurusEggs = (st == 21)
 
 	if showOvulation
-		_loadOvulationIcon(iBars)
+		_loadOvulationIcon(iBars, slot)
 	else
-		iBars.releaseIcon(slwGetModName(), Pregnancy_Ovulation)
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Ovulation, slot))
 	endif
 
 	if showCumInflation
-		_loadCumInflationIcon(iBars)
+		_loadCumInflationIcon(iBars, slot)
 	else
-		iBars.releaseIcon(slwGetModName(), Pregnancy_CumInflation)
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_CumInflation, slot))
 	endif
 
 	if showBasic
-		_loadBasicIcon(iBars)
+		_loadBasicIcon(iBars, slot)
 	else
-		iBars.releaseIcon(slwGetModName(), Pregnancy_Basic)
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Basic, slot))
 	endif
 
 	if showTrimester1
-		_loadTrimester1Icon(iBars)
+		_loadTrimester1Icon(iBars, slot)
 	else
-		iBars.releaseIcon(slwGetModName(), Pregnancy_Trimester1)
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester1, slot))
 	endif
 
 	if showTrimester2
-		_loadTrimester2Icon(iBars)
+		_loadTrimester2Icon(iBars, slot)
 	else
-		iBars.releaseIcon(slwGetModName(), Pregnancy_Trimester2)
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester2, slot))
 	endif
 
 	if showTrimester3
-		_loadTrimester3Icon(iBars)
+		_loadTrimester3Icon(iBars, slot)
 	else
-		iBars.releaseIcon(slwGetModName(), Pregnancy_Trimester3)
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester3, slot))
 	endif
 
 	if showChaurusEggs
-		_loadChaurusEggsIcon(iBars)
+		_loadChaurusEggsIcon(iBars, slot)
 	else
-		iBars.releaseIcon(slwGetModName(), Pregnancy_Chaurus_Eggs)
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Chaurus_Eggs, slot))
 	endif
 
 EndFunction
-int _fm3_actorIndex_prv = -2
+int[] _fm3_actorIndex_prv
 
-Function handleFertilityMode3(iWant_Status_Bars iBars)
-	int actorIndex = getFMActorIndex(_FMStorage,PlayerRef)
-	if actorIndex != _fm3_actorIndex_prv
+Function handleFertilityMode3(iWant_Status_Bars iBars, Actor target, Int slot)
+	int actorIndex = getFMActorIndex(_FMStorage, target)
+	if actorIndex != _fm3_actorIndex_prv[slot]
 		if actorIndex == -1
 			WriteLog("ModulePregnancy: FM3 player not in TrackedActors, releasing icons", 1)
 		else
 			WriteLog("ModulePregnancy: FM3 player tracked at index " + actorIndex)
 		endif
-		_fm3_actorIndex_prv = actorIndex
+		_fm3_actorIndex_prv[slot] = actorIndex
 	endif
 	if (actorIndex == -1)
-		iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)
-		iBars.releaseIcon(slwGetModName(),Pregnancy_Trimester1)
-		iBars.releaseIcon(slwGetModName(),Pregnancy_Trimester2)
-		iBars.releaseIcon(slwGetModName(),Pregnancy_Trimester3)
-		iBars.releaseIcon(slwGetModName(),Pregnancy_Fetus)
-		iBars.releaseIcon(slwGetModName(),Pregnancy_CumInflation)
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Ovulation, slot))
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester1, slot))
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester2, slot))
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester3, slot))
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Fetus, slot))
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_CumInflation, slot))
 		return
 	endIf
-	
-	if PlayerRef.HasSpell(_JSW_BB_Ovulation)
-		_loadOvulationIcon(iBars)
+
+	if target.HasSpell(_JSW_BB_Ovulation)
+		_loadOvulationIcon(iBars, slot)
 	else
-		iBars.releaseIcon(slwGetModName(), Pregnancy_Ovulation)
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Ovulation, slot))
 	endif
 
-	if PlayerRef.HasSpell(_JSW_BB_Trimester1)
-		_loadTrimester1Icon(iBars)
+	if target.HasSpell(_JSW_BB_Trimester1)
+		_loadTrimester1Icon(iBars, slot)
 	else
-		iBars.releaseIcon(slwGetModName(), Pregnancy_Trimester1)
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester1, slot))
 	endif
 
-	if PlayerRef.HasSpell(_JSW_BB_Trimester2)
-		_loadTrimester2Icon(iBars)
+	if target.HasSpell(_JSW_BB_Trimester2)
+		_loadTrimester2Icon(iBars, slot)
 	else
-		iBars.releaseIcon(slwGetModName(), Pregnancy_Trimester2)
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester2, slot))
 	endif
 
-	if PlayerRef.HasSpell(_JSW_BB_Trimester3)
-		_loadTrimester3Icon(iBars)
+	if target.HasSpell(_JSW_BB_Trimester3)
+		_loadTrimester3Icon(iBars, slot)
 	else
-		iBars.releaseIcon(slwGetModName(), Pregnancy_Trimester3)
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester3, slot))
 	endif
 
 	; Mismatch error can be shown cause tweaks mod changed SpermCount array to int
   	If hasFMSperm(_FMStorage, actorIndex)
 	; Fired for inflated actors
-		_loadCumInflationIcon(iBars)
+		_loadCumInflationIcon(iBars, slot)
     else
-		iBars.releaseIcon(slwGetModName(), Pregnancy_CumInflation)
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_CumInflation, slot))
     endIf
 
 EndFunction
 
-Function handleSGO4(iWant_Status_Bars iBars)
-	int gems_state_curr = gotGems(_dse_sgo_QuestDatabase_Main,PlayerRef)
-	Float GemTotalPercent = gotGemTotalPercent(_dse_sgo_QuestDatabase_Main,PlayerRef)
+Function handleSGO4(iWant_Status_Bars iBars, Actor target, Int slot)
+	int gems_state_curr = gotGems(_dse_sgo_QuestDatabase_Main, target)
+	Float GemTotalPercent = gotGemTotalPercent(_dse_sgo_QuestDatabase_Main, target)
 	GemTotalPercent = ((GemTotalPercent*100.0) as Int) /100.0
 	if gems_state_curr > 0
-		if gems_state_prv == EMPTY || gems_state_prv != gems_state_curr || GemPrePercent != GemTotalPercent
-			iBars.releaseIcon(slwGetModName(), Pregnancy_Gems)
-			_loadGemsIcon(iBars,GemTotalPercent)
+		if gems_state_prv[slot] == EMPTY || gems_state_prv[slot] != gems_state_curr || GemPrePercent[slot] != GemTotalPercent
+			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Gems, slot))
+			_loadGemsIcon(iBars, slot, GemTotalPercent)
 			if gems_state_curr >= 6
-				iBars.setIconStatus(slwGetModName(), Pregnancy_Gems, 5)
+				iBars.setIconStatus(slwGetModName(), getIconNameForSlot(Pregnancy_Gems, slot), 5)
 			else
-				iBars.setIconStatus(slwGetModName(), Pregnancy_Gems, gems_state_curr - 1)
+				iBars.setIconStatus(slwGetModName(), getIconNameForSlot(Pregnancy_Gems, slot), gems_state_curr - 1)
 			endif
-			gems_state_prv = gems_state_curr
-			GemPrePercent = GemTotalPercent
+			gems_state_prv[slot] = gems_state_curr
+			GemPrePercent[slot] = GemTotalPercent
 		endif
 	else
-		iBars.releaseIcon(slwGetModName(), Pregnancy_Gems)
-		gems_state_prv = EMPTY
-		GemPrePercent = 0.0
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Gems, slot))
+		gems_state_prv[slot] = EMPTY
+		GemPrePercent[slot] = 0.0
 	endif
 EndFunction
 
-Function handleCOF(iWant_Status_Bars iBars)
+Function handleCOF(iWant_Status_Bars iBars, Int slot)
 	; Overall Status
 	float CharusCurrentSize = StorageUtil.GetFloatValue(none, "CurseOfLife_CharusCurrentSize", 0.0)
 	float SpiderCurrentSize = StorageUtil.GetFloatValue(none, "CurseOfLife_SpiderCurrentSize", 0.0)
@@ -477,55 +503,55 @@ Function handleCOF(iWant_Status_Bars iBars)
 	float BlessingCurrentSize = StorageUtil.GetFloatValue(none, "CurseOfLife_BlessingCurrentSize", 0.0)
 
 	if (CharusCurrentSize > 0)
-		_loadChaurusEggsIcon(iBars)
+		_loadChaurusEggsIcon(iBars, slot)
 	Else
-		iBars.releaseIcon(slwGetModName(),Pregnancy_Chaurus_Eggs)
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Chaurus_Eggs, slot))
 	endif
 
 	if (SpiderCurrentSize > 0)
-		_loadSpiderEggsIcon(iBars)
+		_loadSpiderEggsIcon(iBars, slot)
 	else
-		iBars.releaseIcon(slwGetModName(),Pregnancy_Spider_Eggs)
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Spider_Eggs, slot))
 	endif
 
 	if (DragonCurrentSize > 0 || BlessingCurrentSize > 0)
-		_loadEggsIcon(iBars)
+		_loadEggsIcon(iBars, slot)
 	else
-		iBars.releaseIcon(slwGetModName(),Pregnancy_Eggs)
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Eggs, slot))
 	endif
 
 EndFunction
 
-int _hp_rank_prv = -1
+int[] _hp_rank_prv
 
 ;Hentai pregnancy LE/SE
 	;You can check pregnancy through "HentaiPregnantFaction" its ranks are: 1- actor is cuminflated 2- actor is cuminflated and will be pregnant 3- actor is pregnant
-Function handleHentaiPregnancy(iWant_Status_Bars iBars)
-	int _HentaiPregnantFactionRank = PlayerRef.GetFactionRank(_HentaiPregnantFaction)
-	if _HentaiPregnantFactionRank != _hp_rank_prv
-		WriteLog("ModulePregnancy: HP faction rank changed " + _hp_rank_prv + " -> " + _HentaiPregnantFactionRank)
-		_hp_rank_prv = _HentaiPregnantFactionRank
+Function handleHentaiPregnancy(iWant_Status_Bars iBars, Actor target, Int slot)
+	int _HentaiPregnantFactionRank = target.GetFactionRank(_HentaiPregnantFaction)
+	if _HentaiPregnantFactionRank != _hp_rank_prv[slot]
+		WriteLog("ModulePregnancy: HP faction rank changed " + _hp_rank_prv[slot] + " -> " + _HentaiPregnantFactionRank)
+		_hp_rank_prv[slot] = _HentaiPregnantFactionRank
 	endif
-	if _HentaiPregnantFactionRank == 1 
-			_loadCumInflationIcon(iBars)
-			iBars.releaseIcon(slwGetModName(),Pregnancy_Fetus)
-			iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)
+	if _HentaiPregnantFactionRank == 1
+			_loadCumInflationIcon(iBars, slot)
+			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Fetus, slot))
+			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Ovulation, slot))
 	Elseif _HentaiPregnantFactionRank == 2
-			_loadCumInflationIcon(iBars)
-			_loadOvulationIcon(iBars)
-			iBars.releaseIcon(slwGetModName(),Pregnancy_Fetus)
+			_loadCumInflationIcon(iBars, slot)
+			_loadOvulationIcon(iBars, slot)
+			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Fetus, slot))
 	ElseIf _HentaiPregnantFactionRank == 3
-			_loadFetusIcon(iBars)
-			iBars.releaseIcon(slwGetModName(),Pregnancy_CumInflation)
-			iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)
+			_loadFetusIcon(iBars, slot)
+			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_CumInflation, slot))
+			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Ovulation, slot))
 	Else
-			iBars.releaseIcon(slwGetModName(),Pregnancy_Ovulation)
-			iBars.releaseIcon(slwGetModName(),Pregnancy_CumInflation)
-			iBars.releaseIcon(slwGetModName(),Pregnancy_Fetus)
+			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Ovulation, slot))
+			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_CumInflation, slot))
+			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Fetus, slot))
 	endif
 EndFunction
 
-Function _loadBasicIcon(iWant_Status_Bars iBars)
+Function _loadBasicIcon(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[1]
 	String[] d = new String[1]
 	Int[] r = new Int[1]
@@ -543,10 +569,10 @@ Function _loadBasicIcon(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(Pregnancy_Basic, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), Pregnancy_Basic, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(Pregnancy_Basic, slot), d, s, r, g, b, a, slot)
 EndFunction
 
-Function _loadTrimester1Icon(iWant_Status_Bars iBars)
+Function _loadTrimester1Icon(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[1]
 	String[] d = new String[1]
 	Int[] r = new Int[1]
@@ -563,10 +589,10 @@ Function _loadTrimester1Icon(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(Pregnancy_Trimester1, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), Pregnancy_Trimester1, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(Pregnancy_Trimester1, slot), d, s, r, g, b, a, slot)
 EndFunction	
 
-Function _loadTrimester2Icon(iWant_Status_Bars iBars)
+Function _loadTrimester2Icon(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[1]
 	String[] d = new String[1]
 	Int[] r = new Int[1]
@@ -583,10 +609,10 @@ Function _loadTrimester2Icon(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(Pregnancy_Trimester2, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), Pregnancy_Trimester2, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(Pregnancy_Trimester2, slot), d, s, r, g, b, a, slot)
 EndFunction
 
-Function _loadTrimester3Icon(iWant_Status_Bars iBars)
+Function _loadTrimester3Icon(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[1]
 	String[] d = new String[1]
 	Int[] r = new Int[1]
@@ -603,10 +629,10 @@ Function _loadTrimester3Icon(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(Pregnancy_Trimester3, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), Pregnancy_Trimester3, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(Pregnancy_Trimester3, slot), d, s, r, g, b, a, slot)
 EndFunction	
 
-Function _loadEggsIcon(iWant_Status_Bars iBars)
+Function _loadEggsIcon(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[1]
 	String[] d = new String[1]
 	Int[] r = new Int[1]
@@ -623,10 +649,10 @@ Function _loadEggsIcon(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(Pregnancy_Eggs, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), Pregnancy_Eggs, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(Pregnancy_Eggs, slot), d, s, r, g, b, a, slot)
 EndFunction	
 
-Function _loadFetusIcon(iWant_Status_Bars iBars)
+Function _loadFetusIcon(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[1]
 	String[] d = new String[1]
 	Int[] r = new Int[1]
@@ -644,10 +670,10 @@ Function _loadFetusIcon(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(Pregnancy_Fetus, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), Pregnancy_Fetus, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(Pregnancy_Fetus, slot), d, s, r, g, b, a, slot)
 EndFunction	
 
-Function _loadChaurusEggsIcon(iWant_Status_Bars iBars)
+Function _loadChaurusEggsIcon(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[1]
 	String[] d = new String[1]
 	Int[] r = new Int[1]
@@ -664,10 +690,10 @@ Function _loadChaurusEggsIcon(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(Pregnancy_Chaurus_Eggs, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), Pregnancy_Chaurus_Eggs, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(Pregnancy_Chaurus_Eggs, slot), d, s, r, g, b, a, slot)
 EndFunction	
 
-Function _loadSpiderEggsIcon(iWant_Status_Bars iBars)
+Function _loadSpiderEggsIcon(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[1]
 	String[] d = new String[1]
 	Int[] r = new Int[1]
@@ -684,10 +710,10 @@ Function _loadSpiderEggsIcon(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(Pregnancy_Spider_Eggs, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), Pregnancy_Spider_Eggs, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(Pregnancy_Spider_Eggs, slot), d, s, r, g, b, a, slot)
 EndFunction	
 
-Function _loadSphereIcon(iWant_Status_Bars iBars)
+Function _loadSphereIcon(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[1]
 	String[] d = new String[1]
 	Int[] r = new Int[1]
@@ -704,10 +730,10 @@ Function _loadSphereIcon(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(Pregnancy_Dwemer_Spheres, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), Pregnancy_Dwemer_Spheres, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(Pregnancy_Dwemer_Spheres, slot), d, s, r, g, b, a, slot)
 EndFunction	
 
-Function _loadCumInflationIcon(iWant_Status_Bars iBars)
+Function _loadCumInflationIcon(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[1]
 	String[] d = new String[1]
 	Int[] r = new Int[1]
@@ -730,10 +756,10 @@ Function _loadCumInflationIcon(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(Pregnancy_CumInflation, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), Pregnancy_CumInflation, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(Pregnancy_CumInflation, slot), d, s, r, g, b, a, slot)
 EndFunction	
 
-Function _loadOvulationIcon(iWant_Status_Bars iBars)
+Function _loadOvulationIcon(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[1]
 	String[] d = new String[1]
 	Int[] r = new Int[1]
@@ -750,10 +776,10 @@ Function _loadOvulationIcon(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(Pregnancy_Ovulation, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), Pregnancy_Ovulation, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(Pregnancy_Ovulation, slot), d, s, r, g, b, a, slot)
 EndFunction
 
-Function _loadGemsIcon(iWant_Status_Bars iBars ,Float GemPercent)
+Function _loadGemsIcon(iWant_Status_Bars iBars, Int slot, Float GemPercent)
 	String[] s = new String[6]
 	String[] d = new String[6]
 	Int[] r = new Int[6]
@@ -819,5 +845,5 @@ Function _loadGemsIcon(iWant_Status_Bars iBars ,Float GemPercent)
 	EndWhile
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(Pregnancy_Gems, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), Pregnancy_Gems, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(Pregnancy_Gems, slot), d, s, r, g, b, a, slot)
 EndFunction

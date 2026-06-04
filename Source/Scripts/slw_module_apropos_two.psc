@@ -15,25 +15,38 @@ String VAG_STATE = "AP2Vaginal"
 String ANAL_STATE = "AP2Anal"
 String ORAL_STATE = "AP2Oral"
 int EMPTY = -1
-int vag_prv = -1
-int oral_prv = -1
-int anal_prv = -1
+int[] vag_prv
+int[] oral_prv
+int[] anal_prv
 
 ;override
 Bool Function isInterfaceActive()
 	Return Module_Ready
 EndFunction
 
+Function _ensurePrvArrays()
+	If !vag_prv
+		vag_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	EndIf
+	If !oral_prv
+		oral_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	EndIf
+	If !anal_prv
+		anal_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	EndIf
+EndFunction
+
 ;override
 Function resetInterface()
-	vag_prv = EMPTY
-	oral_prv = EMPTY
-   	anal_prv = EMPTY
+	vag_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	oral_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+   	anal_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
 	Module_Ready = false
 EndFunction
 
 ;override
 Function initInterface()
+	_ensurePrvArrays()
 	If (!Module_Ready && isAprReady())
 		slw_log.WriteLog("ModuleAPR: Apropos2.esp found")
 
@@ -54,60 +67,75 @@ Function initInterface()
 EndFunction
 
 ;override
-Event onWidgetReload(iWant_Status_Bars iBars)
-	vag_prv = EMPTY
-	oral_prv = EMPTY
-   	anal_prv = EMPTY
-	iBars.releaseIcon(slwGetModName(), ORAL_STATE)
-	iBars.releaseIcon(slwGetModName(), ANAL_STATE)
-	iBars.releaseIcon(slwGetModName(), VAG_STATE)
-	if(config.isOn(config.module_apropos_two_wt) && isInterfaceActive())
-		_loadApropos2Oral(iBars)
-		_loadApropos2Anal(iBars)
-		_loadApropos2Vag(iBars)
+Event onWidgetReload(iWant_Status_Bars iBars, Actor target, Int slot)
+	_ensurePrvArrays()
+	vag_prv[slot] = EMPTY
+	oral_prv[slot] = EMPTY
+   	anal_prv[slot] = EMPTY
+	String oralName = getIconNameForSlot(ORAL_STATE, slot)
+	String analName = getIconNameForSlot(ANAL_STATE, slot)
+	String vagName = getIconNameForSlot(VAG_STATE, slot)
+	iBars.releaseIcon(slwGetModName(), oralName)
+	iBars.releaseIcon(slwGetModName(), analName)
+	iBars.releaseIcon(slwGetModName(), vagName)
+	if !target
+		return
+	endif
+	if(config.isOnForSlot(config.module_apropos_two_wt, slot, config.MOD_AP2) && isInterfaceActive())
+		_loadApropos2Oral(iBars, slot)
+		_loadApropos2Anal(iBars, slot)
+		_loadApropos2Vag(iBars, slot)
 	endif
 EndEvent
 
 ;override
-Event onWidgetToggleUpdate(iWant_Status_Bars iBars)
-	If config.isOn(config.module_apropos_two_wt) && isInterfaceActive()
-		_loadApropos2Oral(iBars)
-		_loadApropos2Anal(iBars)
-		_loadApropos2Vag(iBars)
+Event onWidgetToggleUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
+	_ensurePrvArrays()
+	String oralName = getIconNameForSlot(ORAL_STATE, slot)
+	String analName = getIconNameForSlot(ANAL_STATE, slot)
+	String vagName = getIconNameForSlot(VAG_STATE, slot)
+	If target && config.isOnForSlot(config.module_apropos_two_wt, slot, config.MOD_AP2) && isInterfaceActive()
+		_loadApropos2Oral(iBars, slot)
+		_loadApropos2Anal(iBars, slot)
+		_loadApropos2Vag(iBars, slot)
 	Else
-		iBars.releaseIcon(slwGetModName(), ORAL_STATE)
-		iBars.releaseIcon(slwGetModName(), ANAL_STATE)
-		iBars.releaseIcon(slwGetModName(), VAG_STATE)
-		oral_prv = EMPTY
-		anal_prv = EMPTY
-		vag_prv = EMPTY
+		iBars.releaseIcon(slwGetModName(), oralName)
+		iBars.releaseIcon(slwGetModName(), analName)
+		iBars.releaseIcon(slwGetModName(), vagName)
+		oral_prv[slot] = EMPTY
+		anal_prv[slot] = EMPTY
+		vag_prv[slot] = EMPTY
 	EndIf
 EndEvent
 
 ;override
-Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
-	if (config.isOn(config.module_apropos_two_wt) && isInterfaceActive())
-		int oral_curr = GetWearStateOral(PlayerRef, ActorsQuest)
-		if oral_prv == EMPTY || oral_curr != oral_prv
-			iBars.setIconStatus(slwGetModName(), ORAL_STATE, oral_curr)
-			oral_prv = oral_curr
+Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
+	_ensurePrvArrays()
+	if !target
+		return
+	endif
+	if (config.isOnForSlot(config.module_apropos_two_wt, slot, config.MOD_AP2) && isInterfaceActive())
+		int oral_curr = GetWearStateOral(target, ActorsQuest)
+		if oral_prv[slot] == EMPTY || oral_curr != oral_prv[slot]
+			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(ORAL_STATE, slot), oral_curr)
+			oral_prv[slot] = oral_curr
 		endif
-		int anal_curr = GetWearStateAnal(PlayerRef, ActorsQuest)
-		if anal_prv == EMPTY || anal_curr != anal_prv
-			iBars.setIconStatus(slwGetModName(), ANAL_STATE, anal_curr)
-			anal_prv = anal_curr
+		int anal_curr = GetWearStateAnal(target, ActorsQuest)
+		if anal_prv[slot] == EMPTY || anal_curr != anal_prv[slot]
+			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(ANAL_STATE, slot), anal_curr)
+			anal_prv[slot] = anal_curr
 		endif
-		int vag_curr = GetWearStateVaginal(PlayerRef, ActorsQuest)
-		if vag_prv == EMPTY || vag_curr != vag_prv
-			iBars.setIconStatus(slwGetModName(), VAG_STATE, vag_curr)
-			vag_prv = vag_curr
+		int vag_curr = GetWearStateVaginal(target, ActorsQuest)
+		if vag_prv[slot] == EMPTY || vag_curr != vag_prv[slot]
+			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(VAG_STATE, slot), vag_curr)
+			vag_prv[slot] = vag_curr
 		endif
 	endIf
 EndEvent
 
 
 
-Function _loadApropos2Oral(iWant_Status_Bars iBars)
+Function _loadApropos2Oral(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[9]
 	String[] d = new String[9]
 	Int[] r = new Int[9]
@@ -182,10 +210,10 @@ Function _loadApropos2Oral(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(ORAL_STATE, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), ORAL_STATE, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(ORAL_STATE, slot), d, s, r, g, b, a, slot)
 EndFunction
 
-Function _loadApropos2Anal(iWant_Status_Bars iBars)
+Function _loadApropos2Anal(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[9]
 	String[] d = new String[9]
 	Int[] r = new Int[9]
@@ -260,11 +288,11 @@ Function _loadApropos2Anal(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(ANAL_STATE, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), ANAL_STATE, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(ANAL_STATE, slot), d, s, r, g, b, a, slot)
 
 EndFunction
 
-Function _loadApropos2Vag(iWant_Status_Bars iBars)
+Function _loadApropos2Vag(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[9]
 	String[] d = new String[9]
 	Int[] r = new Int[9]
@@ -339,7 +367,7 @@ Function _loadApropos2Vag(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(VAG_STATE, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), VAG_STATE, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(VAG_STATE, slot), d, s, r, g, b, a, slot)
 EndFunction
 
 

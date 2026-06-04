@@ -17,23 +17,33 @@ Faction pExposureFaction
 String AROUSAL_STATE = "Arousal"
 String EXPOSURE_STATE = "Exposure"
 int EMPTY = -1
-int arousal_state_prv = -1
-int exposure_state_prv = -1
+int[] arousal_state_prv
+int[] exposure_state_prv
 
 ;override
 Bool Function isInterfaceActive()
 	Return Module_Ready
 EndFunction
 
+Function _ensurePrvArrays()
+	If !arousal_state_prv
+		arousal_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	EndIf
+	If !exposure_state_prv
+		exposure_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	EndIf
+EndFunction
+
 ;override
 Function resetInterface()
-	arousal_state_prv = EMPTY
-	exposure_state_prv = EMPTY
+	arousal_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	exposure_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
 	Module_Ready = false
 EndFunction
 
 ;override
 Function initInterface()
+	_ensurePrvArrays()
 	If (!Module_Ready && isSLAReady())
 		slw_log.WriteLog("ModuleSLA: SexLabAroused.esm found")
 		pArousalFaction = Game.GetFormFromFile(0x3FC36, "SexLabAroused.esm") As Faction
@@ -49,54 +59,67 @@ Function initInterface()
 EndFunction
 
 ;override
-Event onWidgetReload(iWant_Status_Bars iBars)
-	arousal_state_prv = EMPTY
-	exposure_state_prv = EMPTY
-	iBars.releaseIcon(slwGetModName(), AROUSAL_STATE)
-	iBars.releaseIcon(slwGetModName(), EXPOSURE_STATE)
-	if(config.isOn(config.module_sla_arousal) && isInterfaceActive())
-		_loadArousedIcons(iBars)
+Event onWidgetReload(iWant_Status_Bars iBars, Actor target, Int slot)
+	_ensurePrvArrays()
+	arousal_state_prv[slot] = EMPTY
+	exposure_state_prv[slot] = EMPTY
+	String arousalName = getIconNameForSlot(AROUSAL_STATE, slot)
+	String exposureName = getIconNameForSlot(EXPOSURE_STATE, slot)
+	iBars.releaseIcon(slwGetModName(), arousalName)
+	iBars.releaseIcon(slwGetModName(), exposureName)
+	if !target
+		return
 	endif
-	if(config.isOn(config.module_sla_exposure) && isInterfaceActive())
-		_loadExposureIcons(iBars)
+	if(config.isOnForSlot(config.module_sla_arousal, slot, config.MOD_SLA_AROUSAL) && isInterfaceActive())
+		_loadArousedIcons(iBars, slot)
+	endif
+	if(config.isOnForSlot(config.module_sla_exposure, slot, config.MOD_SLA_EXPOSURE) && isInterfaceActive())
+		_loadExposureIcons(iBars, slot)
 	endif
 EndEvent
 
 ;override
-Event onWidgetToggleUpdate(iWant_Status_Bars iBars)
-	If config.isOn(config.module_sla_arousal) && isInterfaceActive()
-		_loadArousedIcons(iBars)
+Event onWidgetToggleUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
+	_ensurePrvArrays()
+	String arousalName = getIconNameForSlot(AROUSAL_STATE, slot)
+	String exposureName = getIconNameForSlot(EXPOSURE_STATE, slot)
+	If target && config.isOnForSlot(config.module_sla_arousal, slot, config.MOD_SLA_AROUSAL) && isInterfaceActive()
+		_loadArousedIcons(iBars, slot)
 	Else
-		iBars.releaseIcon(slwGetModName(), AROUSAL_STATE)
-		arousal_state_prv = EMPTY
+		iBars.releaseIcon(slwGetModName(), arousalName)
+		arousal_state_prv[slot] = EMPTY
 	EndIf
-	If config.isOn(config.module_sla_exposure) && isInterfaceActive()
-		_loadExposureIcons(iBars)
+	If target && config.isOnForSlot(config.module_sla_exposure, slot, config.MOD_SLA_EXPOSURE) && isInterfaceActive()
+		_loadExposureIcons(iBars, slot)
 	Else
-		iBars.releaseIcon(slwGetModName(), EXPOSURE_STATE)
-		exposure_state_prv = EMPTY
+		iBars.releaseIcon(slwGetModName(), exposureName)
+		exposure_state_prv[slot] = EMPTY
 	EndIf
 EndEvent
 
 ;override
-Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
-	if (config.isOn(config.module_sla_arousal) && isInterfaceActive())
-		int arousal_state_curr = getArousalLevel(pArousalFaction, sla, PlayerRef)
-		if arousal_state_prv == EMPTY || arousal_state_prv != arousal_state_curr
-			iBars.setIconStatus(slwGetModName(), AROUSAL_STATE, arousal_state_curr )
-			arousal_state_prv = arousal_state_curr
+Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
+	_ensurePrvArrays()
+	if !target
+		return
+	endif
+	if (config.isOnForSlot(config.module_sla_arousal, slot, config.MOD_SLA_AROUSAL) && isInterfaceActive())
+		int arousal_state_curr = getArousalLevel(pArousalFaction, sla, target)
+		if arousal_state_prv[slot] == EMPTY || arousal_state_prv[slot] != arousal_state_curr
+			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(AROUSAL_STATE, slot), arousal_state_curr )
+			arousal_state_prv[slot] = arousal_state_curr
 		endif
 	endIf
-	if (config.isOn(config.module_sla_exposure) && isInterfaceActive())
-		int exposure_state_curr = getExposureLevel(pExposureFaction, sla, PlayerRef)
-		if exposure_state_prv == EMPTY || exposure_state_prv != exposure_state_curr
-			iBars.setIconStatus(slwGetModName(), EXPOSURE_STATE, exposure_state_curr )
-			exposure_state_prv = exposure_state_curr
+	if (config.isOnForSlot(config.module_sla_exposure, slot, config.MOD_SLA_EXPOSURE) && isInterfaceActive())
+		int exposure_state_curr = getExposureLevel(pExposureFaction, sla, target)
+		if exposure_state_prv[slot] == EMPTY || exposure_state_prv[slot] != exposure_state_curr
+			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(EXPOSURE_STATE, slot), exposure_state_curr )
+			exposure_state_prv[slot] = exposure_state_curr
 		endif
 	endIf
 EndEvent
 
-Function _loadArousedIcons(iWant_Status_Bars iBars)
+Function _loadArousedIcons(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[9]
 	String[] d = new String[9]
 	Int[] r = new Int[9]
@@ -170,11 +193,11 @@ Function _loadArousedIcons(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(AROUSAL_STATE, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), AROUSAL_STATE, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(AROUSAL_STATE, slot), d, s, r, g, b, a, slot)
 
 EndFunction
 
-Function _loadExposureIcons(iWant_Status_Bars iBars)
+Function _loadExposureIcons(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[9]
 	String[] d = new String[9]
 	Int[] r = new Int[9]
@@ -248,6 +271,6 @@ Function _loadExposureIcons(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(EXPOSURE_STATE, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), EXPOSURE_STATE, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(EXPOSURE_STATE, slot), d, s, r, g, b, a, slot)
 
 EndFunction

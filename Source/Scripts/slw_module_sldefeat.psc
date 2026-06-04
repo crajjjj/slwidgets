@@ -37,19 +37,19 @@ Function initInterface()
 EndFunction
 
 ;override
-Event onWidgetReload(iWant_Status_Bars iBars)
+Event onWidgetReload(iWant_Status_Bars iBars, Actor target, Int slot)
 	_releaseDefeatIcons(iBars)
 EndEvent
 
 ;override
-Event onWidgetToggleUpdate(iWant_Status_Bars iBars)
+Event onWidgetToggleUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	If !config.isOn(config.module_defeat_enabled) || !isInterfaceActive()
 		_releaseDefeatIcons(iBars)
 	EndIf
 EndEvent
 
 ;override
-Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
+Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	if (config.isOn(config.module_defeat_enabled) && isInterfaceActive())
 		_reloadDefeatIcons(iBars)
 	endIf

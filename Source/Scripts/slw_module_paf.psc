@@ -24,22 +24,32 @@ GlobalVariable apbm
 String PEE_STATE = "PAF_PEE"
 String POOP_STATE = "PAF_POOP"
 int EMPTY = -1
-int pee_state_prv = -1
-int poop_state_prv = -1
+int[] pee_state_prv
+int[] poop_state_prv
 ;override
 Bool Function isInterfaceActive()
 	Return Module_Ready
 EndFunction
 
+Function _ensurePrvArrays()
+	If !pee_state_prv
+		pee_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	EndIf
+	If !poop_state_prv
+		poop_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	EndIf
+EndFunction
+
 ;override
 Function resetInterface()
-	pee_state_prv = EMPTY
-	poop_state_prv = EMPTY
+	pee_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	poop_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
 	Module_Ready = false
 EndFunction
 
 ;override
 Function initInterface()
+	_ensurePrvArrays()
 	If (!Module_Ready && isPAFReady())
 		slw_log.WriteLog("ModulePAF: PeeAndFart.esp/Paf Fixes and Addons.esp found")
 		paf = Game.GetFormFromFile(0x0012C8, "PeeAndFart.esp") As Quest
@@ -87,9 +97,10 @@ Function initInterface()
 EndFunction
 
 ;override
-Event onWidgetReload(iWant_Status_Bars iBars)
-	pee_state_prv = EMPTY
-	poop_state_prv = EMPTY
+Event onWidgetReload(iWant_Status_Bars iBars, Actor target, Int slot)
+	_ensurePrvArrays()
+	pee_state_prv[slot] = EMPTY
+	poop_state_prv[slot] = EMPTY
 	iBars.releaseIcon(slwGetModName(), PEE_STATE)
 	iBars.releaseIcon(slwGetModName(), POOP_STATE)
 	if(config.isOn(config.module_paf_pee) && isInterfaceActive())
@@ -101,35 +112,37 @@ Event onWidgetReload(iWant_Status_Bars iBars)
 EndEvent
 
 ;override
-Event onWidgetToggleUpdate(iWant_Status_Bars iBars)
+Event onWidgetToggleUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
+	_ensurePrvArrays()
 	If config.isOn(config.module_paf_pee) && isInterfaceActive()
 		_loadPeeIcons(iBars)
 	Else
 		iBars.releaseIcon(slwGetModName(), PEE_STATE)
-		pee_state_prv = EMPTY
+		pee_state_prv[slot] = EMPTY
 	EndIf
 	If config.isOn(config.module_paf_poo) && isInterfaceActive()
 		_loadPooIcons(iBars)
 	Else
 		iBars.releaseIcon(slwGetModName(), POOP_STATE)
-		poop_state_prv = EMPTY
+		poop_state_prv[slot] = EMPTY
 	EndIf
 EndEvent
 
 ;override
-Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
+Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
+	_ensurePrvArrays()
 	if (config.isOn(config.module_paf_pee) && isInterfaceActive())
 		int pee_state_curr = getPeeLevel()
-		if pee_state_prv == EMPTY || pee_state_prv != pee_state_curr
+		if pee_state_prv[slot] == EMPTY || pee_state_prv[slot] != pee_state_curr
 			iBars.setIconStatus(slwGetModName(), PEE_STATE, pee_state_curr )
-			pee_state_prv = pee_state_curr
+			pee_state_prv[slot] = pee_state_curr
 		endif
 	endIf
 	if (config.isOn(config.module_paf_poo) && isInterfaceActive())
 		int poop_state_curr = getPoopLevel()
-		if poop_state_prv == EMPTY || poop_state_prv != poop_state_curr
+		if poop_state_prv[slot] == EMPTY || poop_state_prv[slot] != poop_state_curr
 			iBars.setIconStatus(slwGetModName(), POOP_STATE, poop_state_curr )
-			poop_state_prv = poop_state_curr
+			poop_state_prv[slot] = poop_state_curr
 		endif
 	endIf
 EndEvent

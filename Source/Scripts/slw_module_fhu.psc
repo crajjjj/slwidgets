@@ -17,27 +17,43 @@ String CUM_VAGINAL_STATE = "FHUCumVaginal"
 String CUM_ORAL_STATE = "FHUCumOral"
 
 int EMPTY = -1
-int cum_state_prv = -1
-int cum_anal_state_prv = -1
-int cum_vaginal_state_prv = -1
-int cum_oral_state_prv = -1
+int[] cum_state_prv
+int[] cum_anal_state_prv
+int[] cum_vaginal_state_prv
+int[] cum_oral_state_prv
 
 ;override
 Bool Function isInterfaceActive()
 	Return Module_Ready
 EndFunction
 
+Function _ensurePrvArrays()
+	If !cum_state_prv
+		cum_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	EndIf
+	If !cum_anal_state_prv
+		cum_anal_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	EndIf
+	If !cum_vaginal_state_prv
+		cum_vaginal_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	EndIf
+	If !cum_oral_state_prv
+		cum_oral_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	EndIf
+EndFunction
+
 ;override
 Function resetInterface()
-	cum_state_prv = EMPTY
-	cum_anal_state_prv = EMPTY
- 	cum_vaginal_state_prv = EMPTY
- 	cum_oral_state_prv = EMPTY
+	cum_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	cum_anal_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+ 	cum_vaginal_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+ 	cum_oral_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
 	Module_Ready = false
 EndFunction
 
 ;override
 Function initInterface()
+	_ensurePrvArrays()
 	If (!Module_Ready && isFHUReady())
 		slw_log.WriteLog("ModuleFHU: sr_FillHerUp.esp found")
 		FhuInflateQuest = Game.GetFormFromFile(0x000D63,"sr_FillHerUp.esp") as Quest
@@ -50,94 +66,111 @@ Function initInterface()
 EndFunction
 
 ;override
-Event onWidgetReload(iWant_Status_Bars iBars)
-	cum_state_prv = EMPTY
-	cum_anal_state_prv = EMPTY
- 	cum_vaginal_state_prv = EMPTY
- 	cum_oral_state_prv = EMPTY
-	iBars.releaseIcon(slwGetModName(), CUM_STATE)
-	iBars.releaseIcon(slwGetModName(), CUM_ANAL_STATE)
-	iBars.releaseIcon(slwGetModName(), CUM_VAGINAL_STATE)
-	iBars.releaseIcon(slwGetModName(), CUM_ORAL_STATE)
-	if(config.isOn(config.module_fhu_cum) && isInterfaceActive())
-		_loadCumIcons(iBars)
+Event onWidgetReload(iWant_Status_Bars iBars, Actor target, Int slot)
+	_ensurePrvArrays()
+	cum_state_prv[slot] = EMPTY
+	cum_anal_state_prv[slot] = EMPTY
+ 	cum_vaginal_state_prv[slot] = EMPTY
+ 	cum_oral_state_prv[slot] = EMPTY
+	String cumName = getIconNameForSlot(CUM_STATE, slot)
+	String cumAnalName = getIconNameForSlot(CUM_ANAL_STATE, slot)
+	String cumVagName = getIconNameForSlot(CUM_VAGINAL_STATE, slot)
+	String cumOralName = getIconNameForSlot(CUM_ORAL_STATE, slot)
+	iBars.releaseIcon(slwGetModName(), cumName)
+	iBars.releaseIcon(slwGetModName(), cumAnalName)
+	iBars.releaseIcon(slwGetModName(), cumVagName)
+	iBars.releaseIcon(slwGetModName(), cumOralName)
+	if !target
+		return
 	endif
-	if(config.isOn(config.module_fhu_cum_anal) && isInterfaceActive())
-		_loadCumAnalIcons(iBars)
+	if(config.isOnForSlot(config.module_fhu_cum, slot, config.MOD_FHU_CUM) && isInterfaceActive())
+		_loadCumIcons(iBars, slot)
 	endif
-	if(config.isOn(config.module_fhu_cum_vaginal) && isInterfaceActive())
-		_loadCumVaginalIcons(iBars)
+	if(config.isOnForSlot(config.module_fhu_cum_anal, slot, config.MOD_FHU_ANAL) && isInterfaceActive())
+		_loadCumAnalIcons(iBars, slot)
 	endif
-	if(config.isOn(config.module_fhu_cum_oral) && isInterfaceActive())
-		_loadCumOralIcons(iBars)
+	if(config.isOnForSlot(config.module_fhu_cum_vaginal, slot, config.MOD_FHU_VAGINAL) && isInterfaceActive())
+		_loadCumVaginalIcons(iBars, slot)
+	endif
+	if(config.isOnForSlot(config.module_fhu_cum_oral, slot, config.MOD_FHU_ORAL) && isInterfaceActive())
+		_loadCumOralIcons(iBars, slot)
 	endif
 EndEvent
 
 ;override
-Event onWidgetToggleUpdate(iWant_Status_Bars iBars)
-	If config.isOn(config.module_fhu_cum) && isInterfaceActive()
-		_loadCumIcons(iBars)
+Event onWidgetToggleUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
+	_ensurePrvArrays()
+	String cumName = getIconNameForSlot(CUM_STATE, slot)
+	String cumAnalName = getIconNameForSlot(CUM_ANAL_STATE, slot)
+	String cumVagName = getIconNameForSlot(CUM_VAGINAL_STATE, slot)
+	String cumOralName = getIconNameForSlot(CUM_ORAL_STATE, slot)
+	If target && config.isOnForSlot(config.module_fhu_cum, slot, config.MOD_FHU_CUM) && isInterfaceActive()
+		_loadCumIcons(iBars, slot)
 	Else
-		iBars.releaseIcon(slwGetModName(), CUM_STATE)
-		cum_state_prv = EMPTY
+		iBars.releaseIcon(slwGetModName(), cumName)
+		cum_state_prv[slot] = EMPTY
 	EndIf
-	If config.isOn(config.module_fhu_cum_anal) && isInterfaceActive()
-		_loadCumAnalIcons(iBars)
+	If target && config.isOnForSlot(config.module_fhu_cum_anal, slot, config.MOD_FHU_ANAL) && isInterfaceActive()
+		_loadCumAnalIcons(iBars, slot)
 	Else
-		iBars.releaseIcon(slwGetModName(), CUM_ANAL_STATE)
-		cum_anal_state_prv = EMPTY
+		iBars.releaseIcon(slwGetModName(), cumAnalName)
+		cum_anal_state_prv[slot] = EMPTY
 	EndIf
-	If config.isOn(config.module_fhu_cum_vaginal) && isInterfaceActive()
-		_loadCumVaginalIcons(iBars)
+	If target && config.isOnForSlot(config.module_fhu_cum_vaginal, slot, config.MOD_FHU_VAGINAL) && isInterfaceActive()
+		_loadCumVaginalIcons(iBars, slot)
 	Else
-		iBars.releaseIcon(slwGetModName(), CUM_VAGINAL_STATE)
-		cum_vaginal_state_prv = EMPTY
+		iBars.releaseIcon(slwGetModName(), cumVagName)
+		cum_vaginal_state_prv[slot] = EMPTY
 	EndIf
-	If config.isOn(config.module_fhu_cum_oral) && isInterfaceActive()
-		_loadCumOralIcons(iBars)
+	If target && config.isOnForSlot(config.module_fhu_cum_oral, slot, config.MOD_FHU_ORAL) && isInterfaceActive()
+		_loadCumOralIcons(iBars, slot)
 	Else
-		iBars.releaseIcon(slwGetModName(), CUM_ORAL_STATE)
-		cum_oral_state_prv = EMPTY
+		iBars.releaseIcon(slwGetModName(), cumOralName)
+		cum_oral_state_prv[slot] = EMPTY
 	EndIf
 EndEvent
 
 ;override
-Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
+Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
+	_ensurePrvArrays()
+	if !target
+		return
+	endif
 	if !isInterfaceActive()
 		return
 	endif
-	if config.isOn(config.module_fhu_cum)
-		int cum_state_curr = GetCumAmount(PlayerRef, FhuInflateQuest)
-		if cum_state_prv == EMPTY || cum_state_prv != cum_state_curr
-			iBars.setIconStatus(slwGetModName(), CUM_STATE, cum_state_curr)
-			cum_state_prv = cum_state_curr
+	if config.isOnForSlot(config.module_fhu_cum, slot, config.MOD_FHU_CUM)
+		int cum_state_curr = GetCumAmount(target, FhuInflateQuest)
+		if cum_state_prv[slot] == EMPTY || cum_state_prv[slot] != cum_state_curr
+			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(CUM_STATE, slot), cum_state_curr)
+			cum_state_prv[slot] = cum_state_curr
 		endif
 	endIf
-	if config.isOn(config.module_fhu_cum_anal)
-		int cum_anal_state_curr = GetCumAmountAnal(PlayerRef, FhuInflateQuest)
-		if cum_anal_state_prv == EMPTY || cum_anal_state_prv != cum_anal_state_curr
-			iBars.setIconStatus(slwGetModName(), CUM_ANAL_STATE, cum_anal_state_curr)
-			cum_anal_state_prv = cum_anal_state_curr
+	if config.isOnForSlot(config.module_fhu_cum_anal, slot, config.MOD_FHU_ANAL)
+		int cum_anal_state_curr = GetCumAmountAnal(target, FhuInflateQuest)
+		if cum_anal_state_prv[slot] == EMPTY || cum_anal_state_prv[slot] != cum_anal_state_curr
+			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(CUM_ANAL_STATE, slot), cum_anal_state_curr)
+			cum_anal_state_prv[slot] = cum_anal_state_curr
 		endif
 	endIf
-	if config.isOn(config.module_fhu_cum_vaginal)
-		int cum_vag_state_curr = GetCumAmountVag(PlayerRef, FhuInflateQuest)
-		if cum_vaginal_state_prv == EMPTY || cum_vaginal_state_prv != cum_vag_state_curr
-			iBars.setIconStatus(slwGetModName(), CUM_VAGINAL_STATE, cum_vag_state_curr)
-			cum_vaginal_state_prv = cum_vag_state_curr
+	if config.isOnForSlot(config.module_fhu_cum_vaginal, slot, config.MOD_FHU_VAGINAL)
+		int cum_vag_state_curr = GetCumAmountVag(target, FhuInflateQuest)
+		if cum_vaginal_state_prv[slot] == EMPTY || cum_vaginal_state_prv[slot] != cum_vag_state_curr
+			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(CUM_VAGINAL_STATE, slot), cum_vag_state_curr)
+			cum_vaginal_state_prv[slot] = cum_vag_state_curr
 		endif
 	endIf
-	if config.isOn(config.module_fhu_cum_oral)
-		int cum_oral_state_curr = GetCumAmountOral(PlayerRef, FhuInflateQuest)
-		if cum_oral_state_prv == EMPTY || cum_oral_state_prv != cum_oral_state_curr
-			iBars.setIconStatus(slwGetModName(), CUM_ORAL_STATE, cum_oral_state_curr)
-			cum_oral_state_prv = cum_oral_state_curr
+	if config.isOnForSlot(config.module_fhu_cum_oral, slot, config.MOD_FHU_ORAL)
+		int cum_oral_state_curr = GetCumAmountOral(target, FhuInflateQuest)
+		if cum_oral_state_prv[slot] == EMPTY || cum_oral_state_prv[slot] != cum_oral_state_curr
+			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(CUM_ORAL_STATE, slot), cum_oral_state_curr)
+			cum_oral_state_prv[slot] = cum_oral_state_curr
 		endif
 	endIf
-	
+
 EndEvent
 
-Function _loadCumIcons(iWant_Status_Bars iBars)
+Function _loadCumIcons(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[9]
 	String[] d = new String[9]
 	Int[] r = new Int[9]
@@ -211,11 +244,11 @@ Function _loadCumIcons(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(CUM_STATE, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), CUM_STATE, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(CUM_STATE, slot), d, s, r, g, b, a, slot)
 
 EndFunction
 
-Function _loadCumAnalIcons(iWant_Status_Bars iBars)
+Function _loadCumAnalIcons(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[9]
 	String[] d = new String[9]
 	Int[] r = new Int[9]
@@ -289,11 +322,11 @@ Function _loadCumAnalIcons(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(CUM_ANAL_STATE, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), CUM_ANAL_STATE, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(CUM_ANAL_STATE, slot), d, s, r, g, b, a, slot)
 
 EndFunction
 
-Function _loadCumVaginalIcons(iWant_Status_Bars iBars)
+Function _loadCumVaginalIcons(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[9]
 	String[] d = new String[9]
 	Int[] r = new Int[9]
@@ -367,11 +400,11 @@ Function _loadCumVaginalIcons(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(CUM_VAGINAL_STATE, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), CUM_VAGINAL_STATE, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(CUM_VAGINAL_STATE, slot), d, s, r, g, b, a, slot)
 
 EndFunction
 
-Function _loadCumOralIcons(iWant_Status_Bars iBars)
+Function _loadCumOralIcons(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[9]
 	String[] d = new String[9]
 	Int[] r = new Int[9]
@@ -445,6 +478,6 @@ Function _loadCumOralIcons(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(CUM_ORAL_STATE, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), CUM_ORAL_STATE, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(CUM_ORAL_STATE, slot), d, s, r, g, b, a, slot)
 
 EndFunction

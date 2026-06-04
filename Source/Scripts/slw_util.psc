@@ -8,7 +8,7 @@ EndFunction
 
 ;SemVer support
 Int Function GetVersion() Global
-    Return 20103
+    Return 20200
     ; 1.0.0   -> 10000
     ; 1.1.0   -> 10100
     ; 1.1.1  -> 10101
@@ -17,7 +17,7 @@ Int Function GetVersion() Global
 EndFunction
 
 String Function GetVersionString() Global
-    Return "2.1.3"
+    Return "2.2.0"
 EndFunction
 
 String Function StringIfElse(Bool isTrue, String returnTrue, String returnFalse = "") Global
@@ -26,6 +26,25 @@ String Function StringIfElse(Bool isTrue, String returnTrue, String returnFalse 
     Else
         Return returnFalse
     EndIf
+EndFunction
+
+; Slot model: index 0 is the player, indices 1..N_NPC_SLOTS are tracked NPCs.
+Int Function getSlotCount() Global
+    Return 4
+EndFunction
+
+Int Function getNpcSlotCount() Global
+    Return 3
+EndFunction
+
+; Returns the icon name to use for a given slot. Slot 0 (player) keeps the
+; original unsuffixed name for save-compat with existing widgets; NPC slots
+; get a "_NPCn" suffix so iWant Status Bars treats them as distinct icons.
+String Function getIconNameForSlot(String baseName, Int slot) Global
+    If slot <= 0
+        Return baseName
+    EndIf
+    Return baseName + "_NPC" + slot
 EndFunction
 
 Bool Function isFHUReady() Global

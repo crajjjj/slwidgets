@@ -18,8 +18,8 @@ String MILK_STATE = "MMEMilk"
 String LACTACID_STATE = "MMELactacid"
 
 int EMPTY = -1
-int milk_state_prv = -1
-int lactacid_state_prv = -1
+int[] milk_state_prv
+int[] lactacid_state_prv
 
 ;MAL cached values (populated via return events)
 float _mal_milk_cur = 0.0
@@ -30,10 +30,19 @@ Bool Function isInterfaceActive()
 	Return Plugin_MME || Plugin_SGO4 || Plugin_MAL
 EndFunction
 
+Function _ensurePrvArrays()
+	If !milk_state_prv
+		milk_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	EndIf
+	If !lactacid_state_prv
+		lactacid_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	EndIf
+EndFunction
+
 ;override
 Function resetInterface()
-	milk_state_prv = EMPTY
-	lactacid_state_prv = EMPTY
+	milk_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
+	lactacid_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
 	Plugin_MME = false
 	Plugin_SGO4 = false
 	Plugin_MAL = false
@@ -43,6 +52,7 @@ EndFunction
 
 ;override
 Function initInterface()
+	_ensurePrvArrays()
 	If (!Plugin_MME && isMMEReady())
 		slw_log.WriteLog("ModuleMilk: MilkModNEW.esp found")
 		Plugin_MME = true
@@ -78,71 +88,87 @@ Event OnMALReturnPlayerMilkLimit(Float value)
 EndEvent
 
 ;override
-Event onWidgetReload(iWant_Status_Bars iBars)
-	milk_state_prv = EMPTY
-	lactacid_state_prv = EMPTY
-	_mal_milk_cur = 0.0
-	_mal_milk_max = 0.0
-	iBars.releaseIcon(slwGetModName(), MILK_STATE)
-	iBars.releaseIcon(slwGetModName(), LACTACID_STATE)
-	if(config.isOn(config.module_mme_milk) && isInterfaceActive())
-		_loadMilkIcons(iBars)
+Event onWidgetReload(iWant_Status_Bars iBars, Actor target, Int slot)
+	_ensurePrvArrays()
+	milk_state_prv[slot] = EMPTY
+	lactacid_state_prv[slot] = EMPTY
+	If slot == 0
+		_mal_milk_cur = 0.0
+		_mal_milk_max = 0.0
+	EndIf
+	String milkName = getIconNameForSlot(MILK_STATE, slot)
+	String lactName = getIconNameForSlot(LACTACID_STATE, slot)
+	iBars.releaseIcon(slwGetModName(), milkName)
+	iBars.releaseIcon(slwGetModName(), lactName)
+	if !target
+		return
 	endif
-	if(config.isOn(config.module_mme_lactacid) && Plugin_MME)
-		_loadLactacidIcons(iBars)
+	if(config.isOnForSlot(config.module_mme_milk, slot, config.MOD_MME_MILK) && isInterfaceActive())
+		_loadMilkIcons(iBars, slot)
+	endif
+	if(config.isOnForSlot(config.module_mme_lactacid, slot, config.MOD_MME_LACTACID) && Plugin_MME)
+		_loadLactacidIcons(iBars, slot)
 	endif
 EndEvent
 
 ;override
-Event onWidgetToggleUpdate(iWant_Status_Bars iBars)
-	If config.isOn(config.module_mme_milk) && isInterfaceActive()
-		_loadMilkIcons(iBars)
+Event onWidgetToggleUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
+	_ensurePrvArrays()
+	String milkName = getIconNameForSlot(MILK_STATE, slot)
+	String lactName = getIconNameForSlot(LACTACID_STATE, slot)
+	If target && config.isOnForSlot(config.module_mme_milk, slot, config.MOD_MME_MILK) && isInterfaceActive()
+		_loadMilkIcons(iBars, slot)
 	Else
-		iBars.releaseIcon(slwGetModName(), MILK_STATE)
-		milk_state_prv = EMPTY
+		iBars.releaseIcon(slwGetModName(), milkName)
+		milk_state_prv[slot] = EMPTY
 	EndIf
-	If config.isOn(config.module_mme_lactacid) && Plugin_MME
-		_loadLactacidIcons(iBars)
+	If target && config.isOnForSlot(config.module_mme_lactacid, slot, config.MOD_MME_LACTACID) && Plugin_MME
+		_loadLactacidIcons(iBars, slot)
 	Else
-		iBars.releaseIcon(slwGetModName(), LACTACID_STATE)
-		lactacid_state_prv = EMPTY
+		iBars.releaseIcon(slwGetModName(), lactName)
+		lactacid_state_prv[slot] = EMPTY
 	EndIf
 EndEvent
 
 ;override
-Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
-	if Plugin_MAL && config.isOn(config.module_mme_milk)
+Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
+	_ensurePrvArrays()
+	if !target
+		return
+	endif
+	if slot == 0 && Plugin_MAL && config.isOnForSlot(config.module_mme_milk, slot, config.MOD_MME_MILK)
 		_requestMALUpdate()
 	endif
-	if (config.isOn(config.module_mme_milk) && isInterfaceActive())
-		int milk_state_curr = getMilkLevel()
-		if milk_state_prv == EMPTY || milk_state_prv != milk_state_curr
-			iBars.setIconStatus(slwGetModName(), MILK_STATE, milk_state_curr )
-			milk_state_prv = milk_state_curr
+	if (config.isOnForSlot(config.module_mme_milk, slot, config.MOD_MME_MILK) && isInterfaceActive())
+		int milk_state_curr = getMilkLevel(target, slot)
+		if milk_state_prv[slot] == EMPTY || milk_state_prv[slot] != milk_state_curr
+			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(MILK_STATE, slot), milk_state_curr )
+			milk_state_prv[slot] = milk_state_curr
 		endif
 	endIf
 
-	if (config.isOn(config.module_mme_lactacid) && Plugin_MME)
-		int lactacid_state_curr = getLactacidLevel()
-		if lactacid_state_prv == EMPTY || lactacid_state_prv != lactacid_state_curr
-			iBars.setIconStatus(slwGetModName(), LACTACID_STATE, lactacid_state_curr )
-			lactacid_state_prv = lactacid_state_curr
+	if (config.isOnForSlot(config.module_mme_lactacid, slot, config.MOD_MME_LACTACID) && Plugin_MME)
+		int lactacid_state_curr = getLactacidLevel(target)
+		if lactacid_state_prv[slot] == EMPTY || lactacid_state_prv[slot] != lactacid_state_curr
+			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(LACTACID_STATE, slot), lactacid_state_curr )
+			lactacid_state_prv[slot] = lactacid_state_curr
 		endif
 	endIf
 EndEvent
 
-Int Function getMilkLevel()
+Int Function getMilkLevel(Actor a, Int slot)
 	float milkCur
 	float milkMax
 	if Plugin_MME
-		milkCur = MME_Storage.getMilkCurrent(playerRef)
-		milkMax = MME_Storage.getMilkMaximum(playerRef)
+		milkCur = MME_Storage.getMilkCurrent(a)
+		milkMax = MME_Storage.getMilkMaximum(a)
 	endif
 	if Plugin_SGO4
-		milkCur = milkCur + getMilkCur(_dse_sgo_QuestDatabase_Main, playerRef)
-		milkMax = milkMax + getMilkMax(_dse_sgo_QuestDatabase_Main, playerRef)
+		milkCur = milkCur + getMilkCur(_dse_sgo_QuestDatabase_Main, a)
+		milkMax = milkMax + getMilkMax(_dse_sgo_QuestDatabase_Main, a)
 	endif
-	if Plugin_MAL
+	; MAL is queried via player-targeted mod events — only valid for slot 0
+	if slot == 0 && Plugin_MAL
 		milkCur = milkCur + _mal_milk_cur
 		milkMax = milkMax + _mal_milk_max
 	endif
@@ -159,9 +185,9 @@ Function _requestMALUpdate()
 	ModEvent.Send(eh)
 EndFunction
 
-Int Function getLactacidLevel()
-		float lactCur = MME_Storage.getLactacidCurrent(playerRef)
-		float lactMax = MME_Storage.getLactacidMaximum(playerRef)
+Int Function getLactacidLevel(Actor a)
+		float lactCur = MME_Storage.getLactacidCurrent(a)
+		float lactMax = MME_Storage.getLactacidMaximum(a)
 		if lactMax <= 0
 			lactMax = 1
 		endif
@@ -170,7 +196,7 @@ Int Function getLactacidLevel()
 EndFunction
 
 
-Function _loadMilkIcons(iWant_Status_Bars iBars)
+Function _loadMilkIcons(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[9]
 	String[] d = new String[9]
 	Int[] r = new Int[9]
@@ -245,10 +271,10 @@ Function _loadMilkIcons(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(MILK_STATE, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), MILK_STATE, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(MILK_STATE, slot), d, s, r, g, b, a, slot)
 EndFunction
 
-Function _loadLactacidIcons(iWant_Status_Bars iBars)
+Function _loadLactacidIcons(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[9]
 	String[] d = new String[9]
 	Int[] r = new Int[9]
@@ -323,7 +349,7 @@ Function _loadLactacidIcons(iWant_Status_Bars iBars)
 
 	; This will fail silently if the icon is already loaded
 	config.ApplyIconColors(LACTACID_STATE, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), LACTACID_STATE, d, s, r, g, b, a)
+	config.loadIconForSlot(iBars, getIconNameForSlot(LACTACID_STATE, slot), d, s, r, g, b, a, slot)
 
 EndFunction
 

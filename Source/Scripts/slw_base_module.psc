@@ -17,16 +17,16 @@ Bool Function isInterfaceActive()
 EndFunction
 
 ; @interface
-Event onWidgetReload(iWant_Status_Bars iBars)
+Event onWidgetReload(iWant_Status_Bars iBars, Actor target, Int slot)
 	WriteLog("slw_base_module UIUpdate() not overriden", 2)
 EndEvent
 
 ; @interface
-Event onWidgetToggleUpdate(iWant_Status_Bars iBars)
+Event onWidgetToggleUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 EndEvent
 
 ; @interface
-Event onWidgetStatusUpdate(iWant_Status_Bars iBars)
+Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	WriteLog("slw_base_module UpdateStatus() not overriden", 2)
 EndEvent
 
