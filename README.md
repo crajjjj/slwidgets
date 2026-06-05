@@ -47,6 +47,12 @@ Watch up to 3 NPCs alongside the player. Each tracked NPC gets their own bar pai
 - The whole cluster moves as one via **NPC group X** / **NPC group Y** sliders — no need to position each bar individually
 - Bars 7–9 (default NPC range) leave bars 0–6 (70 positions) to the player and other addons
 
+### Note on monitor resolutions and widescreen
+
+iWant Status Bars (and SL Widgets through it) uses Skyrim's **fixed 1280×720 Flash HUD stage** — Skyrim scales it to fit any monitor. The same X/Y values produce the same on-screen position whether you're on 1080p, 1440p ultrawide, 4K, or 32:9 super-ultrawide. **Widescreen users do not need different coordinates than 1080p users.**
+
+NPC group X/Y sliders are bounded to 0–1279 / 0–719 (the standard stage). If you've installed a HUD overhaul (SkyHUD, etc.) that extends the stage, you may need higher values; the same applies to iWant's own bar positioning sliders. The default `npcGroupX = 1100, npcGroupY = 600` matches iWant's bottom-right anchor convention.
+
 ### Per-NPC controls (per slot)
 
 - **Clear Slot** — unassign that NPC

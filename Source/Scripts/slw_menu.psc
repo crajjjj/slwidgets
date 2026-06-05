@@ -565,16 +565,21 @@ Event OnOptionSliderOpen(Int mcm_option)
 	_initNpcOptionArrays()
 	If mcm_option == _npc_group_x_slider
 		SetSliderDialogStartValue(widget_controller.npcGroupX)
-		SetSliderDialogRange(0, 1920)
+		; iWant's Flash stage is fixed at 1280x720 and gets scaled by Skyrim
+		; to fit any monitor — same coordinates on 1080p, 1440p ultrawide, 4K.
+		; Going past 1279 lands off the standard stage; some HUD overhauls
+		; extend it so we don't hard-cap. Default 1100 matches iWant's right-
+		; side anchor pattern.
+		SetSliderDialogRange(0, 1279)
 		SetSliderDialogInterval(5.0)
-		SetSliderDialogDefaultValue(1700)
+		SetSliderDialogDefaultValue(1100)
 		Return
 	EndIf
 	If mcm_option == _npc_group_y_slider
 		SetSliderDialogStartValue(widget_controller.npcGroupY)
-		SetSliderDialogRange(0, 1080)
+		SetSliderDialogRange(0, 719)
 		SetSliderDialogInterval(5.0)
-		SetSliderDialogDefaultValue(900)
+		SetSliderDialogDefaultValue(600)
 		Return
 	EndIf
 	If mcm_option == _npc_label_size_slider

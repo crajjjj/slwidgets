@@ -160,6 +160,19 @@ API calls use the `target` parameter, not the module's `PlayerRef` property. The
 - Format: `$KEY\tValue` (tab-separated)
 - Must use Python (not sed) to edit — sed corrupts the UTF-16LE encoding
 
+## HUD Coordinate System
+
+iWant Status Bars (and any other Scaleform-based HUD widget mod) uses Skyrim's **fixed 1280×720 Flash stage**, NOT the monitor's actual pixel dimensions. Skyrim scales the rendered Flash stage to fit whatever resolution the user is running — 1080p, 1440p ultrawide, 4K, anything. The same `(X, Y)` coordinate produces the same visual position on every monitor.
+
+**Implications for new positioning code:**
+- Valid range is **0–1279 / 0–719** by default
+- Bottom-right anchor for SL Widgets convention: ~1100, ~600 (matches iWant's own bottom-right of ~1210, ~650)
+- Slider ranges should default to `0–1279` and `0–719` for X/Y; if you anticipate users with HUD overhauls that extend the stage, allow override (iWant offers a "Position Lock" toggle that unlocks ±10000)
+- DO NOT set defaults based on monitor pixel dimensions (1920, 3840, etc.) — those values land off-stage and only render for users with extended-stage HUD mods
+- Existing saves that stored off-stage coordinates from earlier dev builds (e.g., `npcGroupX = 1700`) keep those values via property persistence; document that users should reset via MCM if they want the standard stage anchor
+
+iWant's own MCM exposes this via `min_pos_x = 0`, `max_pos_x = 1279`, `min_pos_y = 0`, `max_pos_y = 719` in [iwant_status_bars_mcm.psc:13-16](Source/Scripts/iwant_status_bars_mcm.psc#L13-L16).
+
 ## External Mod API Patterns
 | Mod | Access pattern |
 |-----|---------------|

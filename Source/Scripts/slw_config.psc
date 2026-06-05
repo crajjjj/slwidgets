@@ -366,7 +366,7 @@ Event OnKeyDown(Int keyCode)
 	; Otherwise assign to first empty slot, or refuse if all full.
 	Int empty = findFirstEmptyNpcSlot()
 	If empty == 0
-		Debug.Notification("SLWidgets: All NPC slots full — clear one in MCM.")
+		Debug.Notification("SLWidgets: All NPC slots full - clear one in MCM.")
 		Return
 	EndIf
 	setNpcSlot(empty, a)

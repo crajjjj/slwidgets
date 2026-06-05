@@ -27,9 +27,10 @@ Int NPC_BARS_PER_SLOT = 2
 ; NPC1's primary bar — slot 1 sits at the bottom of the cluster and additional
 ; slots stack upward. If only NPC1 is assigned, the cluster is just one bar at
 ; the anchor — no visible empty space below it.
-; Default: bottom-right area of 1920x1080.
-Int Property npcGroupX = 1700 Auto Hidden
-Int Property npcGroupY = 900 Auto Hidden
+; iWant uses a fixed 1280x720 Flash stage that Skyrim scales to any monitor
+; resolution. Defaults match iWant's bottom-right anchor pattern.
+Int Property npcGroupX = 1100 Auto Hidden
+Int Property npcGroupY = 600 Auto Hidden
 
 ; Global label style (applies to all 3 NPC name labels). Font and size are
 ; baked in at creation by iWant.loadText — changing them requires destroying
@@ -47,10 +48,25 @@ Int NPC_BAR_VSPACING = 40
 ; previous NPC's secondary bar (labels sit ~28px above their primary bar).
 Int NPC_INTER_LABEL_PAD = 25
 Int NPC_DEFAULT_ICON_SIZE = 18
-Int NPC_DEFAULT_SHAPE = 1  ; line-right
+Int NPC_DEFAULT_SHAPE = 0  ; line-left — icons grow leftward from the X anchor
+                           ; so the bottom-right cluster fits on stage when X is
+                           ; near the right edge (1279). Line-right would push
+                           ; icons off-screen.
 
 ; iWant bar shape codes: 0=line-left, 1=line-right, 2=line-up, 3=line-down,
 ; 4=circle, 5=orbit, 6=lower half-circle, 7=upper half-circle.
+
+; Per-slot "was the NPC present last OnUpdate tick?" — script-level, doesn't
+; survive saves (which is fine: _restoreNpcLabelsAndIcons re-seeds it).
+; Used to detect cell load/unload transitions so OnUpdate can refresh the
+; label text once (adding/removing the "(away)" suffix) instead of every tick.
+Bool[] _slot_present_prv
+
+Function _ensurePresentPrv()
+	If !_slot_present_prv
+		_slot_present_prv = Utility.CreateBoolArray(4, False)
+	EndIf
+EndFunction
 
 ; Primary bar for the slot (where the label anchors). 1→4, 2→6, 3→8.
 Int Function _getBarForSlot(Int slot)
@@ -186,30 +202,43 @@ Event OnUpdate()
 	; Reconcile every tick — modules can register new icons during a status
 	; update (pregnancy state change) and iWant auto-places them in bar 0;
 	; reconciling here moves them into the slot's dedicated bar promptly.
+	_ensurePresentPrv()
 	Int slot = 1
 	Int total = getSlotCount()
+	Bool anyActive = False
 	While slot < total
 		Actor t = config.getNpcSlot(slot)
 		If t
-			If _isNpcPresent(t)
+			anyActive = True
+			Bool isNow = _isNpcPresent(t)
+			Bool wasPrv = _slot_present_prv[slot]
+			If isNow
 				config.moduleWidgetStateUpdate(iBars, t, slot)
 				_reconcileNpcBars(slot)
-				; Per-tick label work is intentionally light: setVisible(1) + setPos.
-				; Exception: if the widget was destroyed (e.g. by a font/size
-				; change while the NPC was unloaded), recreate it now via the
-				; full _ensureNpcLabel path so the label can reappear.
-				If config.getNpcLabelId(slot) < 0
-					_ensureNpcLabel(slot, t)
-				Else
-					_showNpcLabel(slot)
-				EndIf
-				_repositionNpcLabel(slot)
-			Else
-				_hideNpcLabel(slot)
 			EndIf
+			; Absent NPCs: icons stay frozen at their last-known state. The
+			; "(away)" label suffix added by _ensureNpcLabel signals that the
+			; values are stale. Simplest behavior — no zero pass, no
+			; release/reload churn, cluster shape stays constant.
+			; Label: rewrite (adds/removes "(away)" suffix) on every presence
+			; transition or when the widget was destroyed (e.g. by font/size
+			; change while absent); otherwise the cheap visibility-only path.
+			If config.getNpcLabelId(slot) < 0 || isNow != wasPrv
+				_ensureNpcLabel(slot, t)
+			Else
+				_showNpcLabel(slot)
+			EndIf
+			_repositionNpcLabel(slot)
+			_slot_present_prv[slot] = isNow
 		EndIf
 		slot += 1
 	EndWhile
+	; Always redraw when any slot is active — picks up bar position/shape/size
+	; changes from iWant's own MCM (which mutates the bar array but doesn't
+	; redraw on a schedule we control) within one tick.
+	If anyActive
+		iBars._drawAllBars()
+	EndIf
 	RegisterForSingleUpdate(config.updateInterval)
 EndEvent
 
@@ -227,21 +256,30 @@ function reloadWidgets()
 	endIf
 	WriteLogAndPrintConsole("WidgetController: reloading widgets")
 	config.moduleWidgetReload(iBars, PlayerRef, 0)
+	_ensurePresentPrv()
 	Int slot = 1
 	Int total = getSlotCount()
 	While slot < total
 		Actor t = config.getNpcSlot(slot)
 		If t
-			config.moduleWidgetReload(iBars, t, slot)
-			_reconcileNpcBars(slot)
-			If !config.slw_stopped && _isNpcPresent(t)
+			If !config.slw_stopped
+				; Always reload — even for absent NPCs — so toggle changes
+				; from MCM take effect for the slot's bars. _ensureNpcLabel
+				; auto-suffixes "(away)" when the NPC isn't present.
+				config.moduleWidgetReload(iBars, t, slot)
+				_reconcileNpcBars(slot)
 				_ensureNpcLabel(slot, t)
+				_slot_present_prv[slot] = _isNpcPresent(t)
 			Else
-				_hideNpcLabel(slot)
+				; Mod stopped — release the slot's icons and tear down label.
+				config.moduleWidgetReload(iBars, None, slot)
+				_destroyNpcLabel(slot)
+				_slot_present_prv[slot] = False
 			EndIf
 		EndIf
 		slot += 1
 	EndWhile
+	iBars._drawAllBars()
 endFunction
 
 function toggleUpdateWidgets()
@@ -269,19 +307,30 @@ Function reloadNpcSlot(Int slot)
 	If !t
 		Return
 	EndIf
+	_ensurePresentPrv()
 	config.moduleWidgetReload(iBars, t, slot)
 	_reconcileNpcBars(slot)
+	iBars._drawAllBars()
 	_ensureNpcLabel(slot, t)
+	; Hotkey-pick targets the crosshair actor — always currently present.
+	; Seed prv so OnUpdate doesn't see a spurious absent→present transition
+	; on the next tick and double-reload.
+	_slot_present_prv[slot] = True
 EndFunction
 
 ; Called from slw_config when a slot is cleared. Modules see target=None and
 ; release their per-slot icons; the cleared slot is then skipped on OnUpdate.
+; Destroys (not just hides) the label widget — setVisible(0) leaves the Flash
+; widget alive and any later call to _showNpcLabel/_ensureNpcLabel can bring
+; it back; destroy guarantees the slot is visually gone until reassigned.
 Function releaseNpcSlot(Int slot)
 	If !iBars || !iBars.isReady()
 		Return
 	EndIf
+	_ensurePresentPrv()
 	config.moduleWidgetReload(iBars, None, slot)
-	_hideNpcLabel(slot)
+	_destroyNpcLabel(slot)
+	_slot_present_prv[slot] = False
 EndFunction
 
 ; Restore all NPC slots after a game load (Flash widgets don't survive saves).
@@ -289,21 +338,26 @@ Function _restoreNpcLabelsAndIcons()
 	If !iBars || !iBars.isReady()
 		Return
 	EndIf
+	_ensurePresentPrv()
 	Int slot = 1
 	Int total = getSlotCount()
 	While slot < total
 		; Flash widget IDs from a previous session are stale — reset.
 		config.setNpcLabelId(slot, -1)
 		Actor t = config.getNpcSlot(slot)
-		If t
+		If t && !config.slw_stopped
+			; Always load icons — even for absent NPCs — so the slot's bars
+			; show neutral state-0 icons (loadIcon defaults to status 0) and
+			; the cluster keeps a consistent shape. _ensureNpcLabel adds the
+			; "(away)" suffix when applicable.
 			config.moduleWidgetReload(iBars, t, slot)
 			_reconcileNpcBars(slot)
-			If !config.slw_stopped && _isNpcPresent(t)
-				_ensureNpcLabel(slot, t)
-			EndIf
+			_ensureNpcLabel(slot, t)
+			_slot_present_prv[slot] = _isNpcPresent(t)
 		EndIf
 		slot += 1
 	EndWhile
+	iBars._drawAllBars()
 EndFunction
 
 Int Function getNpcLabelOffsetX(Int slot)
@@ -368,6 +422,12 @@ Function _ensureNpcLabel(Int slot, Actor target)
 	If displayName == ""
 		displayName = target.GetDisplayName()
 	EndIf
+	; Slot stays assigned across cell transitions, but the NPC may not be in
+	; the current cell. Suffix " (away)" so it's clear the slot is taken-but-
+	; inactive rather than appearing as if Lydia is silently present.
+	If !_isNpcPresent(target)
+		displayName = displayName + " (away)"
+	EndIf
 	Int bar = _getBarForSlot(slot)
 	Int x = iBars._getBarX(bar) + _autoLabelOffsetX(bar) + getNpcLabelOffsetX(slot)
 	Int y = iBars._getBarY(bar) + _autoLabelOffsetY(bar) + getNpcLabelOffsetY(slot)
@@ -386,7 +446,7 @@ EndFunction
 ; widget reflects the new text immediately without waiting for a reload.
 Function refreshNpcLabel(Int slot)
 	Actor t = config.getNpcSlot(slot)
-	If t && _isNpcPresent(t) && !config.slw_stopped
+	If t && !config.slw_stopped
 		_ensureNpcLabel(slot, t)
 	EndIf
 EndFunction
@@ -404,16 +464,15 @@ Function _destroyNpcLabel(Int slot)
 EndFunction
 
 ; Called from MCM after the user changes font or size — destroys all label
-; widgets. Recreation for present NPCs happens here for immediate visual
-; feedback; for unloaded NPCs the label is recreated on next OnUpdate tick
-; once they're back in 3D (handled in OnUpdate's present branch).
+; widgets and recreates them for any assigned slot. _ensureNpcLabel applies
+; the "(away)" suffix when the NPC isn't currently in the cell.
 Function refreshAllNpcLabelStyles()
 	Int slot = 1
 	Int total = getSlotCount()
 	While slot < total
 		_destroyNpcLabel(slot)
 		Actor t = config.getNpcSlot(slot)
-		If t && _isNpcPresent(t) && !config.slw_stopped
+		If t && !config.slw_stopped
 			_ensureNpcLabel(slot, t)
 		EndIf
 		slot += 1
@@ -548,26 +607,19 @@ EndFunction
 ; Walk every owned base name and ensure the slot-suffixed icon, if registered,
 ; sits in the slot's dedicated bar. _setBarIcon only updates iWant's internal
 ; array — Flash widgets stay at their old positions until _drawAllBars runs.
-; We trigger that ourselves at the end of the sweep if anything actually moved
-; so dynamic icons (pregnancy state transitions) appear in the right bar on the
-; same tick they're registered.
+; Callers must invoke iBars._drawAllBars() themselves after a batch of
+; reconciles so icons appear in the right place on the same tick.
 Function _reconcileNpcBars(Int slot)
 	If !iBars || !iBars.isReady() || slot <= 0
 		Return
 	EndIf
 	String[] bases = _getOwnedIconBaseNames()
 	Int i = 0
-	Bool anyMoved = False
 	While i < bases.Length
 		String name = getIconNameForSlot(bases[i], slot)
-		If _placeOneIconInSlotBar(name, slot)
-			anyMoved = True
-		EndIf
+		_placeOneIconInSlotBar(name, slot)
 		i += 1
 	EndWhile
-	If anyMoved
-		iBars._drawAllBars()
-	EndIf
 EndFunction
 
 ; Lay out NPC bars relative to the current group anchor. Preserves the user's
@@ -595,15 +647,32 @@ Function _layoutNpcBars()
 		iBars._setBarY(secondary, baseY + NPC_BAR_VSPACING)
 		iBars._setBarType(secondary, NPC_DEFAULT_SHAPE)
 		iBars._setBarIconSize(secondary, NPC_DEFAULT_ICON_SIZE)
-		_repositionNpcLabel(slot)
+		; Destroy + recreate the label after a bar move. setPos has been seen
+		; to leave a ghost widget at the old position when called on a stale
+		; ID — recreating guarantees exactly one label at the new bar anchor.
+		_destroyNpcLabel(slot)
+		Actor t = config.getNpcSlot(slot)
+		If t && !config.slw_stopped
+			_ensureNpcLabel(slot, t)
+		EndIf
 		slot += 1
 	EndWhile
+	; _setBarIconSize only mutates the array — without _resizeAllBars existing
+	; icons keep their old visual size until each one's next setIconStatus call
+	; (which fires only on state change), causing gradual uneven resizing.
+	iBars._resizeAllBars()
+	; _setBarX/Y/Type/IconSize don't redraw — without _drawAllBars Flash widgets
+	; stay at their last rendered positions.
+	iBars._drawAllBars()
 EndFunction
 
-; "Reset NPC bar layout" MCM button. Full reset: re-applies bar positions
-; AND zeroes per-slot label fine-tune offsets so labels return to the pure
+; "Reset NPC bar layout" MCM button. Full reset: snaps the group anchor back
+; to the bottom-right of iWant's 1280x720 stage, re-applies bar positions,
+; and zeroes per-slot label fine-tune offsets so labels return to the pure
 ; auto position.
 Function applyDefaultNpcBarLayout()
+	npcGroupX = 1100
+	npcGroupY = 600
 	_layoutNpcBars()
 	Int slot = 1
 	While slot <= 3
