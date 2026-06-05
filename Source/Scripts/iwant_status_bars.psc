@@ -50,6 +50,11 @@ Int[]    statusBarActivationKey
 Bool[]   statusBarPressToToggle
 Bool[]   statusBarHoldToShow
 Bool[]   statusBarVisible
+; SL Widgets patch: per-bar timestamp of last icon status change. Used by
+; dependent mods to detect the autohide-faded state (the bar visibility
+; flag stays True during autohide — only icon alpha fades — so this is
+; the only signal available outside Flash).
+Float[]  statusBarLastChangeTime
 
 ; Legacy variables
 String   DEFAULT_STATUS_BAR_TYPE
@@ -197,6 +202,14 @@ EndFunction
 ; the bar should hide when the user toggles the bar off via hotkey).
 Bool Function _getBarVisible(Int bar)
 	Return(statusBarVisible[bar])
+EndFunction
+
+; SL Widgets patch: real-time timestamp of the bar's most recent icon
+; status change. Returns 0.0 if no change has occurred since script
+; init. Dependent mods compute autohide state as:
+;   t > 0 && Utility.GetCurrentRealTime() > t + _getBarAutoHideTime(bar)
+Float Function _getBarLastChangeTime(Int bar)
+	Return(statusBarLastChangeTime[bar])
 EndFunction
 
 Function _iconSetVisible(Int icon, Bool vis)
@@ -416,6 +429,12 @@ Function _setIconStatusByID(Int id, Int status, Bool redraw = True)
 	If bar >= 0
 		If statusBarShowOnChange[bar]
 			autohideTime = statusBarAutoHideTime[bar]
+		EndIf
+		; SL Widgets patch: record the time of the most recent icon change
+		; so dependent mods can detect when an autohide-mode bar has faded
+		; out (statusBarVisible stays True; only widget alpha fades).
+		If change
+			statusBarLastChangeTime[bar] = Utility.GetCurrentRealTime()
 		EndIf
 	EndIf
 	
@@ -866,6 +885,7 @@ Function _initializeStatusBars()
 	statusBarPressToToggle = CreateBoolArray(TOTAL_STATUS_BARS, False)
 	statusBarHoldToShow =  CreateBoolArray(TOTAL_STATUS_BARS, False)
 	statusBarVisible = CreateBoolArray(TOTAL_STATUS_BARS, True)
+	statusBarLastChangeTime = Utility.CreateFloatArray(TOTAL_STATUS_BARS, 0.0)
 	statusBarIcon =  CreateIntArray(TOTAL_STATUS_BARS * ICONS_PER_STATUS_BAR, -1)
 	
 	; Start bars in bottom right corner

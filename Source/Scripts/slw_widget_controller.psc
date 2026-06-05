@@ -405,7 +405,16 @@ Function setNpcLabelOffset(Int slot, Int x, Int y)
 		npc3_labelOffsetX = x
 		npc3_labelOffsetY = y
 	EndIf
-	_repositionNpcLabel(slot)
+	; setPos has been seen to leave a ghost widget at the old position when
+	; called on a stale ID (same issue _layoutNpcBars works around). Destroy
+	; + recreate guarantees exactly one label at the new offset position.
+	Actor t = config.getNpcSlot(slot)
+	If t && !config.slw_stopped
+		_destroyNpcLabel(slot)
+		_ensureNpcLabel(slot, t)
+	Else
+		_repositionNpcLabel(slot)
+	EndIf
 EndFunction
 
 ; Final screen position = bar XY + per-slot offset. Bar XY may change when the
@@ -718,17 +727,36 @@ Function _showNpcLabel(Int slot)
 EndFunction
 
 ; If the user toggled the slot's primary bar off via iWant's hide hotkey
-; (press-to-toggle or hold-to-show), the icons disappear — we mirror that
-; on the label so it doesn't orphan above empty space. Idempotent: cheap
-; setVisible toggle, no widget recreation. Called after the regular
-; show/ensure path so the bar state always wins.
+; (press-to-toggle or hold-to-show) OR the bar is in autohide mode and
+; has timed out since the last status change, the icons disappear — we
+; mirror that on the label so it doesn't orphan above empty space.
+; Idempotent: cheap setVisible toggle, no widget recreation. Called
+; after the regular show/ensure path so bar state always wins.
 Function _applyBarVisibilityToLabel(Int slot)
 	If !iBars || !iBars.iWidgets
 		Return
 	EndIf
-	If !iBars._getBarVisible(_getBarForSlot(slot))
+	Int bar = _getBarForSlot(slot)
+	If !iBars._getBarVisible(bar) || _isBarAutoHidden(bar)
 		_hideNpcLabel(slot)
 	EndIf
+EndFunction
+
+; iWant's autohide doesn't flip statusBarVisible — it fades widget alpha
+; via Scaleform transitions. We detect the faded state by comparing the
+; bar's last-change timestamp (patched into iWant) against autoHideTime.
+; +0.5s grace for the fade-out transition (iWant fades over 15 frames =
+; 0.5s at 30fps).
+Bool Function _isBarAutoHidden(Int bar)
+	If !iBars._getBarShowOnChange(bar)
+		Return False
+	EndIf
+	Float t = iBars._getBarLastChangeTime(bar)
+	If t <= 0.0
+		Return True
+	EndIf
+	Float window = iBars._getBarAutoHideTime(bar) As Float
+	Return Utility.GetCurrentRealTime() > t + window + 0.5
 EndFunction
 
 ;Debug function to arrange iwant status bars icons better - fill empty spaces in the main bar to load/release toggles in a secondary bar
