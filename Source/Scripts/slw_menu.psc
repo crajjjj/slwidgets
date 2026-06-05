@@ -32,6 +32,7 @@ int _npc_hotkey_option
 int _npc_reset_layout_option
 int _npc_group_x_slider
 int _npc_group_y_slider
+int _npc_vertical_spacing_slider
 int _npc_label_font_menu
 int _npc_label_size_slider
 int[] _npc_clear_option
@@ -225,6 +226,7 @@ Function NpcTracking()
 	_npc_hotkey_option = AddKeyMapOption("$SLW_NPC_Hotkey", config.npcHotkey)
 	_npc_group_x_slider = AddSliderOption("$SLW_NPC_Group_X", widget_controller.npcGroupX, "{0}", OPTION_FLAG_NONE)
 	_npc_group_y_slider = AddSliderOption("$SLW_NPC_Group_Y", widget_controller.npcGroupY, "{0}", OPTION_FLAG_NONE)
+	_npc_vertical_spacing_slider = AddSliderOption("$SLW_NPC_Vertical_Spacing", widget_controller.npcVerticalSpacing, "{0}", OPTION_FLAG_NONE)
 	_npc_reset_layout_option = AddTextOption("$SLW_NPC_Reset_Layout", "$SLW_GO", OPTION_FLAG_NONE)
 	AddHeaderOption("$SLW_NPC_Label_Style")
 	_npc_label_font_menu = AddMenuOption("$SLW_NPC_Label_Font", _currentFontLabel(), OPTION_FLAG_NONE)
@@ -566,11 +568,12 @@ Event OnOptionSliderOpen(Int mcm_option)
 	If mcm_option == _npc_group_x_slider
 		SetSliderDialogStartValue(widget_controller.npcGroupX)
 		; iWant's Flash stage is fixed at 1280x720 and gets scaled by Skyrim
-		; to fit any monitor — same coordinates on 1080p, 1440p ultrawide, 4K.
-		; Going past 1279 lands off the standard stage; some HUD overhauls
-		; extend it so we don't hard-cap. Default 1100 matches iWant's right-
-		; side anchor pattern.
-		SetSliderDialogRange(0, 1279)
+		; to fit 16:9 monitors. On ultrawide (21:9 / 32:9), vanilla Skyrim
+		; leaves pillarboxes on either side — the 16:9 safe area ends at
+		; 1279. HUD overhauls (SkyHUD, etc.) extend the stage horizontally;
+		; with one installed, X up to ~1680 fills 21:9 and ~2560 fills 32:9.
+		; Range is generous so users with extended-stage HUDs can dial in.
+		SetSliderDialogRange(0, 2560)
 		SetSliderDialogInterval(5.0)
 		SetSliderDialogDefaultValue(1100)
 		Return
@@ -580,6 +583,15 @@ Event OnOptionSliderOpen(Int mcm_option)
 		SetSliderDialogRange(0, 719)
 		SetSliderDialogInterval(5.0)
 		SetSliderDialogDefaultValue(600)
+		Return
+	EndIf
+	If mcm_option == _npc_vertical_spacing_slider
+		SetSliderDialogStartValue(widget_controller.npcVerticalSpacing)
+		; Min 50 = very compact (labels may overlap previous NPC's secondary
+		; bar). Default 105 = comfortable label clearance. Max 200 = loose.
+		SetSliderDialogRange(50, 200)
+		SetSliderDialogInterval(5.0)
+		SetSliderDialogDefaultValue(105)
 		Return
 	EndIf
 	If mcm_option == _npc_label_size_slider
@@ -621,6 +633,12 @@ Bool Function _handleNpcSliderAccept(Int mcm_option, Float value)
 		widget_controller.setNpcGroupPos(widget_controller.npcGroupX, newY)
 		widget_controller._layoutNpcBars()
 		SetSliderOptionValue(mcm_option, newY, "{0}")
+		Return True
+	EndIf
+	If mcm_option == _npc_vertical_spacing_slider
+		Int newV = value As Int
+		widget_controller.setNpcVerticalSpacing(newV)
+		SetSliderOptionValue(mcm_option, newV, "{0}")
 		Return True
 	EndIf
 	If mcm_option == _npc_label_size_slider

@@ -44,9 +44,12 @@ Int Property npcLabelB = 255 Auto Hidden
 
 ; Vertical spacing between primary/secondary bars within one NPC.
 Int NPC_BAR_VSPACING = 40
-; Extra padding between NPC groups so the next NPC's label clears the
-; previous NPC's secondary bar (labels sit ~28px above their primary bar).
-Int NPC_INTER_LABEL_PAD = 25
+; Stride between NPCs in the cluster (distance from one NPC's primary bar to
+; the next NPC's primary bar). Default 105 = comfortable clearance with the
+; default 40px intra-NPC spacing. User-tunable from MCM for cluster
+; compactness; going below ~80 risks labels overlapping the previous NPC's
+; secondary bar.
+Int Property npcVerticalSpacing = 105 Auto Hidden
 Int NPC_DEFAULT_ICON_SIZE = 18
 Int NPC_DEFAULT_SHAPE = 0  ; line-left — icons grow leftward from the X anchor
                            ; so the bottom-right cluster fits on stage when X is
@@ -87,6 +90,11 @@ EndFunction
 Function setNpcGroupPos(Int x, Int y)
 	npcGroupX = x
 	npcGroupY = y
+EndFunction
+
+Function setNpcVerticalSpacing(Int v)
+	npcVerticalSpacing = v
+	_layoutNpcBars()
 EndFunction
 
 ; Auto-computed label offsets derived from iWant's bar shape + icon size.
@@ -229,6 +237,7 @@ Event OnUpdate()
 				_showNpcLabel(slot)
 			EndIf
 			_repositionNpcLabel(slot)
+			_applyBarVisibilityToLabel(slot)
 			_slot_present_prv[slot] = isNow
 		EndIf
 		slot += 1
@@ -269,6 +278,7 @@ function reloadWidgets()
 				config.moduleWidgetReload(iBars, t, slot)
 				_reconcileNpcBars(slot)
 				_ensureNpcLabel(slot, t)
+				_applyBarVisibilityToLabel(slot)
 				_slot_present_prv[slot] = _isNpcPresent(t)
 			Else
 				; Mod stopped — release the slot's icons and tear down label.
@@ -312,6 +322,7 @@ Function reloadNpcSlot(Int slot)
 	_reconcileNpcBars(slot)
 	iBars._drawAllBars()
 	_ensureNpcLabel(slot, t)
+	_applyBarVisibilityToLabel(slot)
 	; Hotkey-pick targets the crosshair actor — always currently present.
 	; Seed prv so OnUpdate doesn't see a spurious absent→present transition
 	; on the next tick and double-reload.
@@ -353,6 +364,7 @@ Function _restoreNpcLabelsAndIcons()
 			config.moduleWidgetReload(iBars, t, slot)
 			_reconcileNpcBars(slot)
 			_ensureNpcLabel(slot, t)
+			_applyBarVisibilityToLabel(slot)
 			_slot_present_prv[slot] = _isNpcPresent(t)
 		EndIf
 		slot += 1
@@ -629,8 +641,8 @@ Function _layoutNpcBars()
 	If !iBars || !iBars.isReady()
 		Return
 	EndIf
-	; Per-NPC vertical stride: two bars (40+40) plus a label-clearance pad.
-	Int stride = NPC_BAR_VSPACING * 2 + NPC_INTER_LABEL_PAD
+	; Per-NPC vertical stride — user-tunable from MCM for cluster compactness.
+	Int stride = npcVerticalSpacing
 	Int slot = 1
 	While slot <= 3
 		Int primary = _getBarForSlot(slot)
@@ -673,6 +685,7 @@ EndFunction
 Function applyDefaultNpcBarLayout()
 	npcGroupX = 1100
 	npcGroupY = 600
+	npcVerticalSpacing = 105
 	_layoutNpcBars()
 	Int slot = 1
 	While slot <= 3
@@ -701,6 +714,20 @@ Function _showNpcLabel(Int slot)
 	Int id = config.getNpcLabelId(slot)
 	If id >= 0
 		iBars.iWidgets.setVisible(id, 1)
+	EndIf
+EndFunction
+
+; If the user toggled the slot's primary bar off via iWant's hide hotkey
+; (press-to-toggle or hold-to-show), the icons disappear — we mirror that
+; on the label so it doesn't orphan above empty space. Idempotent: cheap
+; setVisible toggle, no widget recreation. Called after the regular
+; show/ensure path so the bar state always wins.
+Function _applyBarVisibilityToLabel(Int slot)
+	If !iBars || !iBars.iWidgets
+		Return
+	EndIf
+	If !iBars._getBarVisible(_getBarForSlot(slot))
+		_hideNpcLabel(slot)
 	EndIf
 EndFunction
 

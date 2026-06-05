@@ -192,6 +192,13 @@ Bool Function _getBarHoldToShow(Int bar)
 	Return(statusBarHoldToShow[bar])
 EndFunction
 
+; SL Widgets patch: exposes current bar visibility so dependent mods can
+; mirror it on their own widgets (e.g. NPC name labels that float above
+; the bar should hide when the user toggles the bar off via hotkey).
+Bool Function _getBarVisible(Int bar)
+	Return(statusBarVisible[bar])
+EndFunction
+
 Function _iconSetVisible(Int icon, Bool vis)
 	Int s = 0
 	Int w

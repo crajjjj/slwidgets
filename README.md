@@ -51,7 +51,7 @@ Watch up to 3 NPCs alongside the player. Each tracked NPC gets their own bar pai
 
 iWant Status Bars (and SL Widgets through it) uses Skyrim's **fixed 1280×720 Flash HUD stage** — Skyrim scales it to fit any monitor. The same X/Y values produce the same on-screen position whether you're on 1080p, 1440p ultrawide, 4K, or 32:9 super-ultrawide. **Widescreen users do not need different coordinates than 1080p users.**
 
-NPC group X/Y sliders are bounded to 0–1279 / 0–719 (the standard stage). If you've installed a HUD overhaul (SkyHUD, etc.) that extends the stage, you may need higher values; the same applies to iWant's own bar positioning sliders. The default `npcGroupX = 1100, npcGroupY = 600` matches iWant's bottom-right anchor convention.
+NPC group sliders: X goes 0–2560, Y goes 0–719. The 16:9 safe area ends at X=1279 — going past it requires a HUD overhaul (SkyHUD, etc.) that extends the Flash stage horizontally; without one, icons past 1279 are clipped. For ultrawide users with an extended-stage HUD: ~1680 fills 21:9, ~2560 fills 32:9. The default `npcGroupX = 1100, npcGroupY = 600` matches iWant's bottom-right anchor convention within the standard stage.
 
 ### Per-NPC controls (per slot)
 
