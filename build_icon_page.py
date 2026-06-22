@@ -54,7 +54,7 @@ def stage_row(key, folder, prefix, n, label, desc=None):
         fn = convert(f"{folder}/{prefix}{i}.dds", f"{key}_{i}")
         md.append(
             f'<figure class="icon-cell">'
-            f'<img src="assets/icons/{fn}" alt="{key} stage {i}">'
+            f'<img src="../assets/icons/{fn}" alt="{key} stage {i}">'
             f'<figcaption>{i}</figcaption></figure>'
         )
     md.append("\n</div>\n")
@@ -68,7 +68,7 @@ def toggle_grid(items, keyprefix):
         fn = convert(rel, safe)
         md.append(
             f'<figure class="icon-cell icon-cell--wide">'
-            f'<img src="assets/icons/{fn}" alt="{caption}">'
+            f'<img src="../assets/icons/{fn}" alt="{caption}">'
             f'<figcaption>{caption}</figcaption></figure>'
         )
     md.append("\n</div>\n")
@@ -166,7 +166,7 @@ for idx in sample_indices(len(gem_files)):
     fn = convert(f"pregnancymod/{gem_files[idx]}", f"preg_gems_{idx}")
     md.append(
         f'<figure class="icon-cell">'
-        f'<img src="assets/icons/{fn}" alt="soul gems stage {idx}">'
+        f'<img src="../assets/icons/{fn}" alt="soul gems stage {idx}">'
         f'<figcaption>{idx + 1}</figcaption></figure>'
     )
 md.append("\n</div>\n")

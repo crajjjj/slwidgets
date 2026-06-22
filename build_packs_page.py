@@ -76,7 +76,7 @@ def icon_row(cells):
 
 
 def fig(fn, alt, caption):
-    return (f'<figure class="icon-cell"><img src="assets/packs/{fn}" alt="{alt}">'
+    return (f'<figure class="icon-cell"><img src="../assets/packs/{fn}" alt="{alt}">'
             f'<figcaption>{caption}</figcaption></figure>')
 
 
