@@ -1,0 +1,78 @@
+site_name: SL Widgets SSE
+site_description: iWant Status Bars plugin displaying SexLab-related icons for the player and up to three NPCs.
+site_url: https://crajjjj.github.io/slwidgets/
+repo_name: crajjjj/slwidgets
+repo_url: https://github.com/crajjjj/slwidgets
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.top
+    - navigation.indexes
+    - content.code.copy
+    - content.action.edit
+    - search.suggest
+    - search.highlight
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Supported Mods: supported-mods.md
+  - Icon Gallery: icons.md
+  - Custom Icon Packs: custom-packs.md
+  - NPC Tracking: npc-tracking.md
+  - MCM Reference: mcm-reference.md
+  - Customization: customization.md
+  - Troubleshooting: troubleshooting.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+validation:
+  links:
+    not_found: warn
+    anchors: warn
+
+plugins:
+  - search
+
+extra_css:
+  - stylesheets/extra.css

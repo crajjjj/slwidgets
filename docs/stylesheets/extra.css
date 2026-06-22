@@ -1,0 +1,46 @@
+/* Icon gallery layout */
+
+.icon-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0.8rem 0 1.4rem;
+}
+
+.icon-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 4.2rem;
+  margin: 0;
+  font-size: 0.7rem;
+}
+
+.icon-cell--wide {
+  width: 5.6rem;
+}
+
+.icon-cell img {
+  width: 3.2rem;
+  height: 3.2rem;
+  padding: 0.25rem;
+  border-radius: 0.35rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  /* Checkerboard so transparent areas read clearly in both themes */
+  background-color: #b8b8b8;
+  background-image:
+    linear-gradient(45deg, #8e8e8e 25%, transparent 25%),
+    linear-gradient(-45deg, #8e8e8e 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #8e8e8e 75%),
+    linear-gradient(-45deg, transparent 75%, #8e8e8e 75%);
+  background-size: 12px 12px;
+  background-position: 0 0, 0 6px, 6px -6px, -6px 0;
+  image-rendering: auto;
+}
+
+.icon-cell figcaption {
+  margin-top: 0.25rem;
+  text-align: center;
+  line-height: 1.2;
+  color: var(--md-default-fg-color--light);
+}
