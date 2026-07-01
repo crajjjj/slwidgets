@@ -2,6 +2,9 @@
 
 A plugin for **iWant Status Bars** that adds SexLab-related status icons to your HUD. 113+ icons across 9 mod ecosystems, with full support for tracking the player and up to three NPCs simultaneously.
 
+!!! warning "Adult mod — reference documentation"
+    SL Widgets is a mature (18+) HUD add-on that displays status from SexLab-ecosystem mods. **These pages are reference documentation:** they describe the widgets, icons, and MCM options so players can configure it and authors can integrate with it. They contain no pornographic media and exist to document software behaviour. Install and use the mod only where appropriate for your age and local laws.
+
 Two display mechanics:
 
 - **Stage icons** — 9-state fills that update dynamically (arousal, milk level, cum pool, wear & tear, needs)
