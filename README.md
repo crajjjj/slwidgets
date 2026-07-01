@@ -1,6 +1,23 @@
 SL Widgets SSE
 ==============
 
+<p align="center">
+  <a href="https://www.nexusmods.com/skyrimspecialedition/mods/164162"><img src="https://img.shields.io/badge/⬇%20Download-Nexus%20Mods-d9782d?style=for-the-badge" alt="Download on Nexus"></a>
+</p>
+
+<p align="center">
+  <a href="https://crajjjj.github.io/slwidgets/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-brightgreen?logo=readthedocs&logoColor=white" alt="Documentation"></a>
+  <a href="https://github.com/crajjjj/slwidgets/actions/workflows/docs.yml"><img src="https://github.com/crajjjj/slwidgets/actions/workflows/docs.yml/badge.svg" alt="Deploy docs"></a>
+  <a href="https://github.com/crajjjj/slwidgets/releases/latest"><img src="https://img.shields.io/github/v/release/crajjjj/slwidgets?label=release" alt="Latest release"></a>
+  <img src="https://img.shields.io/badge/Skyrim-SE%2FAE%2FLE-orange" alt="Skyrim SE/AE/LE">
+  <img src="https://img.shields.io/badge/scripting-Papyrus-8A2BE2" alt="Papyrus">
+  <img src="https://img.shields.io/badge/content-18%2B-black" alt="18+ content"><br>
+  <a href="https://github.com/crajjjj/slwidgets/releases"><img src="https://img.shields.io/github/downloads/crajjjj/slwidgets/total" alt="Total downloads"></a>
+  <img src="https://img.shields.io/github/last-commit/crajjjj/slwidgets" alt="Last commit">
+  <img src="https://img.shields.io/github/license/crajjjj/slwidgets" alt="License">
+  <img src="https://img.shields.io/github/repo-size/crajjjj/slwidgets" alt="Repo size">
+</p>
+
 A plugin for **iWant Status Bars** that shows SexLab-related status icons for the player **and up to three NPCs** — arousal, milk, wear & tear, cum, pregnancy, parasites, needs and more. 113+ icons, all configurable in the MCM.
 
 📖 **Full documentation:** https://crajjjj.github.io/slwidgets/
