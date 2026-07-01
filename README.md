@@ -14,7 +14,7 @@ SL Widgets SSE
   <img src="https://img.shields.io/badge/content-18%2B-black" alt="18+ content"><br>
   <a href="https://github.com/crajjjj/slwidgets/releases"><img src="https://img.shields.io/github/downloads/crajjjj/slwidgets/total" alt="Total downloads"></a>
   <img src="https://img.shields.io/github/last-commit/crajjjj/slwidgets" alt="Last commit">
-  <img src="https://img.shields.io/github/license/crajjjj/slwidgets" alt="License">
+  <img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License: GPL-3.0">
   <img src="https://img.shields.io/github/repo-size/crajjjj/slwidgets" alt="Repo size">
 </p>
 
