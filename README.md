@@ -11,11 +11,8 @@ SL Widgets SSE
   <a href="https://github.com/crajjjj/slwidgets/releases/latest"><img src="https://img.shields.io/github/v/release/crajjjj/slwidgets?label=release" alt="Latest release"></a>
   <img src="https://img.shields.io/badge/Skyrim-SE%2FAE%2FLE-orange" alt="Skyrim SE/AE/LE">
   <img src="https://img.shields.io/badge/scripting-Papyrus-8A2BE2" alt="Papyrus">
-  <img src="https://img.shields.io/badge/content-18%2B-black" alt="18+ content"><br>
-  <a href="https://github.com/crajjjj/slwidgets/releases"><img src="https://img.shields.io/github/downloads/crajjjj/slwidgets/total" alt="Total downloads"></a>
-  <img src="https://img.shields.io/github/last-commit/crajjjj/slwidgets" alt="Last commit">
+  <img src="https://img.shields.io/badge/content-18%2B-black" alt="18+ content">
   <img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License: GPL-3.0">
-  <img src="https://img.shields.io/github/repo-size/crajjjj/slwidgets" alt="Repo size">
 </p>
 
 A plugin for **iWant Status Bars** that shows SexLab-related status icons for the player **and up to three NPCs** — arousal, milk, wear & tear, cum, pregnancy, parasites, needs and more. 113+ icons, all configurable in the MCM.
