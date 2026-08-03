@@ -8,7 +8,7 @@ EndFunction
 
 ;SemVer support
 Int Function GetVersion() Global
-    Return 20200
+    Return 20201
     ; 1.0.0   -> 10000
     ; 1.1.0   -> 10100
     ; 1.1.1  -> 10101
@@ -17,7 +17,7 @@ Int Function GetVersion() Global
 EndFunction
 
 String Function GetVersionString() Global
-    Return "2.2.0"
+    Return "2.2.1"
 EndFunction
 
 String Function StringIfElse(Bool isTrue, String returnTrue, String returnFalse = "") Global
@@ -141,12 +141,14 @@ Bool Function isCurseOfLifeReady() Global
 EndFunction
 
 Bool Function isDependencyReady(String modname) Global
+	; ESL-flagged plugins are invisible to GetModByName (returns 255), so the
+	; light index must be checked too. GetLightModByName's not-found sentinel
+	; is 0xFFFF -- 255 is a valid light index.
 	int index = Game.GetModByName(modname)
-	if index == 255 || index == -1
-		return false
-	else
+	if index != 255 && index != -1
 		return true
 	endif
+	return Game.GetLightModByName(modname) != 65535
 EndFunction
 
 Int Function percentToState9(int percent) Global

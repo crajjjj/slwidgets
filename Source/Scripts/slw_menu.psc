@@ -731,28 +731,33 @@ State TOGGLE_MOD_STATE
         SetOptionFlagsST(OPTION_FLAG_DISABLED)
         SetTextOptionValueST("$SLW_Working")
 		config.slw_stopped = !config.slw_stopped
-		if config.slw_stopped
+		Bool stopped = config.slw_stopped
+		if stopped
 			;disable flow
 			widget_controller.stopUpdates()
-			;config.DisableWidgets()
 			config.moduleReset()
-			SetTextOptionValueST("$SLW_Enable")
 			widget_controller.reloadWidgets()
 			_togglesDirty = false
-			Utility.WaitMenuMode(1)
-			ShowMessage("$SLW_Disabled", false)
+			SetTextOptionValueST("$SLW_Enable")
 		Else
 			;enable flow
 			config.moduleReset()
 			config.moduleSetup()
 			widget_controller.reloadWidgets()
 			_togglesDirty = false
-			Utility.WaitMenuMode(1)
 			widget_controller.startUpdates()
 			SetTextOptionValueST("$SLW_Disable")
-			ShowMessage("$SLW_Enabled", false)
 		endif
         SetOptionFlagsST(OPTION_FLAG_NONE)
+		; WaitMenuMode and ShowMessage yield the UI and invalidate SkyUI's
+		; current-option-state, so every ...ST call must run before them — a
+		; ...ST call afterwards throws "outside a valid option state".
+		Utility.WaitMenuMode(1)
+		if stopped
+			ShowMessage("$SLW_Disabled", false)
+		Else
+			ShowMessage("$SLW_Enabled", false)
+		endif
     EndEvent
 	
 	Event OnHighlightST()
