@@ -10,6 +10,8 @@ Actor Property PlayerRef Auto
 
 int EMPTY = -1
 int FM3_EMPTY = -2
+; must stay outside the FM3 Tweaks faction-rank range (-121..127, -1 = not in faction)
+int FM3T_EMPTY = -999
 int[] gems_state_prv
 Float[] GemPrePercent
 
@@ -19,6 +21,7 @@ Bool Property Plugin_EstrusDwemer = false auto hidden
 Bool Property Plugin_EggFactory = false auto hidden
 Bool Property Plugin_BeeingFemale = false auto hidden
 Bool Property Plugin_FertilityMode3 = false auto hidden
+Bool Property Plugin_FM3Tweaks = false auto hidden
 Bool Property Plugin_HentaiPregnancy = false auto hidden
 Bool Property Plugin_SGO4 = false auto hidden
 Bool Property Plugin_CurseOfLife = false auto hidden
@@ -46,6 +49,7 @@ Spell _JSW_BB_Trimester1
 Spell _JSW_BB_Trimester2
 Spell _JSW_BB_Trimester3
 Spell _JSW_BB_Ovulation
+Faction _FM3TweaksTrackedFaction
 
 ;BF
 Quest _dse_sgo_QuestDatabase_Main
@@ -178,6 +182,19 @@ Function initInterface()
 		endif
 	endif
 
+	; FM3 Fixes and Tweaks rewrites _JSW_BB_Utility and never applies the
+	; trimester/ovulation UI spells, so the HasSpell path shows nothing there.
+	; Its canonical per-actor state is the tracked-females faction rank instead.
+	If (Plugin_FertilityMode3 && !Plugin_FM3Tweaks && isFM3TweaksReady())
+		WriteLog("ModulePregnancy: FM3 Fixes and Tweaks found")
+		_FM3TweaksTrackedFaction = Game.GetFormFromFile(0x000862, "Fertility Mode 3 Fixes and Updates.esp") as Faction
+		Plugin_FM3Tweaks = true
+		if !_FM3TweaksTrackedFaction
+			WriteLog("ModulePregnancy: _FM3TweaksTrackedFaction not found", 2)
+			Plugin_FM3Tweaks = false
+		endif
+	endif
+
 	If (!Plugin_SGO4 && isSGO4Ready())
 		WriteLog("ModulePregnancy: SGO4 found")
 		_dse_sgo_QuestDatabase_Main = Game.GetFormFromFile(0x00182A,"dse-soulgem-oven.esp") as Quest 
@@ -194,7 +211,7 @@ Function initInterface()
 	endif
 
 	if isInterfaceActive()
-		WriteLog("ModulePregnancy: active plugins - EC:" + Plugin_EstrusChaurus + " ES:" + Plugin_EstrusSpider + " ED:" + Plugin_EstrusDwemer + " BF:" + Plugin_BeeingFemale + " HP:" + Plugin_HentaiPregnancy + " EF:" + Plugin_EggFactory + " FM3:" + Plugin_FertilityMode3 + " SGO4:" + Plugin_SGO4 + " COL:" + Plugin_CurseOfLife)
+		WriteLog("ModulePregnancy: active plugins - EC:" + Plugin_EstrusChaurus + " ES:" + Plugin_EstrusSpider + " ED:" + Plugin_EstrusDwemer + " BF:" + Plugin_BeeingFemale + " HP:" + Plugin_HentaiPregnancy + " EF:" + Plugin_EggFactory + " FM3:" + Plugin_FertilityMode3 + " FM3T:" + Plugin_FM3Tweaks + " SGO4:" + Plugin_SGO4 + " COL:" + Plugin_CurseOfLife)
 	else
 		WriteLog("ModulePregnancy: no pregnancy mods detected")
 	endif
@@ -216,6 +233,9 @@ Function _ensurePrvArrays()
 	If !_fm3_actorIndex_prv
 		_fm3_actorIndex_prv = Utility.CreateIntArray(getSlotCount(), FM3_EMPTY)
 	EndIf
+	If !_fm3t_rank_prv
+		_fm3t_rank_prv = Utility.CreateIntArray(getSlotCount(), FM3T_EMPTY)
+	EndIf
 	If !_bf_state_prv
 		_bf_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
 	EndIf
@@ -233,11 +253,13 @@ Function resetInterface()
 	Plugin_HentaiPregnancy = false
 	Plugin_EggFactory = false
 	Plugin_FertilityMode3 = false
+	Plugin_FM3Tweaks = false
 	Plugin_SGO4 = false
 	Plugin_CurseOfLife = false
 	gems_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
 	GemPrePercent = Utility.CreateFloatArray(getSlotCount(), 0.0)
 	_fm3_actorIndex_prv = Utility.CreateIntArray(getSlotCount(), FM3_EMPTY)
+	_fm3t_rank_prv = Utility.CreateIntArray(getSlotCount(), FM3T_EMPTY)
 	_bf_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
 	_hp_rank_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
 EndFunction
@@ -286,7 +308,9 @@ EndFunction
 
 
  Function _reloadPregnancyIcons(iWant_Status_Bars iBars, Actor target, Int slot)
-	if Plugin_FertilityMode3
+	if Plugin_FM3Tweaks
+		handleFM3Tweaks(iBars, target, slot)
+	elseif Plugin_FertilityMode3
 		handleFertilityMode3(iBars, target, slot)
 	elseif Plugin_HentaiPregnancy
 		handleHentaiPregnancy(iBars, target, slot)
@@ -470,6 +494,54 @@ Function handleFertilityMode3(iWant_Status_Bars iBars, Actor target, Int slot)
 		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_CumInflation, slot))
     endIf
 
+EndFunction
+
+int[] _fm3t_rank_prv
+
+; FM3 Fixes and Tweaks encodes each tracked actor's cycle state in its
+; tracked-females faction rank (kept current by the mod's own update cycle,
+; for NPCs as well as the player):
+;   pregnant           -> rank = pregnancy progress percent, masked to 0..127
+;   birth recovery     -> rank = -85 - progress (down to -121)
+;   other cycle states -> rank = stateId * -10 - 5 (ovulation phase: -5 / -15)
+;   not tracked        -> not in the faction (GetFactionRank returns -1)
+; Trimester length is always PregnancyDuration / 3, so the percent splits into
+; trimesters at thirds. Full term (state 20, percent >= 100) stays on trimester 3.
+Function handleFM3Tweaks(iWant_Status_Bars iBars, Actor target, Int slot)
+	int rank = target.GetFactionRank(_FM3TweaksTrackedFaction)
+	if rank != _fm3t_rank_prv[slot]
+		WriteLog("ModulePregnancy: FM3Tweaks faction rank changed " + _fm3t_rank_prv[slot] + " -> " + rank)
+		_fm3t_rank_prv[slot] = rank
+	endif
+
+	bool showOvulation = (rank == -5 || rank == -15)
+	bool showTrimester1 = (rank >= 0 && rank < 34)
+	bool showTrimester2 = (rank >= 34 && rank < 67)
+	bool showTrimester3 = (rank >= 67)
+
+	if showOvulation
+		_loadOvulationIcon(iBars, slot)
+	else
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Ovulation, slot))
+	endif
+
+	if showTrimester1
+		_loadTrimester1Icon(iBars, slot)
+	else
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester1, slot))
+	endif
+
+	if showTrimester2
+		_loadTrimester2Icon(iBars, slot)
+	else
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester2, slot))
+	endif
+
+	if showTrimester3
+		_loadTrimester3Icon(iBars, slot)
+	else
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester3, slot))
+	endif
 EndFunction
 
 Function handleSGO4(iWant_Status_Bars iBars, Actor target, Int slot)
