@@ -11,7 +11,7 @@ Bool Property Plugin_MAL = false auto hidden
 
 slw_config Property config Auto
 Actor Property PlayerRef Auto
-Quest _dse_sgo_QuestDatabase_Main
+Quest _sgo4_db
 
 ;MME
 String MILK_STATE = "MMEMilk"
@@ -57,13 +57,22 @@ Function initInterface()
 		slw_log.WriteLog("ModuleMilk: MilkModNEW.esp found")
 		Plugin_MME = true
 	endif
-	If (!Plugin_SGO4 && isSGO4Ready())
-		WriteLog("ModuleMilk: SGO4 found")
-		_dse_sgo_QuestDatabase_Main = Game.GetFormFromFile(0x00182A,"dse-soulgem-oven.esp") as Quest
-		Plugin_SGO4 = true
-		if !_dse_sgo_QuestDatabase_Main
-			WriteLog("ModuleMilk: _dse_sgo_QuestDatabase_Main not found", 2)
+	; A cached-but-null handle is re-resolved rather than trusted: a save made
+	; against the pre-1.12 base mod carries a handle into a merged SGO4IF install
+	; that points at nothing, while the persisted Plugin_SGO4 flag still says true.
+	If ((!Plugin_SGO4 || !_sgo4_db) && isSGO4Ready())
+		WriteLog("ModuleMilk: SGO4IF found")
+		_sgo4_db = getSGO4Database()
+		if _sgo4_db
+			Plugin_SGO4 = true
+		else
+			Plugin_SGO4 = false
+			WriteLog("ModuleMilk: SGO4 database quest not found", 2)
 		endif
+	ElseIf (Plugin_SGO4 && !isSGO4Ready())
+		WriteLog("ModuleMilk: SGO4 no longer installed")
+		Plugin_SGO4 = false
+		_sgo4_db = none
 	endif
 	If (!Plugin_MAL && isMALReady())
 		WriteLog("ModuleMilk: Mammaries And Lactation found")
@@ -164,8 +173,8 @@ Int Function getMilkLevel(Actor a, Int slot)
 		milkMax = MME_Storage.getMilkMaximum(a)
 	endif
 	if Plugin_SGO4
-		milkCur = milkCur + getMilkCur(_dse_sgo_QuestDatabase_Main, a)
-		milkMax = milkMax + getMilkMax(_dse_sgo_QuestDatabase_Main, a)
+		milkCur = milkCur + getMilkCur(_sgo4_db, a)
+		milkMax = milkMax + getMilkMax(_sgo4_db, a)
 	endif
 	; MAL is queried via player-targeted mod events — only valid for slot 0
 	if slot == 0 && Plugin_MAL

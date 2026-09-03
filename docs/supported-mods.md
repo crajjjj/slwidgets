@@ -60,7 +60,7 @@ At least one of the three milk mods must be installed for milk icons to appear.
 | Plugin | Notes |
 |--------|-------|
 | `MilkModNEW.esp` | Milk Mod Economy — NPC support |
-| `dse-soulgem-oven.esp` | Soul Gem Oven 4 — NPC support |
+| `SGO4IF.esp` | Soul Gem Oven 4 Integration Fork 1.12+ — NPC support |
 | `Mammaries And Lactation.esp` | MAL — **player only** (event-based API) |
 
 | Icon | Description |
@@ -125,7 +125,7 @@ SL Widgets detects all installed pregnancy mods and shows the relevant icon set 
 | `EstrusDwemer.esp` | Dwemer sphere states |
 | `Fertility Mode.esm` | Cycle and pregnancy states |
 | `CurseOfLife.esp` | Curse of Life pregnancy states |
-| `dse-soulgem-oven.esp` | SGO4 soul gem pregnancy states |
+| `SGO4IF.esp` | SGO4 soul gem pregnancy states |
 
 NPC support: **Yes** for all pregnancy mods.
 

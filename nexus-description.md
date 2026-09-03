@@ -62,7 +62,7 @@ Open the iWant Status Bars MCM → Bars page → assign a hotkey under [b]Press 
 [*]Fill Her Up — Baka Edition 1.90+
 [*]Milk Mod Economy
 [*]Mammaries And Lactation (MAL)
-[*]SGO4 IF (1.10 hotfix)
+[*]SGO4 IF 1.12+ (merged builds only — the old base-mod layout is not supported)
 [*]SexLab Parasites
 [*]Fertility Mode v3 Fixes and Tweaks / FM Reloaded
 [*]HentaiPregnancy

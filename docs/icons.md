@@ -141,7 +141,7 @@ Face icon that fills as exposure / nudity rises.
 
 ### Milk — MME / SGO4 / MAL
 
-*Requires MilkModNEW.esp, dse-soulgem-oven.esp, or Mammaries And Lactation.esp.*
+*Requires MilkModNEW.esp, SGO4IF.esp, or Mammaries And Lactation.esp.*
 
 
 #### Milk

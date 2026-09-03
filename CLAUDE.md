@@ -177,7 +177,7 @@ iWant's own MCM exposes this via `min_pos_x = 0`, `max_pos_x = 1279`, `min_pos_y
 | Mod | Access pattern |
 |-----|---------------|
 | MME | Direct global script calls: `MME_Storage.getMilkCurrent(playerRef)` |
-| SGO4 | Quest cast via `slw_interface_sgo4.psc`: `Game.GetFormFromFile(0x00182A, "dse-soulgem-oven.esp") as Quest` |
+| SGO4 | SGO4IF 1.12+ only. `slw_interface_sgo4.getSGO4Database()` resolves the DB via `SGO4_QuestController_Main.Get().Data`; accessors cast the `Quest` to `SGO4_QuestDatabase_Main`. The pre-1.12 `dse_sgo_*` / `dse-soulgem-oven.esp` layout is not supported |
 | MAL | Bidirectional mod events: send `MAL_GetPlayerStoredMilk` / `MAL_GetPlayerMilkLimit`, cache responses from `MAL_ReturnPlayer*` events |
 
 ## MAL Event Caching Pattern

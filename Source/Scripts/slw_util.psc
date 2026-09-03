@@ -8,7 +8,7 @@ EndFunction
 
 ;SemVer support
 Int Function GetVersion() Global
-    Return 20202
+    Return 20203
     ; 1.0.0   -> 10000
     ; 1.1.0   -> 10100
     ; 1.1.1  -> 10101
@@ -17,7 +17,7 @@ Int Function GetVersion() Global
 EndFunction
 
 String Function GetVersionString() Global
-    Return "2.2.2"
+    Return "2.2.3"
 EndFunction
 
 String Function StringIfElse(Bool isTrue, String returnTrue, String returnFalse = "") Global
@@ -128,8 +128,12 @@ Bool Function isSLDefeatReady() Global
 	Return  isDependencyReady("SexLabDefeat.esp")
 EndFunction
 
+; SGO4IF 1.12 merged the base mod into its own plugin, so dse-soulgem-oven.esp
+; is absent on a supported install. Pre-1.12 SGO4IF also ships SGO4IF.esp, but
+; as a patch over the base mod with the old dse_sgo_* scripts -- ruling out the
+; base plugin is what distinguishes the merged fork from that layout.
 Bool Function isSGO4Ready() Global
-	Return  isDependencyReady("dse-soulgem-oven.esp")
+	Return !isDependencyReady("dse-soulgem-oven.esp") && isDependencyReady("SGO4IF.esp")
 EndFunction
 
 Bool Function isMALReady() Global

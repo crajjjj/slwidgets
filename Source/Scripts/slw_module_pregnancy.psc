@@ -51,8 +51,8 @@ Spell _JSW_BB_Trimester3
 Spell _JSW_BB_Ovulation
 Faction _FM3TweaksTrackedFaction
 
-;BF
-Quest _dse_sgo_QuestDatabase_Main
+;SGO4
+Quest _sgo4_db
 
 ;Pregnancy
 String Pregnancy_Basic = "Pregnancy_Basic"
@@ -195,14 +195,22 @@ Function initInterface()
 		endif
 	endif
 
-	If (!Plugin_SGO4 && isSGO4Ready())
-		WriteLog("ModulePregnancy: SGO4 found")
-		_dse_sgo_QuestDatabase_Main = Game.GetFormFromFile(0x00182A,"dse-soulgem-oven.esp") as Quest 
-		Plugin_SGO4 = true
-		if !_dse_sgo_QuestDatabase_Main
-			WriteLog("ModulePregnancy: _dse_sgo_QuestDatabase_Main not found", 2)
+	; A cached-but-null handle is re-resolved rather than trusted: a save made
+	; against the pre-1.12 base mod carries a handle into a merged SGO4IF install
+	; that points at nothing, while the persisted Plugin_SGO4 flag still says true.
+	If ((!Plugin_SGO4 || !_sgo4_db) && isSGO4Ready())
+		WriteLog("ModulePregnancy: SGO4IF found")
+		_sgo4_db = getSGO4Database()
+		if _sgo4_db
+			Plugin_SGO4 = true
+		else
 			Plugin_SGO4 = false
+			WriteLog("ModulePregnancy: SGO4 database quest not found", 2)
 		endif
+	ElseIf (Plugin_SGO4 && !isSGO4Ready())
+		WriteLog("ModulePregnancy: SGO4 no longer installed")
+		Plugin_SGO4 = false
+		_sgo4_db = none
 	endif
 
 	If (!Plugin_CurseOfLife && isCurseOfLifeReady())
@@ -545,8 +553,8 @@ Function handleFM3Tweaks(iWant_Status_Bars iBars, Actor target, Int slot)
 EndFunction
 
 Function handleSGO4(iWant_Status_Bars iBars, Actor target, Int slot)
-	int gems_state_curr = gotGems(_dse_sgo_QuestDatabase_Main, target)
-	Float GemTotalPercent = gotGemTotalPercent(_dse_sgo_QuestDatabase_Main, target)
+	int gems_state_curr = gotGems(_sgo4_db, target)
+	Float GemTotalPercent = gotGemTotalPercent(_sgo4_db, target)
 	GemTotalPercent = ((GemTotalPercent*100.0) as Int) /100.0
 	if gems_state_curr > 0
 		if gems_state_prv[slot] == EMPTY || gems_state_prv[slot] != gems_state_curr || GemPrePercent[slot] != GemTotalPercent
