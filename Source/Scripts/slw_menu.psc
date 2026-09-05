@@ -574,15 +574,18 @@ Event OnOptionSliderOpen(Int mcm_option)
 		; leaves pillarboxes on either side — the 16:9 safe area ends at
 		; 1279. HUD overhauls (SkyHUD, etc.) extend the stage horizontally;
 		; with one installed, X up to ~1680 fills 21:9 and ~2560 fills 32:9.
-		; Range is generous so users with extended-stage HUDs can dial in.
-		SetSliderDialogRange(0, 2560)
+		; The Prisma renderer instead centers the 1280 stage, so its ultrawide
+		; margins sit at NEGATIVE X (about -200 on 21:9, -640 on 32:9).
+		; Coordinates are icon centers, so small negatives also let a bar
+		; tuck flush against (or past) the screen edge on any monitor.
+		SetSliderDialogRange(-1280, 2560)
 		SetSliderDialogInterval(5.0)
 		SetSliderDialogDefaultValue(1100)
 		Return
 	EndIf
 	If mcm_option == _npc_group_y_slider
 		SetSliderDialogStartValue(widget_controller.npcGroupY)
-		SetSliderDialogRange(0, 719)
+		SetSliderDialogRange(-720, 719)
 		SetSliderDialogInterval(5.0)
 		SetSliderDialogDefaultValue(600)
 		Return

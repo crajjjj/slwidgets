@@ -10,9 +10,15 @@ Int activeState = 0
 String[] stateNames
 
 Bool pos_locked = True
-Int min_pos_x = 0
-Int min_pos_y = 0
-Int max_pos_x = 1279
+; SL Widgets patch: the locked range covers the whole reachable area, not just
+; the 16:9 stage. The Prisma renderer centers the 1280x720 stage, so ultrawide
+; margins are at negative X (about -200 on 21:9, -640 on 32:9); extended-stage
+; HUD overhauls reach the right margin at X > 1279. Coordinates are icon
+; centers, so negatives also let a bar sit flush against a screen edge.
+; Unlocking still opens the full +-10000 for extreme layouts.
+Int min_pos_x = -1280
+Int min_pos_y = -720
+Int max_pos_x = 2560
 Int max_pos_y = 719
 
 String SETTINGS_FILENAME = "iWant\\iWantStatusBars\\settings.xml"
@@ -207,7 +213,9 @@ EndState
 State BAR_X
 	Event OnSliderOpenST()
 		SetSliderDialogStartValue(iBars._getBarX(activeBar))
-		SetSliderDialogDefaultValue(((max_pos_x + 1) / 2))
+		; SL Widgets patch: literal stage center. The old (max+1)/2 stopped
+		; meaning "center" once the range grew past the 16:9 stage.
+		SetSliderDialogDefaultValue(640)
 		SetSliderDialogRange(min_pos_x, max_pos_x)
 		SetSliderDialogInterval(1)
 	EndEvent
@@ -222,7 +230,7 @@ State BAR_X
 	EndEvent
 
 	Event OnDefaultST()
-		iBars._setBarX(activeBar, ((max_pos_x + 1) / 2))
+		iBars._setBarX(activeBar, 640)
 		iBars._drawBar(activeBar)
 		SetSliderOptionValueST(iBars._getBarX(activeBar))
 	EndEvent
@@ -235,7 +243,8 @@ EndState
 State BAR_Y
 	Event OnSliderOpenST()
 		SetSliderDialogStartValue(iBars._getBarY(activeBar))
-		SetSliderDialogDefaultValue(((max_pos_y + 1) / 2))
+		; SL Widgets patch: literal stage center (see BAR_X).
+		SetSliderDialogDefaultValue(360)
 		SetSliderDialogRange(min_pos_y, max_pos_y)
 		SetSliderDialogInterval(1)
 	EndEvent
@@ -248,7 +257,7 @@ State BAR_Y
 	EndEvent
 
 	Event OnDefaultST()
-		iBars._setBarY(activeBar, ((max_pos_y + 1) / 2))
+		iBars._setBarY(activeBar, 360)
 		iBars._drawBar(activeBar)
 		SetSliderOptionValueST(iBars._getBarY(activeBar))
 	EndEvent
@@ -733,9 +742,9 @@ State POSITIONLOCK
 		pos_locked = !pos_locked
 		SetToggleOptionValueST(pos_locked)
 		if pos_locked
-			min_pos_x = 0
-			min_pos_y = 0
-			max_pos_x = 1279
+			min_pos_x = -1280
+			min_pos_y = -720
+			max_pos_x = 2560
 			max_pos_y = 719
 		else
 			min_pos_x = -10000
@@ -747,9 +756,9 @@ State POSITIONLOCK
 
 	Event OnDefaultST()
 		pos_locked = True
-		min_pos_x = 0
-		min_pos_y = 0
-		max_pos_x = 1279
+		min_pos_x = -1280
+		min_pos_y = -720
+		max_pos_x = 2560
 		max_pos_y = 719
 		SetToggleOptionValueST(pos_locked)
 	EndEvent
