@@ -282,6 +282,7 @@ Function Debug()
 	
 	AddHeaderOption("$SLW_Dependency_check")
 	AddTextOption("$SLW_Iwant_SB_Check", StringIfElse( widget_controller.isLoaded() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_Iwant_SB_Patch_Check", StringIfElse( widget_controller.hasBarsPatch() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddTextOption("$SLW_SLA_Check", StringIfElse( isSLAReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddTextOption("$SLW_Appr2_Check", StringIfElse( isAprReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddTextOption("$SLW_FHU_Check", StringIfElse( isFHUReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)

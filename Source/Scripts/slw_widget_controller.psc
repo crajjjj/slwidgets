@@ -139,6 +139,26 @@ bool Function isLoaded()
 	return controller_initialised && iBars && iBars.isReady()
 EndFunction
 
+; True when the patched Status Bars fork is installed (bundled with iWant
+; Widgets Prisma; SL Widgets <= 2.2.3 shipped it itself). The NPC-tracking
+; layer is built on fork-only accessors (_getBarVisible,
+; _getBarLastChangeTime) and on its _findBarOfIcon fix — stock 2.09 returns
+; the wrong bar there, which would make reconciliation duplicate icons every
+; tick — so NPC slots are disabled entirely when the probe fails. Player
+; tracking never needs the fork.
+Bool _iBarsPatchProbed = False
+Bool _iBarsPatched = False
+
+Bool Function hasBarsPatch()
+	If !_iBarsPatchProbed && iBars
+		; On stock this call fails into a single Papyrus log error and
+		; returns 0 — that one error is the detection mechanism.
+		_iBarsPatched = iBars._getPatchVersion() >= 1
+		_iBarsPatchProbed = True
+	EndIf
+	Return _iBarsPatched
+EndFunction
+
 ; Assumed lifecycle: menu OnInit() -> OniWantStatusBarsReady......mcm enable -> setup() (Modules initialisation) -> UpdateIcons() -> ||controller_initialised|| -> UpdateIconStateStatus(in a loop)
 Event OnInit()
 	slw_log.InitLog()
@@ -154,6 +174,9 @@ EndEvent
 Event OniWantStatusBarsReady(String eventName, String strArg, Float numArg, Form sender)
 	If eventName == STATUS_BARS_EVENT_NAME
 		iBars = sender As iWant_Status_Bars
+		; The bars instance (or the installed bars script) may have changed —
+		; e.g. the user added/removed the patched fork mid-save. Re-probe.
+		_iBarsPatchProbed = False
 		if iBars
 			WriteLog("WidgetController: iBars ready")
 			config.loadPreset(config.activePreset)
@@ -206,6 +229,13 @@ Event OnUpdate()
 	EndIf
 	; Slot 0 — player, always updates
 	config.moduleWidgetStateUpdate(iBars, PlayerRef, 0)
+	; Stock Status Bars (no patched fork): the NPC layer stays off — see
+	; hasBarsPatch. Keep labels left over from an old save hidden.
+	If !hasBarsPatch()
+		_hideAllNpcLabels()
+		RegisterForSingleUpdate(config.updateInterval)
+		Return
+	EndIf
 	; Slots 1..N_NPC — NPC targets; skip if unset or not currently loaded/alive.
 	; Reconcile every tick — modules can register new icons during a status
 	; update (pregnancy state change) and iWant auto-places them in bar 0;
@@ -310,7 +340,7 @@ endFunction
 
 ; Called from slw_config when a hotkey-pick assigns a new NPC to a slot.
 Function reloadNpcSlot(Int slot)
-	If !iBars || !iBars.isReady() || config.slw_stopped
+	If !iBars || !iBars.isReady() || config.slw_stopped || !hasBarsPatch()
 		Return
 	EndIf
 	Actor t = config.getNpcSlot(slot)
@@ -356,7 +386,7 @@ Function _restoreNpcLabelsAndIcons()
 		; Flash widget IDs from a previous session are stale — reset.
 		config.setNpcLabelId(slot, -1)
 		Actor t = config.getNpcSlot(slot)
-		If t && !config.slw_stopped
+		If t && !config.slw_stopped && hasBarsPatch()
 			; Always load icons — even for absent NPCs — so the slot's bars
 			; show neutral state-0 icons (loadIcon defaults to status 0) and
 			; the cluster keeps a consistent shape. _ensureNpcLabel adds the
@@ -587,6 +617,9 @@ EndFunction
 ; Returns True if the icon was actually moved so the caller can trigger
 ; a single _drawAllBars to update Flash positions.
 Bool Function _placeOneIconInSlotBar(String iconName, Int slot)
+	If !hasBarsPatch()
+		Return False
+	EndIf
 	Int primaryBar = _getBarForSlot(slot)
 	Int secondaryBar = _getSecondaryBarForSlot(slot)
 	Int id = iBars._getIconID(slwGetModName(), iconName)
@@ -631,7 +664,7 @@ EndFunction
 ; Callers must invoke iBars._drawAllBars() themselves after a batch of
 ; reconciles so icons appear in the right place on the same tick.
 Function _reconcileNpcBars(Int slot)
-	If !iBars || !iBars.isReady() || slot <= 0
+	If !iBars || !iBars.isReady() || slot <= 0 || !hasBarsPatch()
 		Return
 	EndIf
 	String[] bases = _getOwnedIconBaseNames()
@@ -734,6 +767,11 @@ EndFunction
 ; after the regular show/ensure path so bar state always wins.
 Function _applyBarVisibilityToLabel(Int slot)
 	If !iBars || !iBars.iWidgets
+		Return
+	EndIf
+	; Stock Status Bars has neither accessor — leave the label as the
+	; presence logic set it.
+	If !hasBarsPatch()
 		Return
 	EndIf
 	Int bar = _getBarForSlot(slot)

@@ -363,6 +363,15 @@ Event OnKeyDown(Int keyCode)
 		Debug.Notification("SLWidgets: cleared NPC slot " + existing + " (" + a.GetDisplayName() + ")")
 		Return
 	EndIf
+	; NPC tracking needs the patched Status Bars fork (ships with iWant
+	; Widgets Prisma; SL Widgets <= 2.2.3 bundled it itself) — refuse new
+	; assignments on stock Status Bars instead of registering icons that
+	; can never be reconciled into the slot's bars. Clearing (above) stays
+	; allowed so leftover slots from an old save can be cleaned up.
+	If widget_controller && !widget_controller.hasBarsPatch()
+		Debug.Notification("SLWidgets: NPC tracking needs the patched iWant Status Bars (see Debug page)")
+		Return
+	EndIf
 	; Otherwise assign to first empty slot, or refuse if all full.
 	Int empty = findFirstEmptyNpcSlot()
 	If empty == 0
