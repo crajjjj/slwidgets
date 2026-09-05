@@ -212,6 +212,10 @@ EndFunction
 ; dedicated bar, then triggers a single _drawAllBars so the icon appears
 ; directly in the NPC bar instead of momentarily at bar 0 (the player's bar).
 Int Function loadIconForSlot(iWant_Status_Bars iBars, String iconName, String[] stateNames, String[] files, Int[] r, Int[] g, Int[] b, Int[] a, Int slot)
+	; Prefer a .png/.gif sibling when the icon pack ships one (PrismaUI decodes
+	; them). The swap only fires if the alternate file actually exists on disk,
+	; so a plain .dds setup on the Flash original is unaffected.
+	files = resolveIconFiles(files)
 	If slot == 0
 		; Player — let iWant handle placement as usual
 		Return iBars.loadIcon(slwGetModName(), iconName, stateNames, files, r, g, b, a)

@@ -28,6 +28,70 @@ String Function StringIfElse(Bool isTrue, String returnTrue, String returnFalse 
     EndIf
 EndFunction
 
+; Icons are authored as .dds, but the PrismaUI renderer also decodes .png and
+; .gif (animated GIF included). If an icon pack drops an alternate format next
+; to the .dds, prefer it. We probe ONCE per icon (the first .dds state) and
+; apply the winning extension to every state, matching how packs ship a single
+; uniform format -- so a partial pack (mixed formats within one icon) is not
+; supported; ship all of an icon's states in the same format. With no alternate
+; present, or on the (Flash) original renderer where only .dds resolves, the
+; paths are returned unchanged, so this is safe on either backend.
+;
+; files[] holds paths relative to Interface/exported/ (the loadWidget root);
+; MiscUtil.FileExists wants a Skyrim-root path, hence the "Data/Interface/
+; exported/" prefix. Mutates and returns the passed array (built fresh per call
+; by the module, so no aliasing).
+String[] Function resolveIconFiles(String[] files) Global
+    If !files || files.Length == 0
+        Return files
+    EndIf
+
+    ; Find the first non-empty .dds entry to probe.
+    String probe = ""
+    Int i = 0
+    While i < files.Length && probe == ""
+        String f = files[i]
+        If f != "" && StringUtil.Find(f, ".dds") != -1
+            probe = f
+        EndIf
+        i += 1
+    EndWhile
+    If probe == ""
+        Return files
+    EndIf
+
+    Int dot = StringUtil.Find(probe, ".dds")
+    If dot == -1 || dot != StringUtil.GetLength(probe) - 4
+        Return files
+    EndIf
+    String base = StringUtil.Substring(probe, 0, dot)
+
+    String prefix = "Data/Interface/exported/"
+    String chosenExt = ""
+    If MiscUtil.FileExists(prefix + base + ".gif")
+        chosenExt = ".gif"
+    ElseIf MiscUtil.FileExists(prefix + base + ".png")
+        chosenExt = ".png"
+    EndIf
+    If chosenExt == ""
+        Return files
+    EndIf
+
+    ; Swap the trailing .dds of every state to the chosen extension.
+    i = 0
+    While i < files.Length
+        String cur = files[i]
+        If cur != ""
+            Int d = StringUtil.Find(cur, ".dds")
+            If d != -1 && d == StringUtil.GetLength(cur) - 4
+                files[i] = StringUtil.Substring(cur, 0, d) + chosenExt
+            EndIf
+        EndIf
+        i += 1
+    EndWhile
+    Return files
+EndFunction
+
 ; Slot model: index 0 is the player, indices 1..N_NPC_SLOTS are tracked NPCs.
 Int Function getSlotCount() Global
     Return 4
