@@ -171,7 +171,14 @@ iWant Status Bars (and any other Scaleform-based HUD widget mod) uses Skyrim's *
 - DO NOT set defaults based on monitor pixel dimensions (1920, 3840, etc.) — those values land off-stage and only render for users with extended-stage HUD mods
 - Existing saves that stored off-stage coordinates from earlier dev builds (e.g., `npcGroupX = 1700`) keep those values via property persistence; document that users should reset via MCM if they want the standard stage anchor
 
-iWant's own MCM exposes this via `min_pos_x = 0`, `max_pos_x = 1279`, `min_pos_y = 0`, `max_pos_y = 719` in [iwant_status_bars_mcm.psc:13-16](Source/Scripts/iwant_status_bars_mcm.psc#L13-L16).
+iWant's own MCM exposes this via `min_pos_x = 0`, `max_pos_x = 1279`, `min_pos_y = 0`, `max_pos_y = 719` (`iwant_status_bars_mcm.psc`, see below).
+
+## Patched iWant Status Bars (moved to iWantWidgetsPrisma)
+
+SL Widgets used to ship a patched fork of `iwant_status_bars.psc` / `iwant_status_bars_mcm.psc` (stock 2.09 + init-race/deadlock fixes, `_findBarOfIcon` fix, pulse fix, MCM FISS no-icon guard, and the `_getBarVisible` / `_getBarLastChangeTime` accessors). As of 2.2.4 the fork lives in `c:\Playground\Skyrim\mods\iWantWidgetsPrisma` (`Source/Scripts/iwant_status_bars*.psc`) and ships with the iWant Widgets Prisma mod instead.
+
+- Compile-time: `skyrimse.ppj` imports `C:\Playground\Skyrim\mods\build\iwantstatusbars\Source\Scripts`, which holds a synced copy of the fork — keep it in sync when the fork's API changes, or `slw_widget_controller.psc` stops compiling.
+- Runtime: `slw_widget_controller` calls `_getBarVisible` / `_getBarLastChangeTime` (label autohide mirroring). With STOCK Status Bars those calls error and return False/0.0, so NPC name labels stay permanently hidden — the patched fork (via iWant Widgets Prisma) is effectively a runtime requirement for 2.2.4+.
 
 ## External Mod API Patterns
 | Mod | Access pattern |
