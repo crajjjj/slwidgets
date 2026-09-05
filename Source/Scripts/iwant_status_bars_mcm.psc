@@ -9,17 +9,15 @@ Int activeIcon = 0
 Int activeState = 0
 String[] stateNames
 
+; SL Widgets patch: slider ranges are computed at slider-open from pos_locked,
+; never stored — script variables persist in saves, so stored bounds from an
+; older build would shadow any widened defaults forever. The locked range
+; covers the whole reachable area, not just the 16:9 stage: the Prisma
+; renderer centers the 1280x720 stage, so ultrawide margins are at NEGATIVE X
+; (about -200 on 21:9, -640 on 32:9); extended-stage HUD overhauls reach the
+; right margin at X > 1279. Coordinates are icon centers, so negatives also
+; let a bar sit flush against a screen edge. Unlocking opens +-10000.
 Bool pos_locked = True
-; SL Widgets patch: the locked range covers the whole reachable area, not just
-; the 16:9 stage. The Prisma renderer centers the 1280x720 stage, so ultrawide
-; margins are at negative X (about -200 on 21:9, -640 on 32:9); extended-stage
-; HUD overhauls reach the right margin at X > 1279. Coordinates are icon
-; centers, so negatives also let a bar sit flush against a screen edge.
-; Unlocking still opens the full +-10000 for extreme layouts.
-Int min_pos_x = -1280
-Int min_pos_y = -720
-Int max_pos_x = 2560
-Int max_pos_y = 719
 
 String SETTINGS_FILENAME = "iWant\\iWantStatusBars\\settings.xml"
 String DELIMITER = "|"
@@ -216,7 +214,11 @@ State BAR_X
 		; SL Widgets patch: literal stage center. The old (max+1)/2 stopped
 		; meaning "center" once the range grew past the 16:9 stage.
 		SetSliderDialogDefaultValue(640)
-		SetSliderDialogRange(min_pos_x, max_pos_x)
+		If pos_locked
+			SetSliderDialogRange(-1280, 2560)
+		Else
+			SetSliderDialogRange(-10000, 10000)
+		EndIf
 		SetSliderDialogInterval(1)
 	EndEvent
 
@@ -245,7 +247,11 @@ State BAR_Y
 		SetSliderDialogStartValue(iBars._getBarY(activeBar))
 		; SL Widgets patch: literal stage center (see BAR_X).
 		SetSliderDialogDefaultValue(360)
-		SetSliderDialogRange(min_pos_y, max_pos_y)
+		If pos_locked
+			SetSliderDialogRange(-720, 719)
+		Else
+			SetSliderDialogRange(-10000, 10000)
+		EndIf
 		SetSliderDialogInterval(1)
 	EndEvent
 
@@ -741,25 +747,10 @@ State POSITIONLOCK
 	Event OnSelectST()
 		pos_locked = !pos_locked
 		SetToggleOptionValueST(pos_locked)
-		if pos_locked
-			min_pos_x = -1280
-			min_pos_y = -720
-			max_pos_x = 2560
-			max_pos_y = 719
-		else
-			min_pos_x = -10000
-			min_pos_y = -10000
-			max_pos_x = 10000
-			max_pos_y = 10000
-		EndIf
 	EndEvent
 
 	Event OnDefaultST()
 		pos_locked = True
-		min_pos_x = -1280
-		min_pos_y = -720
-		max_pos_x = 2560
-		max_pos_y = 719
 		SetToggleOptionValueST(pos_locked)
 	EndEvent
 
