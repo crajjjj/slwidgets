@@ -139,8 +139,9 @@ bool Function isLoaded()
 	return controller_initialised && iBars && iBars.isReady()
 EndFunction
 
-; True when the patched Status Bars fork is installed (bundled with iWant
-; Widgets Prisma; SL Widgets <= 2.2.3 shipped it itself). The NPC-tracking
+; True when the patched Status Bars fork is installed (bundled with SL
+; Widgets; absent when another mod's stock pex wins the file conflict or
+; the user stripped the override). The NPC-tracking
 ; layer is built on fork-only accessors (_getBarVisible,
 ; _getBarLastChangeTime) and on its _findBarOfIcon fix — stock 2.09 returns
 ; the wrong bar there, which would make reconciliation duplicate icons every

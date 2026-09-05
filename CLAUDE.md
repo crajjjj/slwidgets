@@ -171,13 +171,13 @@ iWant Status Bars (and any other Scaleform-based HUD widget mod) uses Skyrim's *
 - DO NOT set defaults based on monitor pixel dimensions (1920, 3840, etc.) — those values land off-stage and only render for users with extended-stage HUD mods
 - Existing saves that stored off-stage coordinates from earlier dev builds (e.g., `npcGroupX = 1700`) keep those values via property persistence; document that users should reset via MCM if they want the standard stage anchor
 
-iWant's own MCM exposes this via `min_pos_x = 0`, `max_pos_x = 1279`, `min_pos_y = 0`, `max_pos_y = 719` (`iwant_status_bars_mcm.psc`, see below).
+iWant's own MCM exposes this via `min_pos_x = 0`, `max_pos_x = 1279`, `min_pos_y = 0`, `max_pos_y = 719` in [iwant_status_bars_mcm.psc:13-16](Source/Scripts/iwant_status_bars_mcm.psc#L13-L16).
 
-## Patched iWant Status Bars (moved to iWantWidgetsPrisma)
+## Bundled iWant Status Bars fork
 
-SL Widgets used to ship a patched fork of `iwant_status_bars.psc` / `iwant_status_bars_mcm.psc` (stock 2.09 + init-race/deadlock fixes, `_findBarOfIcon` fix, pulse fix, MCM FISS no-icon guard, and the `_getBarVisible` / `_getBarLastChangeTime` accessors). As of 2.2.4 the fork lives in `c:\Playground\Skyrim\mods\iWantWidgetsPrisma` (`Source/Scripts/iwant_status_bars*.psc`) and ships with the iWant Widgets Prisma mod instead.
+SL Widgets ships a patched fork of `iwant_status_bars.psc` / `iwant_status_bars_mcm.psc` (stock 2.09 + init-race/deadlock fixes, `_findBarOfIcon` fix, pulse fix, MCM FISS no-icon guard, immediate MCM X/Y apply, the `_getBarVisible` / `_getBarLastChangeTime` accessors, and `_getPatchVersion` for runtime detection). The fork's file header lists the full patch set; "SL Widgets patch" comments mark the API additions. The iWant Widgets Prisma repo does NOT carry these — SL Widgets is the fork's home, because SL Widgets is what depends on it (and Prisma has no VR support, while this Flash fork does).
 
-- Compile-time: `skyrimse.ppj` imports `C:\Playground\Skyrim\mods\build\iwantstatusbars\Source\Scripts`, which holds a synced copy of the fork — keep it in sync when the fork's API changes, or `slw_widget_controller.psc` stops compiling.
+- Compile-time: `skyrimse.ppj` also imports `C:\Playground\Skyrim\mods\build\iwantstatusbars\Source\Scripts` (a synced copy of the fork plus the stock example scripts); `.\Source\Scripts` comes first, so the in-repo fork wins.
 - Runtime: SL Widgets is **fork-agnostic**. `slw_widget_controller.hasBarsPatch()` probes `iBars._getPatchVersion()` once per bars reset (on stock the call errors once into the log and returns 0 — that's the detection mechanism) and caches the result. When the fork is absent, the entire NPC-tracking layer is disabled — OnUpdate NPC loop, `reloadNpcSlot`, `_restoreNpcLabelsAndIcons`, `_reconcileNpcBars`, `_placeOneIconInSlotBar`, `_applyBarVisibilityToLabel` all gate on `hasBarsPatch()`, and the assign hotkey refuses with a notification (clearing stays allowed). Player tracking (slot 0) works fully on stock. Rationale: besides the missing `_getBarVisible`/`_getBarLastChangeTime` accessors, stock 2.09's `_findBarOfIcon` compares `_getBarIcon()` as Bool (-1 is truthy), so reconciliation on stock would duplicate icons every tick. The Debug MCM page shows the fork status (`$SLW_Iwant_SB_Patch_Check`). Any new fork-only iBars call MUST be gated behind `hasBarsPatch()`.
 
 ## External Mod API Patterns
