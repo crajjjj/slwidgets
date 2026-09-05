@@ -8,6 +8,9 @@ Community-made alternative icons for SL Widgets. Each pack restyles one icon set
 !!! note "Installing a pack"
     Install the downloaded archive with your mod manager and let it **overwrite SL     Widgets'** files (or drop its `Interface/...` folder into `Data/`). Packs only     replace `.dds` textures — no plugin, no new requirements. To revert, reinstall SL     Widgets or remove the pack.
 
+!!! tip "Animated and PNG packs"
+    The packs below are all `.dds`. With the optional [Prisma renderer](prisma.md), packs can also ship `.png` or **animated `.gif`** icons, which SL Widgets picks up automatically. Such packs are Prisma-only — see [Animated and alternate-format icons](prisma.md#animated-and-alternate-format-icons).
+
 
 ## Arousal (SexLab Aroused)
 

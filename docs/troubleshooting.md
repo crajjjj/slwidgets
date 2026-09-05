@@ -24,6 +24,9 @@
 === "Check 4: dependency detected"
     MCM → **Debug** → check the mod whose icons you expect. If it shows **Not Found**, the plugin is not loaded or its filename doesn't match. Check that the ESP/ESM is enabled in your load order.
 
+=== "Check 5: using the Prisma renderer"
+    If you installed the [Prisma renderer](prisma.md), the original iWant Widgets must stay **installed and enabled** below it — it supplies the icon textures. See [its troubleshooting section](prisma.md#troubleshooting).
+
 ---
 
 ## Icons overlapping or in the wrong bar

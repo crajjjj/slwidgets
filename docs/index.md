@@ -21,6 +21,7 @@ Two display mechanics:
 - [NPC Tracking](npc-tracking.md) — how to watch up to three NPCs alongside yourself
 - [MCM Reference](mcm-reference.md) — every setting explained
 - [Customization](customization.md) — icon packs, color presets, settings presets
+- [Prisma Renderer](prisma.md) — optional Flash-free renderer: sharper icons, animated GIFs, ultrawide positions
 - [Troubleshooting](troubleshooting.md) — common problems and fixes
 
 ---
@@ -34,7 +35,7 @@ Two display mechanics:
 | Icon count | 113+ |
 | Icon types | 9-stage fills + conditional toggles |
 | Configuration | Full SkyUI MCM with save/load presets |
-| HUD framework | iWant Status Bars |
+| HUD framework | iWant Status Bars (Flash, or the optional [Prisma renderer](prisma.md)) |
 
 ---
 

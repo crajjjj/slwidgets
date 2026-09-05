@@ -28,6 +28,9 @@ iWant Status Bars (and SL Widgets through it) uses Skyrim's **fixed 1280 × 720 
 !!! warning
     Going past X = 1279 on a standard stage clips icons. Extended-stage coordinates only work with a HUD mod that widens the Flash stage (SkyHUD, True Directional Movement, etc.).
 
+!!! tip "Ultrawide with the Prisma renderer"
+    The [Prisma renderer](prisma.md) centres the stage instead of stretching it, putting the ultrawide **left** margin at *negative* X (about −200 on 21:9, −640 on 32:9) with no extended-stage HUD mod needed. Both MCMs accept negative slider values — see [Ultrawide positioning](prisma.md#ultrawide-positioning).
+
 The NPC cluster sliders on the NPC Tracking page default to `npcGroupX = 1100, npcGroupY = 600` to match iWant's own bottom-right anchor convention within the standard stage.
 
 ---
@@ -95,6 +98,9 @@ Follow the naming convention already used by SL Widgets (visible in the installe
 | Mipmaps | None |
 
 GIMP can export DDS in BC3 without mipmaps. Photoshop requires the Intel Texture Works plugin or similar.
+
+!!! tip "PNG and animated GIF"
+    With the optional [Prisma renderer](prisma.md), an icon can instead be a `.png` or an animated `.gif` dropped beside the `.dds` — no DDS export, no conversion. SL Widgets picks it up automatically. See [Animated and alternate-format icons](prisma.md#animated-and-alternate-format-icons).
 
 !!! tip
     Swapping a `.dds` file replaces the icon for every character and NPC using that icon name. Icon names include the slot suffix for NPC variants (`Arousal_NPC1.dds`, `Arousal_NPC2.dds`, `Arousal_NPC3.dds`).

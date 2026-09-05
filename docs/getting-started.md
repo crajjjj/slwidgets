@@ -7,7 +7,7 @@ These must be installed and working before SL Widgets will function at all.
 | Mod | Notes |
 |-----|-------|
 | **iWant Status Bars** | The HUD bar framework SL Widgets displays into |
-| **iWant Widgets** | Flash widget layer used for NPC name labels |
+| **iWant Widgets** | Widget layer that draws the icons and NPC name labels. Optionally replaceable by the [Prisma renderer](prisma.md) |
 | **PapyrusUtil** | Used for preset save/load (JSON) |
 | **SKSE** | Required by all of the above |
 | **SkyUI** | Required for the MCM menu |
@@ -77,5 +77,5 @@ See [Supported Mods](supported-mods.md) for exactly what each one contributes.
 
 ## Incompatible mods
 
-- Mods that replace `hudmenu.gfx` / `hudmenu.swf` directly (without a merge) can prevent iWant Widgets images from rendering. If your icons disappear entirely after installing another UI mod, check for `hudmenu.swf` conflicts.
+- Mods that replace `hudmenu.gfx` / `hudmenu.swf` directly (without a merge) can prevent iWant Widgets images from rendering. If your icons disappear entirely after installing another UI mod, check for `hudmenu.swf` conflicts. The [Prisma renderer](prisma.md) sidesteps this class of conflict entirely, since it does not draw through Flash.
 - Tested compatible with Tsukiro, D&DDC, Licentia, Nefaram, Masterstroke, and similar curated lists.
