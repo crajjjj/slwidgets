@@ -12,6 +12,8 @@ int EMPTY = -1
 int FM3_EMPTY = -2
 ; must stay outside the FM3 Tweaks faction-rank range (-121..127, -1 = not in faction)
 int FM3T_EMPTY = -999
+; must stay outside the FM Reloaded rank range (0..120, negative = not in faction)
+int FMR_EMPTY = -999
 int[] gems_state_prv
 Float[] GemPrePercent
 
@@ -22,6 +24,7 @@ Bool Property Plugin_EggFactory = false auto hidden
 Bool Property Plugin_BeeingFemale = false auto hidden
 Bool Property Plugin_FertilityMode3 = false auto hidden
 Bool Property Plugin_FM3Tweaks = false auto hidden
+Bool Property Plugin_FMReloaded = false auto hidden
 Bool Property Plugin_HentaiPregnancy = false auto hidden
 Bool Property Plugin_SGO4 = false auto hidden
 Bool Property Plugin_CurseOfLife = false auto hidden
@@ -50,6 +53,7 @@ Spell _JSW_BB_Trimester2
 Spell _JSW_BB_Trimester3
 Spell _JSW_BB_Ovulation
 Faction _FM3TweaksTrackedFaction
+Faction _FMReloadedFaction
 
 ;SGO4
 Quest _sgo4_db
@@ -147,7 +151,22 @@ Function initInterface()
 
 	endif
 
-	If (!Plugin_FertilityMode3 && isFM3Ready())
+	; Fertility Mode Reloaded is a fork that ships the SAME "Fertility Mode.esm"
+	; filename, so it must be probed before plain FM3 or it gets routed into the
+	; FM3 handler, whose storage-script reads error against the fork. Its
+	; canonical per-actor state is the ImmersiveEffectsFaction rank (a record
+	; that exists only in the fork, which is also what the probe keys on).
+	If (!Plugin_FMReloaded && isFMReloadedReady())
+		WriteLog("ModulePregnancy: Fertility Mode Reloaded found")
+		_FMReloadedFaction = Game.GetFormFromFile(0x02666B, "Fertility Mode.esm") as Faction
+		Plugin_FMReloaded = true
+		if !_FMReloadedFaction
+			WriteLog("ModulePregnancy: _FMReloadedFaction not found", 2)
+			Plugin_FMReloaded = false
+		endif
+	endif
+
+	If (!Plugin_FMReloaded && !Plugin_FertilityMode3 && isFM3Ready())
 		WriteLog("ModulePregnancy: Fertility Mode found")
 		_FMStorage = Game.GetFormFromFile(0x000D62,"Fertility Mode.esm") as Quest
 		_JSW_BB_Trimester1 = Game.GetFormFromFile(0x01B816,"Fertility Mode.esm") as Spell
@@ -219,7 +238,7 @@ Function initInterface()
 	endif
 
 	if isInterfaceActive()
-		WriteLog("ModulePregnancy: active plugins - EC:" + Plugin_EstrusChaurus + " ES:" + Plugin_EstrusSpider + " ED:" + Plugin_EstrusDwemer + " BF:" + Plugin_BeeingFemale + " HP:" + Plugin_HentaiPregnancy + " EF:" + Plugin_EggFactory + " FM3:" + Plugin_FertilityMode3 + " FM3T:" + Plugin_FM3Tweaks + " SGO4:" + Plugin_SGO4 + " COL:" + Plugin_CurseOfLife)
+		WriteLog("ModulePregnancy: active plugins - EC:" + Plugin_EstrusChaurus + " ES:" + Plugin_EstrusSpider + " ED:" + Plugin_EstrusDwemer + " BF:" + Plugin_BeeingFemale + " HP:" + Plugin_HentaiPregnancy + " EF:" + Plugin_EggFactory + " FM3:" + Plugin_FertilityMode3 + " FM3T:" + Plugin_FM3Tweaks + " FMR:" + Plugin_FMReloaded + " SGO4:" + Plugin_SGO4 + " COL:" + Plugin_CurseOfLife)
 	else
 		WriteLog("ModulePregnancy: no pregnancy mods detected")
 	endif
@@ -228,7 +247,7 @@ EndFunction
 
 ;override
 Bool Function isInterfaceActive()
-	Return (Plugin_EstrusSpider || 	Plugin_EstrusChaurus || Plugin_EstrusDwemer || Plugin_BeeingFemale || Plugin_HentaiPregnancy || Plugin_EggFactory || Plugin_FertilityMode3 || Plugin_SGO4 || Plugin_CurseOfLife)
+	Return (Plugin_EstrusSpider || 	Plugin_EstrusChaurus || Plugin_EstrusDwemer || Plugin_BeeingFemale || Plugin_HentaiPregnancy || Plugin_EggFactory || Plugin_FertilityMode3 || Plugin_FMReloaded || Plugin_SGO4 || Plugin_CurseOfLife)
 EndFunction
 
 Function _ensurePrvArrays()
@@ -243,6 +262,9 @@ Function _ensurePrvArrays()
 	EndIf
 	If !_fm3t_rank_prv
 		_fm3t_rank_prv = Utility.CreateIntArray(getSlotCount(), FM3T_EMPTY)
+	EndIf
+	If !_fmr_rank_prv
+		_fmr_rank_prv = Utility.CreateIntArray(getSlotCount(), FMR_EMPTY)
 	EndIf
 	If !_bf_state_prv
 		_bf_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
@@ -262,12 +284,14 @@ Function resetInterface()
 	Plugin_EggFactory = false
 	Plugin_FertilityMode3 = false
 	Plugin_FM3Tweaks = false
+	Plugin_FMReloaded = false
 	Plugin_SGO4 = false
 	Plugin_CurseOfLife = false
 	gems_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
 	GemPrePercent = Utility.CreateFloatArray(getSlotCount(), 0.0)
 	_fm3_actorIndex_prv = Utility.CreateIntArray(getSlotCount(), FM3_EMPTY)
 	_fm3t_rank_prv = Utility.CreateIntArray(getSlotCount(), FM3T_EMPTY)
+	_fmr_rank_prv = Utility.CreateIntArray(getSlotCount(), FMR_EMPTY)
 	_bf_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
 	_hp_rank_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
 EndFunction
@@ -316,7 +340,9 @@ EndFunction
 
 
  Function _reloadPregnancyIcons(iWant_Status_Bars iBars, Actor target, Int slot)
-	if Plugin_FM3Tweaks
+	if Plugin_FMReloaded
+		handleFMReloaded(iBars, target, slot)
+	elseif Plugin_FM3Tweaks
 		handleFM3Tweaks(iBars, target, slot)
 	elseif Plugin_FertilityMode3
 		handleFertilityMode3(iBars, target, slot)
@@ -494,7 +520,6 @@ Function handleFertilityMode3(iWant_Status_Bars iBars, Actor target, Int slot)
 		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester3, slot))
 	endif
 
-	; Mismatch error can be shown cause tweaks mod changed SpermCount array to int
   	If hasFMSperm(_FMStorage, actorIndex)
 	; Fired for inflated actors
 		_loadCumInflationIcon(iBars, slot)
@@ -526,6 +551,57 @@ Function handleFM3Tweaks(iWant_Status_Bars iBars, Actor target, Int slot)
 	bool showTrimester1 = (rank >= 0 && rank < 34)
 	bool showTrimester2 = (rank >= 34 && rank < 67)
 	bool showTrimester3 = (rank >= 67)
+
+	if showOvulation
+		_loadOvulationIcon(iBars, slot)
+	else
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Ovulation, slot))
+	endif
+
+	if showTrimester1
+		_loadTrimester1Icon(iBars, slot)
+	else
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester1, slot))
+	endif
+
+	if showTrimester2
+		_loadTrimester2Icon(iBars, slot)
+	else
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester2, slot))
+	endif
+
+	if showTrimester3
+		_loadTrimester3Icon(iBars, slot)
+	else
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester3, slot))
+	endif
+EndFunction
+
+int[] _fmr_rank_prv
+
+; Fertility Mode Reloaded encodes each tracked actor's state in its
+; ImmersiveEffectsFaction rank (kept current by the mod's own update cycle,
+; for NPCs as well as the player):
+;   1-100 pregnancy progress percent, 101-115 birth recovery,
+;   116 menstruation, 117 follicular, 118 ovulation, 119 luteal, 120 labor,
+;   0 cleared (and cleared actors are removed from the faction, so
+;   GetFactionRank then returns its not-in-faction negative)
+; The rank is 1 + (progress * 99), so the trimester thirds land exactly on
+; 34 and 67. Labor stays on trimester 3; recovery and the non-ovulation cycle
+; phases show nothing.
+; Only the faction is read -- the fork's storage script is never touched, so
+; its property-type drift across FMR releases cannot error here.
+Function handleFMReloaded(iWant_Status_Bars iBars, Actor target, Int slot)
+	int rank = target.GetFactionRank(_FMReloadedFaction)
+	if rank != _fmr_rank_prv[slot]
+		WriteLog("ModulePregnancy: FM Reloaded faction rank changed " + _fmr_rank_prv[slot] + " -> " + rank)
+		_fmr_rank_prv[slot] = rank
+	endif
+
+	bool showOvulation = (rank == 118)
+	bool showTrimester1 = (rank >= 1 && rank < 34)
+	bool showTrimester2 = (rank >= 34 && rank < 67)
+	bool showTrimester3 = (rank >= 67 && rank <= 100) || (rank == 120)
 
 	if showOvulation
 		_loadOvulationIcon(iBars, slot)

@@ -16,6 +16,18 @@ The user builds manually — do **not** attempt to invoke the compiler or build 
 # Sources: Source/Scripts/*.psc -> compiled .pex
 ```
 
+### Import order matters (and `skyrimse.ppj` is gitignored)
+
+The ppj holds machine-absolute paths so it is not in the repo — which means
+import-order constraints live only here. When two dependency folders ship the
+same script name, the FIRST import wins, and compiling against the wrong copy
+produces a `.pex` that mismatches at runtime with no compile-time warning:
+
+- **`_JSW_BB_Storage`**: `fmPlus` declares `SpermCount` as `int[]`, while every
+  real Fertility Mode variant (3.0.1 and Reloaded) ships `float[]`. A Fertility
+  Mode source folder must be imported BEFORE `fmPlus`, or `hasFMSperm()` throws
+  "Mismatched types" on every widget update for FM3 users.
+
 ## Important: CK-Filled Properties
 
 Script properties filled via the Creation Kit (CK) in the ESP/ESM must NOT be removed from `.psc` files even if unused in code. Removing them breaks the form binding. To clean up, you must also clear the property in the ESP. When in doubt, leave them as dead weight.

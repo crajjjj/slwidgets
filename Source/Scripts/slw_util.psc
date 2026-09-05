@@ -159,6 +159,16 @@ Bool Function isFM3TweaksReady() Global
 	Return isDependencyReady("Fertility Mode 3 Fixes and Updates.esp")
 EndFunction
 
+Bool Function isFMReloadedReady() Global
+	; Fertility Mode Reloaded ships as "Fertility Mode.esm" -- the SAME filename
+	; as vanilla FM3 -- so filename detection cannot tell them apart. The
+	; ImmersiveEffectsFaction record exists only in the Reloaded fork.
+	If !isDependencyReady("Fertility Mode.esm")
+		Return false
+	EndIf
+	Return (Game.GetFormFromFile(0x02666B, "Fertility Mode.esm") as Faction) != None
+EndFunction
+
 Bool Function isEFReady() Global
 	Return isDependencyReady("EggFactory.esp")
 EndFunction

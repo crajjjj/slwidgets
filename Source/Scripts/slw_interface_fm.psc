@@ -18,5 +18,12 @@ bool function isFMOvulating( Quest fm, int actorIndex) Global
 endFunction
 
 bool function hasFMSperm( Quest fm, int actorIndex) Global
-	return (fm as _JSW_BB_Storage).SpermCount[actorIndex] > 0
+	; SpermCount is None until FM's maintenance first resizes it, and FM forks
+	; have shipped it with drifted typing (the get then yields None too) -- the
+	; raw element read errors on every tick either way. Fail soft to "no sperm".
+	float[] counts = (fm as _JSW_BB_Storage).SpermCount
+	if !counts || actorIndex < 0 || actorIndex >= counts.Length
+		return false
+	endif
+	return counts[actorIndex] > 0
 endFunction
