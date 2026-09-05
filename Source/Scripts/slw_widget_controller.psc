@@ -302,7 +302,7 @@ function reloadWidgets()
 	While slot < total
 		Actor t = config.getNpcSlot(slot)
 		If t
-			If !config.slw_stopped
+			If !config.slw_stopped && hasBarsPatch()
 				; Always reload — even for absent NPCs — so toggle changes
 				; from MCM take effect for the slot's bars. _ensureNpcLabel
 				; auto-suffixes "(away)" when the NPC isn't present.
@@ -312,7 +312,11 @@ function reloadWidgets()
 				_applyBarVisibilityToLabel(slot)
 				_slot_present_prv[slot] = _isNpcPresent(t)
 			Else
-				; Mod stopped — release the slot's icons and tear down label.
+				; Mod stopped, or stock Status Bars — release the slot's icons
+				; and tear down label. On stock, loaded NPC icons would be
+				; auto-placed into the player's bars with reconciliation
+				; disabled (see hasBarsPatch), so fork-era leftovers in the
+				; save are actively released here instead.
 				config.moduleWidgetReload(iBars, None, slot)
 				_destroyNpcLabel(slot)
 				_slot_present_prv[slot] = False
@@ -328,6 +332,12 @@ function toggleUpdateWidgets()
 		Return
 	endIf
 	config.moduleWidgetToggleUpdate(iBars, PlayerRef, 0)
+	; Stock Status Bars: a toggle update would load NPC icons that can never
+	; be reconciled into the slot's bars (see hasBarsPatch) — skip the NPC
+	; loop; reloadWidgets releases any fork-era leftovers.
+	If !hasBarsPatch()
+		Return
+	EndIf
 	Int slot = 1
 	Int total = getSlotCount()
 	While slot < total
@@ -466,6 +476,12 @@ EndFunction
 
 Function _ensureNpcLabel(Int slot, Actor target)
 	If !iBars || !iBars.iWidgets || !target
+		Return
+	EndIf
+	; Guarding the single creation leaf keeps every MCM path (label offset,
+	; custom text, font/size refresh, bar layout) from resurrecting labels
+	; on stock Status Bars, where the NPC layer is disabled entirely.
+	If !hasBarsPatch()
 		Return
 	EndIf
 	Int id = config.getNpcLabelId(slot)
