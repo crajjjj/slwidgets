@@ -46,11 +46,27 @@ Install it like any mod, above the original iWant Widgets in your mod manager's 
 
 With the Prisma renderer, SL Widgets automatically prefers a `.gif` and then a `.png` sibling of each icon's `.dds`, applied uniformly across all of that icon's states. To animate the arousal heart, drop `aroused0.gif` … `aroused8.gif` beside the existing `.dds` files — no configuration.
 
-| Format | Result |
-|--------|--------|
-| `.dds` | Static (the default; BC3/DXT5, 100 × 100) |
-| `.png` / `.jpg` | Static, no DDS conversion needed |
-| `.gif` | **Animated**, per-frame delays honoured |
+| Format | Result | Colour |
+|--------|--------|--------|
+| `.dds` | Static (the default; BC3/DXT5, 100 × 100) | Painted with the state colour |
+| `.png` / `.jpg` | Static, no DDS conversion needed | **Shown as authored** |
+| `.gif` | **Animated**, per-frame delays honoured | **Shown as authored** |
+
+!!! info "Why the state colour doesn't apply to PNG/GIF"
+    The stock icon libraries are authored as **white masks**: Flash's tint
+    *replaces* a widget's colour outright, so the state colour (the pink of an
+    arousal stage, the amber of a needs bar) is what you actually see, shaped by
+    the mask's transparency. Run full-colour artwork through that same tint and
+    every pixel collapses to one flat colour — a colourful PNG comes out as a
+    plain white or pink silhouette.
+
+    So the renderer tints `.dds` only. PNG, JPG and GIF are assumed to be
+    finished artwork and are drawn exactly as authored, at every state. The
+    per-state **alpha** still applies to them, so icons still fade in and out
+    with their stage.
+
+    The practical consequence: a white mask you want tinted must stay `.dds`.
+    Converting the stock masks to PNG would leave them permanently white.
 
 !!! warning "Alternate-format packs are Prisma-only"
     Ship all states of one icon in the same format. A pack containing both `.dds` and `.png` will pick the `.png` on the **Flash** renderer too, which cannot decode it — so the icon renders as nothing. Label such packs as requiring the Prisma renderer.
