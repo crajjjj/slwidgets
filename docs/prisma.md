@@ -75,6 +75,25 @@ Icon paths and naming are otherwise identical to [Customization](customization.m
 
 ---
 
+## Conflicts with iWant Widgets NG
+
+**Do not run both.** [iWant Widgets NG](https://www.nexusmods.com/skyrimspecialedition/mods/96410) is a different SKSE reimplementation of the same widget layer, and it ships a `Scripts/iwant_widgets.pex` of its own — the exact same filename this mod overrides. Whichever one wins your mod manager's file conflict decides which renderer runs, while the loser's SKSE plugin sits there doing nothing.
+
+The two are **not** interchangeable inside one save:
+
+| | iWant Widgets NG | Prisma Edition |
+|---|---|---|
+| `iWant_Widgets` script extends | `SKI_WidgetBase` (SkyUI) | `Quest` |
+| Plugin | None — rides the original mod's quest | Its own `iWant Widgets.esl` |
+| Reset trigger | SkyUI's `OnWidgetReset` | Player alias on its own quest |
+
+Because the script's **base class differs**, a save that ran one of them carries a script instance the other cannot load. The usual symptom of a half-finished switch is **icons that appear once and then never update again**: the first reset draws them, and a later reset rebinds iWant Status Bars to the stale instance, whose calls quietly go nowhere.
+
+!!! warning "Switching away from NG"
+    Uninstalling the NG mod entry is not always enough — confirm neither `Scripts/iwant_widgets.pex` nor `SKSE/Plugins/IWantWidgetsNative.dll` survives anywhere in your load order (check your mod manager's conflict view and the overwrite folder). Switching on a **new game** avoids the stale-instance problem entirely; on an existing save, expect to verify the files first.
+
+---
+
 ## Ultrawide positioning
 
 The Prisma renderer centres the fixed 1280 × 720 stage rather than letting the game stretch it, so on ultrawide monitors the usable **left** margin sits at *negative* X — roughly −200 on 21:9 and −640 on 32:9. The right margin extends past 1279 as before.
