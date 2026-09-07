@@ -75,22 +75,30 @@ Icon paths and naming are otherwise identical to [Customization](customization.m
 
 ---
 
-## Conflicts with iWant Widgets NG
+## Switching between widget backends
 
-**Do not run both.** [iWant Widgets NG](https://www.nexusmods.com/skyrimspecialedition/mods/96410) is a different SKSE reimplementation of the same widget layer, and it ships a `Scripts/iwant_widgets.pex` of its own — the exact same filename this mod overrides. Whichever one wins your mod manager's file conflict decides which renderer runs, while the loser's SKSE plugin sits there doing nothing.
+Three mods can provide the `iwant_widgets` script: the original **iWant Widgets** (Flash), **iWant Widgets NG** (the same Flash rendering with native plumbing, and it *requires* the original), and this one (Flash replaced entirely). They all ship `Scripts/iwant_widgets.pex`, so your mod manager's priority decides which is actually used — install only one, and check that the others' files aren't still winning the conflict.
 
-The two are **not** interchangeable inside one save:
+!!! warning "Switching backends on an existing save can permanently break the Flash ones"
+    The original and NG both draw through **SkyUI's** widget system, which assigns a widget's HUD modes exactly once and remembers it in your save:
 
-| | iWant Widgets NG | Prisma Edition |
-|---|---|---|
-| `iWant_Widgets` script extends | `SKI_WidgetBase` (SkyUI) | `Quest` |
-| Plugin | None — rides the original mod's quest | Its own `iWant Widgets.esl` |
-| Reset trigger | SkyUI's `OnWidgetReset` | Player alias on its own quest |
+    ```papyrus
+    if (!_initialized)          ; persisted in the save
+        _initialized = true
+        if (!_modes)            ; the only place modes are ever defaulted
+    ```
 
-Because the script's **base class differs**, a save that ran one of them carries a script instance the other cannot load. The usual symptom of a half-finished switch is **icons that appear once and then never update again**: the first reset draws them, and a later reset rebinds iWant Status Bars to the stale instance, whose calls quietly go nowhere.
+    Both plugins define their quest at the same FormID, and every backend names its script `iwant_widgets` — so a save holds **one** record for it, and whichever backend ran last overwrites it. Come back to a SkyUI-based backend afterwards and it can find `_initialized` already true with the modes gone, so the defaults are never reassigned and SkyUI keeps the widget hidden. There is no recovery path: the version check that would re-run initialisation is pinned to version 1.
 
-!!! warning "Switching away from NG"
-    Uninstalling the NG mod entry is not always enough — confirm neither `Scripts/iwant_widgets.pex` nor `SKSE/Plugins/IWantWidgetsNative.dll` survives anywhere in your load order (check your mod manager's conflict view and the overwrite folder). Switching on a **new game** avoids the stale-instance problem entirely; on an existing save, expect to verify the files first.
+    The signature in `Papyrus.0.log` is:
+
+    ```
+    WidgetError: [iwant_widgets <iWant_WidgetQuest (FE06E800)>]: NoValidModes
+    ```
+
+    Everything else looks healthy around it — `***LIBRARY RESET***`, the reset event, and `iWant Status Bars: Loading Icons` all succeed. The scripts are running fine; only the container they draw into is never shown. **Fix: start a new game, or clean-save the plugin** (disable it, load, save, re-enable).
+
+**This mod is not affected by that.** It doesn't use SkyUI's widget system at all — its script extends `Quest`, it owns its own overlay, and it reads no persisted widget state. A save whose SkyUI widget record is already ruined will still render here, which is worth knowing if you are debugging one: if icons return under this renderer but not under the original, the save is the problem, not your install.
 
 ---
 

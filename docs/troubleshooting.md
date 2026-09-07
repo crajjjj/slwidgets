@@ -29,6 +29,18 @@
 
 ---
 
+## Icons vanished after switching widget backends
+
+If you moved between the original **iWant Widgets**, **iWant Widgets NG**, and the [Prisma renderer](prisma.md) on the same playthrough, check `Papyrus.0.log` for:
+
+```
+WidgetError: [iwant_widgets <iWant_WidgetQuest (FE06E800)>]: NoValidModes
+```
+
+That means SkyUI is holding the widget hidden because its saved HUD modes were lost — a state it cannot repair on that save. Everything around it in the log looks fine, which makes it easy to miss. Start a new game, or clean-save the widget plugin (disable it, load, save, re-enable). See [Switching between widget backends](prisma.md#switching-between-widget-backends).
+
+---
+
 ## Icons overlapping or in the wrong bar
 
 This happens on heavy script-load mod lists where iWant Bar events fire out of order.
