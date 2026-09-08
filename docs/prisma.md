@@ -38,7 +38,7 @@ It replaces only the part that paints pixels. **iWant Status Bars, its MCM, SL W
 Install it like any mod, above the original iWant Widgets in your mod manager's priority order. Nothing needs configuring afterwards.
 
 !!! note "Switching mid-playthrough"
-    Safe in both directions — the widget scripts hold no meaningful save state. Expect a few one-time Papyrus log warnings about the original's orphaned quest on the first load after switching.
+    This mod itself holds no meaningful save state, so enabling or disabling it is safe on that count — expect only a few one-time Papyrus log warnings about the original's orphaned quest on the first load. The **Flash** backends (original / NG) are a different story: they *do* persist widget state, and moving between them on one save can strand it. Read [Switching between widget backends](#switching-between-widget-backends) below before you do.
 
 ---
 
@@ -77,9 +77,12 @@ Icon paths and naming are otherwise identical to [Customization](customization.m
 
 ## Switching between widget backends
 
-Three mods can provide the `iwant_widgets` script: the original **iWant Widgets** (Flash), **iWant Widgets NG** (the same Flash rendering with native plumbing, and it *requires* the original), and this one (Flash replaced entirely). They all ship `Scripts/iwant_widgets.pex`, so your mod manager's priority decides which is actually used — install only one, and check that the others' files aren't still winning the conflict.
+Three mods can provide the `iwant_widgets` script: the original **iWant Widgets** (Flash), **iWant Widgets NG** (the same Flash rendering with native plumbing, and it *requires* the original), and this one (Flash replaced entirely). They all ship `Scripts/iwant_widgets.pex`, so your mod manager's priority decides which one actually runs — make sure only **one** wins that conflict. With the Prisma renderer that does **not** mean uninstalling the original: it stays installed for its icon library (above), it simply loses the `iwant_widgets.pex` conflict to the Prisma files placed higher. So the rule is *one winning script*, not *one installed mod*.
 
-!!! warning "Switching backends on an existing save can permanently break the Flash ones"
+!!! success "Migrating *to* this renderer is always safe"
+    Coming from the original iWant Widgets or NG — even on a long-running save, even one that already hit the trap below — just works. This renderer never reads or writes SkyUI's widget record, so nothing the Flash backends did to it can carry over. The warning below is about the **Flash** backends among themselves; it does not apply when the destination is this mod.
+
+!!! warning "Switching between the *Flash* backends on an existing save can permanently break them"
     The original and NG both draw through **SkyUI's** widget system, which assigns a widget's HUD modes exactly once and remembers it in your save:
 
     ```papyrus
@@ -88,15 +91,15 @@ Three mods can provide the `iwant_widgets` script: the original **iWant Widgets*
         if (!_modes)            ; the only place modes are ever defaulted
     ```
 
-    Both plugins define their quest at the same FormID, and every backend names its script `iwant_widgets` — so a save holds **one** record for it, and whichever backend ran last overwrites it. Come back to a SkyUI-based backend afterwards and it can find `_initialized` already true with the modes gone, so the defaults are never reassigned and SkyUI keeps the widget hidden. There is no recovery path: the version check that would re-run initialisation is pinned to version 1.
+    Both plugins define their quest at the same FormID, and every backend names its script `iwant_widgets` — so a save holds **one** record for it, and whichever backend ran last overwrites it. Come back to a SkyUI-based backend afterwards and it can find `_initialized` already true with the modes gone, so the defaults are never reassigned and SkyUI keeps the widget hidden. Nothing clears `_initialized` on an existing save — the modes are defaulted *only* inside that `if (!_initialized)` block, and SkyUI's version hook (`OnVersionUpdate`) is empty and touches neither flag — so there is no in-place recovery once a save is in this state.
 
-    The signature in `Papyrus.0.log` is:
+    The signature in `Papyrus.0.log` — search for `NoValidModes`, since the FormID's light-plugin index (the `FE0xx` part) depends on your own load order and is **not** a fixed value to match on:
 
     ```
-    WidgetError: [iwant_widgets <iWant_WidgetQuest (FE06E800)>]: NoValidModes
+    WidgetError: [iwant_widgets <iWant_WidgetQuest (FE0xx800)>]: NoValidModes
     ```
 
-    Everything else looks healthy around it — `***LIBRARY RESET***`, the reset event, and `iWant Status Bars: Loading Icons` all succeed. The scripts are running fine; only the container they draw into is never shown. **Fix: start a new game, or clean-save the plugin** (disable it, load, save, re-enable).
+    Everything else looks healthy around it — `***LIBRARY RESET***`, the reset event, and `iWant Status Bars: Loading Icons` all succeed. The scripts are running fine; only the container they draw into is never shown. **Fix: start a new game.** A clean-save can also work, but note the catch created by the shared filename: because every backend ships the same `iWant Widgets.esl`, disabling just *one* mod leaves the plugin in your load order (supplied by another), so the ruined quest record is never dropped. To clean-save you must disable **every** backend at once so `iWant Widgets.esl` leaves the load order entirely, load and hard-save, then re-enable only the one you want.
 
 **This mod is not affected by that.** It doesn't use SkyUI's widget system at all — its script extends `Quest`, it owns its own overlay, and it reads no persisted widget state. A save whose SkyUI widget record is already ruined will still render here, which is worth knowing if you are debugging one: if icons return under this renderer but not under the original, the save is the problem, not your install.
 

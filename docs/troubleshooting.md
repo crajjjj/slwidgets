@@ -31,13 +31,15 @@
 
 ## Icons vanished after switching widget backends
 
-If you moved between the original **iWant Widgets**, **iWant Widgets NG**, and the [Prisma renderer](prisma.md) on the same playthrough, check `Papyrus.0.log` for:
+If you moved between the original **iWant Widgets**, **iWant Widgets NG**, and the [Prisma renderer](prisma.md) on the same playthrough, search `Papyrus.0.log` for `NoValidModes` (the FormID's `FE0xx` light-plugin index varies with your load order, so don't match on a literal value):
 
 ```
-WidgetError: [iwant_widgets <iWant_WidgetQuest (FE06E800)>]: NoValidModes
+WidgetError: [iwant_widgets <iWant_WidgetQuest (FE0xx800)>]: NoValidModes
 ```
 
-That means SkyUI is holding the widget hidden because its saved HUD modes were lost — a state it cannot repair on that save. Everything around it in the log looks fine, which makes it easy to miss. Start a new game, or clean-save the widget plugin (disable it, load, save, re-enable). See [Switching between widget backends](prisma.md#switching-between-widget-backends).
+That means SkyUI is holding the widget hidden because its saved HUD modes were lost — a state it cannot repair on that save. Everything around it in the log looks fine, which makes it easy to miss. Starting a new game is the reliable fix; a clean-save works only if you disable **every** iWant Widgets backend at once (they share one `iWant Widgets.esl`, so the plugin must leave the load order entirely) before re-enabling the one you want. See [Switching between widget backends](prisma.md#switching-between-widget-backends).
+
+This does not affect the Prisma renderer itself — it reads no persisted widget state, so it still draws on a save whose SkyUI widget record is already ruined.
 
 ---
 
