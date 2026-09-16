@@ -44,7 +44,9 @@ Install it like any mod, above the original iWant Widgets in your mod manager's 
 
 ## Animated and alternate-format icons
 
-With the Prisma renderer, SL Widgets automatically prefers a `.gif` and then a `.png` sibling of each icon's `.dds`, applied uniformly across all of that icon's states. To animate the arousal heart, drop `aroused0.gif` … `aroused8.gif` beside the existing `.dds` files — no configuration.
+The Prisma renderer (**0.4.0 or newer**) resolves every requested `.dds` by first looking for a `.gif`, then a `.png`, of the same name, and uses that when it finds one. To animate the arousal heart, drop `aroused0.gif` … `aroused8.gif` beside the existing `.dds` files — no configuration, and nothing needs to hide or overwrite the `.dds`.
+
+This happens inside the renderer, so it applies to **every** iWant Status Bars mod, not just SL Widgets.
 
 | Format | Result | Colour |
 |--------|--------|--------|
@@ -68,8 +70,10 @@ With the Prisma renderer, SL Widgets automatically prefers a `.gif` and then a `
     The practical consequence: a white mask you want tinted must stay `.dds`.
     Converting the stock masks to PNG would leave them permanently white.
 
-!!! warning "Alternate-format packs are Prisma-only"
-    Ship all states of one icon in the same format. A pack containing both `.dds` and `.png` will pick the `.png` on the **Flash** renderer too, which cannot decode it — so the icon renders as nothing. Label such packs as requiring the Prisma renderer.
+!!! warning "Alternate-format packs need Prisma 0.4.0+"
+    Ship all states of one icon in the same format — the renderer probes once per icon and applies the winning extension to every state.
+
+    On the **Flash** renderer, and on Prisma older than 0.4.0, the `.dds` is used and the alternate files are ignored, so a mixed pack degrades to its DDS artwork rather than breaking. A pack that ships *only* `.png`/`.gif` has no DDS to fall back to and renders as nothing — label those as requiring the Prisma renderer.
 
 Icon paths and naming are otherwise identical to [Customization](customization.md#custom-icon-packs).
 

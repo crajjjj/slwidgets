@@ -100,7 +100,7 @@ Follow the naming convention already used by SL Widgets (visible in the installe
 GIMP can export DDS in BC3 without mipmaps. Photoshop requires the Intel Texture Works plugin or similar.
 
 !!! tip "PNG and animated GIF"
-    With the optional [Prisma renderer](prisma.md), an icon can instead be a `.png` or an animated `.gif` dropped beside the `.dds` — no DDS export, no conversion. SL Widgets picks it up automatically. See [Animated and alternate-format icons](prisma.md#animated-and-alternate-format-icons).
+    With the optional [Prisma renderer](prisma.md) (0.4.0+), an icon can instead be a `.png` or an animated `.gif` dropped beside the `.dds` — no DDS export, no conversion. The renderer picks it up automatically. See [Animated and alternate-format icons](prisma.md#animated-and-alternate-format-icons).
 
 !!! tip
     Swapping a `.dds` file replaces the icon for every character and NPC using that icon name. Icon names include the slot suffix for NPC variants (`Arousal_NPC1.dds`, `Arousal_NPC2.dds`, `Arousal_NPC3.dds`).
