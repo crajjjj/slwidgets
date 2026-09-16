@@ -71,9 +71,9 @@ This happens inside the renderer, so it applies to **every** iWant Status Bars m
     Converting the stock masks to PNG would leave them permanently white.
 
 !!! warning "Alternate-format packs need Prisma 0.4.0+"
-    Ship all states of one icon in the same format — the renderer probes once per icon and applies the winning extension to every state.
+    Each state file is resolved on its own, so mixing formats within one icon works — though shipping all of an icon's states in one format keeps its look consistent from stage to stage.
 
-    On the **Flash** renderer, and on Prisma older than 0.4.0, the `.dds` is used and the alternate files are ignored, so a mixed pack degrades to its DDS artwork rather than breaking. A pack that ships *only* `.png`/`.gif` has no DDS to fall back to and renders as nothing — label those as requiring the Prisma renderer.
+    On the **Flash** renderer, and on Prisma older than 0.4.0, the `.dds` is used and the alternate files are ignored, so a mixed pack degrades to its DDS artwork rather than breaking. A pack that ships *only* `.png`/`.gif` has no DDS to fall back to and renders as nothing — label those as requiring the Prisma renderer **0.4.0 or newer**.
 
 Icon paths and naming are otherwise identical to [Customization](customization.md#custom-icon-packs).
 
