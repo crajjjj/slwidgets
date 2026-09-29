@@ -192,11 +192,15 @@ SL Widgets used to ship a patched fork of `iwant_status_bars.psc` /
 the fork is gone: the mod now compiles and runs against the stock release.
 
 - Compile-time: `skyrimse.ppj` imports the two dependency folders under
-  `mods/build`: `iwantstatusbars/Source/Scripts` and
-  `iwantWidgets/Source/Scripts`, synced from the Status Bars 2.11 and
-  Widgets 1.35 downloads. 2.11's scripts still report `GetVersion()` 2.10
-  and every comment in them says 2.10, so 2.10 is the API level to code
-  against. There is no in-repo copy to shadow the folders any more.
+  `mods/build`, each a full extract of its Nexus release with the archive
+  kept beside it: `iWant Widgets 1.35/00 - Main/Source/Scripts` and
+  `iWant Status Bars 2.11/00 - Main/Source/Scripts`. Bump to a new release
+  by extracting it next to these and repointing the two `<Import>` lines,
+  which is also why the unversioned `iwantstatusbars` / `iwantWidgets`
+  folders are no longer imported. 2.11's scripts still report
+  `GetVersion()` 2.10 and every comment in them says 2.10, so 2.10 is the
+  API level to code against. There is no in-repo copy to shadow the
+  folders any more.
 - Runtime: `slw_widget_controller.hasBarsAPI()` probes `iBars.GetAPIVersion()`
   once per bars reset (2.09 and older have no such function, so the call
   errors once into the log and returns 0, which is the detection mechanism)
