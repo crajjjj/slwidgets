@@ -139,25 +139,27 @@ bool Function isLoaded()
 	return controller_initialised && iBars && iBars.isReady()
 EndFunction
 
-; True when the patched Status Bars fork is installed (bundled with SL
-; Widgets; absent when another mod's stock pex wins the file conflict or
-; the user stripped the override). The NPC-tracking
-; layer is built on fork-only accessors (_getBarVisible,
-; _getBarLastChangeTime) and on its _findBarOfIcon fix — stock 2.09 returns
-; the wrong bar there, which would make reconciliation duplicate icons every
-; tick — so NPC slots are disabled entirely when the probe fails. Player
-; tracking never needs the fork.
-Bool _iBarsPatchProbed = False
-Bool _iBarsPatched = False
+; True when iWant Status Bars exposes the 2.10 API (GetAPIVersion 4). The
+; NPC-tracking layer needs getBarVisible and getBarLastChangeTime, and it
+; needs 2.10's _findBarOfIcon fix: 2.09 and older return the wrong bar
+; there, which would make reconciliation duplicate icons every tick. NPC
+; slots stay disabled entirely when the probe fails. Player tracking works
+; on any version.
+Bool _iBarsApiProbed = False
+Bool _iBarsApiOk = False
 
-Bool Function hasBarsPatch()
-	If !_iBarsPatchProbed && iBars
-		; On stock this call fails into a single Papyrus log error and
-		; returns 0 — that one error is the detection mechanism.
-		_iBarsPatched = iBars._getPatchVersion() >= 1
-		_iBarsPatchProbed = True
+Bool Function hasBarsAPI()
+	If !iBars
+		; Nothing to probe: never report a capability from a stale save value.
+		Return False
 	EndIf
-	Return _iBarsPatched
+	If !_iBarsApiProbed
+		; On 2.09 and older the call fails into a single Papyrus log error
+		; and returns 0, which is the detection mechanism.
+		_iBarsApiOk = iBars.GetAPIVersion() >= 4
+		_iBarsApiProbed = True
+	EndIf
+	Return _iBarsApiOk
 EndFunction
 
 ; Assumed lifecycle: menu OnInit() -> OniWantStatusBarsReady......mcm enable -> setup() (Modules initialisation) -> UpdateIcons() -> ||controller_initialised|| -> UpdateIconStateStatus(in a loop)
@@ -176,8 +178,9 @@ Event OniWantStatusBarsReady(String eventName, String strArg, Float numArg, Form
 	If eventName == STATUS_BARS_EVENT_NAME
 		iBars = sender As iWant_Status_Bars
 		; The bars instance (or the installed bars script) may have changed —
-		; e.g. the user added/removed the patched fork mid-save. Re-probe.
-		_iBarsPatchProbed = False
+		; e.g. the user changed Status Bars version mid-save. Re-probe.
+		_iBarsApiProbed = False
+		_iBarsApiOk = False
 		if iBars
 			WriteLog("WidgetController: iBars ready")
 			config.loadPreset(config.activePreset)
@@ -230,9 +233,9 @@ Event OnUpdate()
 	EndIf
 	; Slot 0 — player, always updates
 	config.moduleWidgetStateUpdate(iBars, PlayerRef, 0)
-	; Stock Status Bars (no patched fork): the NPC layer stays off — see
-	; hasBarsPatch. Keep labels left over from an old save hidden.
-	If !hasBarsPatch()
+	; Status Bars older than 2.10: the NPC layer stays off, see
+	; hasBarsAPI. Keep labels left over from an old save hidden.
+	If !hasBarsAPI()
 		_hideAllNpcLabels()
 		RegisterForSingleUpdate(config.updateInterval)
 		Return
@@ -302,7 +305,7 @@ function reloadWidgets()
 	While slot < total
 		Actor t = config.getNpcSlot(slot)
 		If t
-			If !config.slw_stopped && hasBarsPatch()
+			If !config.slw_stopped && hasBarsAPI()
 				; Always reload — even for absent NPCs — so toggle changes
 				; from MCM take effect for the slot's bars. _ensureNpcLabel
 				; auto-suffixes "(away)" when the NPC isn't present.
@@ -312,10 +315,11 @@ function reloadWidgets()
 				_applyBarVisibilityToLabel(slot)
 				_slot_present_prv[slot] = _isNpcPresent(t)
 			Else
-				; Mod stopped, or stock Status Bars — release the slot's icons
-				; and tear down label. On stock, loaded NPC icons would be
+				; Mod stopped, or Status Bars older than 2.10: release the
+				; slot's icons and tear down label. There, loaded NPC icons
+				; would be
 				; auto-placed into the player's bars with reconciliation
-				; disabled (see hasBarsPatch), so fork-era leftovers in the
+				; disabled (see hasBarsAPI), so leftovers in the
 				; save are actively released here instead.
 				config.moduleWidgetReload(iBars, None, slot)
 				_destroyNpcLabel(slot)
@@ -332,10 +336,10 @@ function toggleUpdateWidgets()
 		Return
 	endIf
 	config.moduleWidgetToggleUpdate(iBars, PlayerRef, 0)
-	; Stock Status Bars: a toggle update would load NPC icons that can never
-	; be reconciled into the slot's bars (see hasBarsPatch) — skip the NPC
-	; loop; reloadWidgets releases any fork-era leftovers.
-	If !hasBarsPatch()
+	; Below Status Bars 2.10 a toggle update would load NPC icons that can never
+	; be reconciled into the slot's bars (see hasBarsAPI), so skip the NPC
+	; loop; reloadWidgets releases any leftovers.
+	If !hasBarsAPI()
 		Return
 	EndIf
 	Int slot = 1
@@ -351,7 +355,7 @@ endFunction
 
 ; Called from slw_config when a hotkey-pick assigns a new NPC to a slot.
 Function reloadNpcSlot(Int slot)
-	If !iBars || !iBars.isReady() || config.slw_stopped || !hasBarsPatch()
+	If !iBars || !iBars.isReady() || config.slw_stopped || !hasBarsAPI()
 		Return
 	EndIf
 	Actor t = config.getNpcSlot(slot)
@@ -397,7 +401,7 @@ Function _restoreNpcLabelsAndIcons()
 		; Flash widget IDs from a previous session are stale — reset.
 		config.setNpcLabelId(slot, -1)
 		Actor t = config.getNpcSlot(slot)
-		If t && !config.slw_stopped && hasBarsPatch()
+		If t && !config.slw_stopped && hasBarsAPI()
 			; Always load icons — even for absent NPCs — so the slot's bars
 			; show neutral state-0 icons (loadIcon defaults to status 0) and
 			; the cluster keeps a consistent shape. _ensureNpcLabel adds the
@@ -480,8 +484,8 @@ Function _ensureNpcLabel(Int slot, Actor target)
 	EndIf
 	; Guarding the single creation leaf keeps every MCM path (label offset,
 	; custom text, font/size refresh, bar layout) from resurrecting labels
-	; on stock Status Bars, where the NPC layer is disabled entirely.
-	If !hasBarsPatch()
+	; below Status Bars 2.10, where the NPC layer is disabled entirely.
+	If !hasBarsAPI()
 		Return
 	EndIf
 	Int id = config.getNpcLabelId(slot)
@@ -634,7 +638,7 @@ EndFunction
 ; Returns True if the icon was actually moved so the caller can trigger
 ; a single _drawAllBars to update Flash positions.
 Bool Function _placeOneIconInSlotBar(String iconName, Int slot)
-	If !hasBarsPatch()
+	If !hasBarsAPI()
 		Return False
 	EndIf
 	Int primaryBar = _getBarForSlot(slot)
@@ -681,7 +685,7 @@ EndFunction
 ; Callers must invoke iBars._drawAllBars() themselves after a batch of
 ; reconciles so icons appear in the right place on the same tick.
 Function _reconcileNpcBars(Int slot)
-	If !iBars || !iBars.isReady() || slot <= 0 || !hasBarsPatch()
+	If !iBars || !iBars.isReady() || slot <= 0 || !hasBarsAPI()
 		Return
 	EndIf
 	String[] bases = _getOwnedIconBaseNames()
@@ -786,32 +790,39 @@ Function _applyBarVisibilityToLabel(Int slot)
 	If !iBars || !iBars.iWidgets
 		Return
 	EndIf
-	; Stock Status Bars has neither accessor — leave the label as the
-	; presence logic set it.
-	If !hasBarsPatch()
+	; Status Bars older than 2.10 has neither accessor, so leave the
+	; label as the presence logic set it.
+	If !hasBarsAPI()
 		Return
 	EndIf
 	Int bar = _getBarForSlot(slot)
-	If !iBars._getBarVisible(bar) || _isBarAutoHidden(bar)
+	If !iBars.getBarVisible(bar) || _isBarAutoHidden(bar)
 		_hideNpcLabel(slot)
 	EndIf
 EndFunction
 
 ; iWant's autohide doesn't flip statusBarVisible — it fades widget alpha
 ; via Scaleform transitions. We detect the faded state by comparing the
-; bar's last-change timestamp (patched into iWant) against autoHideTime.
+; bar's last-change timestamp (Status Bars 2.10) against autoHideTime.
 ; +0.5s grace for the fade-out transition (iWant fades over 15 frames =
 ; 0.5s at 30fps).
 Bool Function _isBarAutoHidden(Int bar)
 	If !iBars._getBarShowOnChange(bar)
 		Return False
 	EndIf
-	Float t = iBars._getBarLastChangeTime(bar)
+	Float t = iBars.getBarLastChangeTime(bar)
 	If t <= 0.0
 		Return True
 	EndIf
+	Float now = Utility.GetCurrentRealTime()
+	; GetCurrentRealTime restarts near 0 each launch but iWant keeps the
+	; timestamp in the save, so a value ahead of the clock is last session's.
+	; Nothing can be measured from it until the bar next changes.
+	If t > now
+		Return False
+	EndIf
 	Float window = iBars._getBarAutoHideTime(bar) As Float
-	Return Utility.GetCurrentRealTime() > t + window + 0.5
+	Return now > t + window + 0.5
 EndFunction
 
 ;Debug function to arrange iwant status bars icons better - fill empty spaces in the main bar to load/release toggles in a secondary bar

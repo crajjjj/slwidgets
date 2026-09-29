@@ -183,14 +183,38 @@ iWant Status Bars (and any other Scaleform-based HUD widget mod) uses Skyrim's *
 - DO NOT set defaults based on monitor pixel dimensions (1920, 3840, etc.) — those values land off-stage and only render for users with extended-stage HUD mods
 - Existing saves that stored off-stage coordinates from earlier dev builds (e.g., `npcGroupX = 1700`) keep those values via property persistence; document that users should reset via MCM if they want the standard stage anchor
 
-iWant's own MCM exposes this via `min_pos_x = 0`, `max_pos_x = 1279`, `min_pos_y = 0`, `max_pos_y = 719` in [iwant_status_bars_mcm.psc:13-16](Source/Scripts/iwant_status_bars_mcm.psc#L13-L16).
+0..1279 / 0..719 stays the rule for any position SL Widgets picks itself. iWant's own MCM is more permissive as of 2.10: its X/Y sliders derive their range from the Position Lock toggle, locked to -1280..2559 / -720..1439 (2.09 locked them to the stage, 0..1279 / 0..719) and unlocked to +-10000. That range exists for extended-stage HUD overhauls and for the Prisma renderer, which centers the stage so ultrawide margins sit at negative X. The vestigial `min_pos_*` / `max_pos_*` variables in iWant's MCM are still written by the lock toggle but no longer read.
 
-## Bundled iWant Status Bars fork
+## iWant Status Bars API requirement
 
-SL Widgets ships a patched fork of `iwant_status_bars.psc` / `iwant_status_bars_mcm.psc` (stock 2.09 + init-race/deadlock fixes, `_findBarOfIcon` fix, pulse fix, MCM FISS no-icon guard, immediate MCM X/Y apply, the `_getBarVisible` / `_getBarLastChangeTime` accessors, and `_getPatchVersion` for runtime detection). The fork's file header lists the full patch set; "SL Widgets patch" comments mark the API additions. The iWant Widgets Prisma repo does NOT carry these — SL Widgets is the fork's home, because SL Widgets is what depends on it (and Prisma has no VR support, while this Flash fork does).
+SL Widgets used to ship a patched fork of `iwant_status_bars.psc` /
+`_mcm.psc`. Everything in it landed upstream in iWant Status Bars 2.10, so
+the fork is gone: the mod now compiles and runs against the stock release.
 
-- Compile-time: `skyrimse.ppj` also imports `C:\Playground\Skyrim\mods\build\iwantstatusbars\Source\Scripts` (a synced copy of the fork plus the stock example scripts); `.\Source\Scripts` comes first, so the in-repo fork wins.
-- Runtime: SL Widgets is **fork-agnostic**. `slw_widget_controller.hasBarsPatch()` probes `iBars._getPatchVersion()` once per bars reset (on stock the call errors once into the log and returns 0 — that's the detection mechanism) and caches the result. When the fork is absent, the entire NPC-tracking layer is disabled — OnUpdate NPC loop, `reloadNpcSlot`, `_restoreNpcLabelsAndIcons`, `_reconcileNpcBars`, `_placeOneIconInSlotBar`, `_applyBarVisibilityToLabel`, the NPC loops in `reloadWidgets` / `toggleUpdateWidgets`, and the label-creation leaf `_ensureNpcLabel` all gate on `hasBarsPatch()`, and the assign hotkey refuses with a notification (clearing stays allowed). On stock, `reloadWidgets` actively releases fork-era leftover NPC icons and labels from the save. Player tracking (slot 0) works fully on stock. Rationale: besides the missing `_getBarVisible`/`_getBarLastChangeTime` accessors, stock 2.09's `_findBarOfIcon` compares `_getBarIcon()` as Bool (-1 is truthy), so reconciliation on stock would duplicate icons every tick. The Debug MCM page shows the fork status (`$SLW_Iwant_SB_Patch_Check`). Any new fork-only iBars call MUST be gated behind `hasBarsPatch()`.
+- Compile-time: `skyrimse.ppj` imports the two dependency folders under
+  `mods/build`: `iwantstatusbars/Source/Scripts` and
+  `iwantWidgets/Source/Scripts`, synced from the Status Bars 2.11 and
+  Widgets 1.35 downloads. 2.11's scripts still report `GetVersion()` 2.10
+  and every comment in them says 2.10, so 2.10 is the API level to code
+  against. There is no in-repo copy to shadow the folders any more.
+- Runtime: `slw_widget_controller.hasBarsAPI()` probes `iBars.GetAPIVersion()`
+  once per bars reset (2.09 and older have no such function, so the call
+  errors once into the log and returns 0, which is the detection mechanism)
+  and caches the result. Below API 4 the entire NPC-tracking layer is
+  disabled: OnUpdate NPC loop, `reloadNpcSlot`, `_restoreNpcLabelsAndIcons`,
+  `_reconcileNpcBars`, `_placeOneIconInSlotBar`, `_applyBarVisibilityToLabel`,
+  the NPC loops in `reloadWidgets` / `toggleUpdateWidgets`, and the
+  label-creation leaf `_ensureNpcLabel`; the assign hotkey refuses with a
+  notification (clearing stays allowed), and `reloadWidgets` actively
+  releases NPC icons and labels left in the save. Player tracking (slot 0)
+  works on any version. The Debug MCM page shows the probe result
+  (`$SLW_Iwant_SB_Patch_Check`).
+- What 2.10 added that NPC tracking needs: `getBarVisible`,
+  `getBarLastChangeTime`, the `_findBarOfIcon` fix (2.09 compares
+  `_getBarIcon()` as Bool, and -1 is truthy, so reconciliation would
+  duplicate icons every tick), and `loadIcon` guarding `_nextFreeBarPosition`
+  against `bar == -1`. Any new 2.10-only iBars call MUST be gated behind
+  `hasBarsAPI()`.
 
 ## External Mod API Patterns
 | Mod | Access pattern |

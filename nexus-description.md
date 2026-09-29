@@ -49,7 +49,7 @@ Open the iWant Status Bars MCM → Bars page → assign a hotkey under [b]Press 
 
 [b]Hard requirements[/b]
 [list]
-[*]iWant Status Bars
+[*]iWant Status Bars (2.10 or newer for NPC tracking)
 [*]iWant Widgets
 [*]PapyrusUtil
 [*]SKSE & SkyUI (for the MCM)

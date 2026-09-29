@@ -29,7 +29,7 @@ A plugin for **iWant Status Bars** that shows SexLab-related status icons for th
 
 ## Requirements
 
-- iWant Status Bars
+- iWant Status Bars (2.10+ required for NPC tracking, recommended for everyone)
 - iWant Widgets
 - PapyrusUtil
 - SKSE / SkyUI

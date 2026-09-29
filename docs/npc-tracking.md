@@ -2,6 +2,9 @@
 
 SL Widgets can track **up to three NPCs** simultaneously alongside the player. Each tracked NPC gets their own pair of iWant bars and a floating name label on-screen.
 
+!!! warning "Requires iWant Status Bars 2.10+"
+    NPC tracking uses bar-visibility and bar-activity calls that older releases do not have, and it depends on a bar-lookup fix made in 2.10. On 2.09 and older the whole NPC layer stays off: the pick hotkey refuses new assignments, and MCM -> Debug shows **iWant Status Bars 2.10+** as not found. Player tracking still works, but 2.10 is recommended there too: it fixes a bar-lookup bug that can size a player icon to the wrong bar, and it bounds the waits that older releases spin on forever if the bars never initialise.
+
 ---
 
 ## Setting up the hotkey

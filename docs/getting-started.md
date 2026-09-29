@@ -6,7 +6,7 @@ These must be installed and working before SL Widgets will function at all.
 
 | Mod | Notes |
 |-----|-------|
-| **iWant Status Bars** | The HUD bar framework SL Widgets displays into |
+| **iWant Status Bars** | The HUD bar framework SL Widgets displays into. **2.10 or newer** is required for NPC tracking, and recommended for everyone: it carries bar-lookup and init-timeout fixes that affect player icons too |
 | **iWant Widgets** | Widget layer that draws the icons and NPC name labels. Optionally replaceable by the [Prisma renderer](prisma.md) |
 | **PapyrusUtil** | Used for preset save/load (JSON) |
 | **SKSE** | Required by all of the above |
