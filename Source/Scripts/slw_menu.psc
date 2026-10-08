@@ -26,6 +26,10 @@ int _pregnancy_mod_Toggle
 int _paf_pee_Toggle
 int _paf_poo_Toggle
 int _defeat_mod_Toggle
+int _slove_willpower_Toggle
+int _slove_bar_x_slider
+int _slove_bar_y_slider
+int _slove_bar_scale_slider
 
 ; NPC Tracking page option IDs (resolved each OnPageReset)
 int _npc_hotkey_option
@@ -151,6 +155,16 @@ Function Toggles()
 	AddHeaderOption("$SLW_Defeat")
 	Int defeatFlag = _getFlag(config.module_defeat.isInterfaceActive())
 	_defeat_mod_Toggle = addToggleOption("$SLW_Defeat_Icon", config.module_defeat_enabled, defeatFlag)
+
+	; Right column: the SLO VE willpower bar. A bar, not a Status Bars icon,
+	; so it has a place and a size of its own.
+	SetCursorPosition(1)
+	AddHeaderOption("$SLW_SLOVE")
+	Int sloveFlag = _getFlag(isSloveReady())
+	_slove_willpower_Toggle = addToggleOption("$SLW_Willpower_Bar", config.module_slove_willpower, sloveFlag)
+	_slove_bar_x_slider = AddSliderOption("$SLW_Willpower_Bar_X", widget_controller.willpowerBarX, "{0}", sloveFlag)
+	_slove_bar_y_slider = AddSliderOption("$SLW_Willpower_Bar_Y", widget_controller.willpowerBarY, "{0}", sloveFlag)
+	_slove_bar_scale_slider = AddSliderOption("$SLW_Willpower_Bar_Scale", widget_controller.willpowerBarScale, "{0}%", sloveFlag)
 EndFunction
 
 String Function _slotName(Int slot)
@@ -308,7 +322,8 @@ Function Debug()
 	AddTextOption("$SLW_PNO_Check", StringIfElse( isPNOReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddHeaderOption("$SLW_Dependency_check_defeat")
 	AddTextOption("$SLW_SLD_Check", StringIfElse( isSLDefeatReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
-	
+	AddTextOption("$SLW_SLOVE_Check", StringIfElse( isSloveReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+
 	AddTextOptionST("ADD_EMPTY_ICON_STATE","$SLW_Empty_Icon_Add","$SLW_Add", OPTION_FLAG_NONE)
 EndFunction
 
@@ -345,6 +360,14 @@ Event onOptionHighlight(int mcm_option)
 		SetInfoText("$SLW_Pregnancy_Toggle_Info")
 	ElseIf (mcm_option == _defeat_mod_Toggle)
 		SetInfoText("$SLW_Defeat_Toggle_Info")
+	ElseIf (mcm_option == _slove_willpower_Toggle)
+		SetInfoText("$SLW_Willpower_Bar_Info")
+	ElseIf (mcm_option == _slove_bar_x_slider)
+		SetInfoText("$SLW_Willpower_Bar_X_Info")
+	ElseIf (mcm_option == _slove_bar_y_slider)
+		SetInfoText("$SLW_Willpower_Bar_Y_Info")
+	ElseIf (mcm_option == _slove_bar_scale_slider)
+		SetInfoText("$SLW_Willpower_Bar_Scale_Info")
 	endIf
 EndEvent
 
@@ -406,6 +429,10 @@ Event onOptionSelect(int mcm_option)
 	elseIf(mcm_option == _defeat_mod_Toggle)
 		_v = !config.module_defeat_enabled
 		config.module_defeat_enabled = _v
+		setToggleOptionValue(mcm_option, _v)
+	elseIf(mcm_option == _slove_willpower_Toggle)
+		_v = !config.module_slove_willpower
+		config.module_slove_willpower = _v
 		setToggleOptionValue(mcm_option, _v)
 	Else
 		_handleNpcPageSelect(mcm_option)
@@ -567,6 +594,29 @@ Event OnOptionSliderOpen(Int mcm_option)
 		SetSliderDialogDefaultValue(5)
 		Return
 	endIf
+	; Same ranges as the NPC group anchor below: the 1280x720 stage plus the
+	; margins of an extended-stage HUD or the Prisma renderer.
+	If mcm_option == _slove_bar_x_slider
+		SetSliderDialogStartValue(widget_controller.willpowerBarX)
+		SetSliderDialogRange(-1280, 2560)
+		SetSliderDialogInterval(5.0)
+		SetSliderDialogDefaultValue(640)
+		Return
+	EndIf
+	If mcm_option == _slove_bar_y_slider
+		SetSliderDialogStartValue(widget_controller.willpowerBarY)
+		SetSliderDialogRange(-720, 719)
+		SetSliderDialogInterval(5.0)
+		SetSliderDialogDefaultValue(640)
+		Return
+	EndIf
+	If mcm_option == _slove_bar_scale_slider
+		SetSliderDialogStartValue(widget_controller.willpowerBarScale)
+		SetSliderDialogRange(20, 200)
+		SetSliderDialogInterval(5.0)
+		SetSliderDialogDefaultValue(60)
+		Return
+	EndIf
 	_initNpcOptionArrays()
 	If mcm_option == _npc_group_x_slider
 		SetSliderDialogStartValue(widget_controller.npcGroupX)
@@ -674,6 +724,21 @@ Event OnOptionSliderAccept(Int mcm_option, Float Value)
 	If (mcm_option == _update_interval_slider)
 		config.updateInterval = Value as Int
 		SetSliderOptionValue(mcm_option, Value, "{0}")
+		Return
+	EndIf
+	If mcm_option == _slove_bar_x_slider
+		widget_controller.setWillpowerBarLayout(Value as Int, widget_controller.willpowerBarY, widget_controller.willpowerBarScale)
+		SetSliderOptionValue(mcm_option, Value, "{0}")
+		Return
+	EndIf
+	If mcm_option == _slove_bar_y_slider
+		widget_controller.setWillpowerBarLayout(widget_controller.willpowerBarX, Value as Int, widget_controller.willpowerBarScale)
+		SetSliderOptionValue(mcm_option, Value, "{0}")
+		Return
+	EndIf
+	If mcm_option == _slove_bar_scale_slider
+		widget_controller.setWillpowerBarLayout(widget_controller.willpowerBarX, widget_controller.willpowerBarY, Value as Int)
+		SetSliderOptionValue(mcm_option, Value, "{0}%")
 		Return
 	EndIf
 	_handleNpcSliderAccept(mcm_option, Value)

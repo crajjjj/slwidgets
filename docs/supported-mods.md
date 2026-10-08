@@ -142,7 +142,25 @@ NPC support: **Yes** for all pregnancy mods.
 |------|-----------|
 | **Defeat** | Player is in a weakened/raped state |
 
-NPC support: **No** — SLDefeat uses a player-only magic effect.
+NPC support: **No** - SLDefeat uses a player-only magic effect.
+
+---
+
+### SLO VE (willpower bar)
+
+*Requires:* `SLOVE.esp` (SLO VE 0.7.2 or newer for the recovery between scenes)
+
+Not a status icon but a **bar**: an iWant Widgets meter with a brain icon beside it, showing the player's [willpower](https://crajjjj.github.io/SLOVE/resistance/).
+
+| State | What you see |
+|-------|--------------|
+| Willpower at `100` | Nothing: the bar is hidden |
+| Below `100` | The bar, filled to the current willpower. It drains during a scene and climbs back as game hours pass |
+| Broken (`0`) | The bar flashes and empties, and the icon turns red until the break has passed |
+
+The value is read from the StorageUtil keys SLO VE publishes; between scenes SL Widgets works out the recovery SLO VE will apply at the next scene. Position, size and the on/off switch are on the **Toggles** page of the MCM, right column. The bar is updated on the normal update interval (5 seconds by default).
+
+NPC support: **No** - the bar is for the player.
 
 ---
 
@@ -165,4 +183,5 @@ NPC support: **No** — SLDefeat uses a player-only magic effect.
 | Fertility Mode 3 | — | Varies | Yes |
 | Curse of Life | — | Varies | Yes |
 | SGO4 (pregnancy) | — | Varies | Yes |
-| SLDefeat | — | 1 | Player only |
+| SLDefeat | - | 1 | Player only |
+| SLO VE | a willpower bar, not an icon | - | Player only |

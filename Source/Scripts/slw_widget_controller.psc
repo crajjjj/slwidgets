@@ -181,6 +181,7 @@ Event OniWantStatusBarsReady(String eventName, String strArg, Float numArg, Form
 		; e.g. the user changed Status Bars version mid-save. Re-probe.
 		_iBarsApiProbed = False
 		_iBarsApiOk = False
+		_forgetWillpowerBar()
 		if iBars
 			WriteLog("WidgetController: iBars ready")
 			config.loadPreset(config.activePreset)
@@ -208,6 +209,7 @@ Function stopUpdates()
 	UnregisterForUpdate()
 	UnregisterForModEvent(STATUS_BARS_EVENT_NAME)
 	_hideAllNpcLabels()
+	_destroyWillpowerBar()
 EndFunction
 
 Function _hideAllNpcLabels()
@@ -231,8 +233,9 @@ Event OnUpdate()
 	If !PlayerRef
 		PlayerRef = Game.GetPlayer()
 	EndIf
-	; Slot 0 — player, always updates
+	; Slot 0 - player, always updates
 	config.moduleWidgetStateUpdate(iBars, PlayerRef, 0)
+	_updateWillpowerBar()
 	; Status Bars older than 2.10: the NPC layer stays off, see
 	; hasBarsAPI. Keep labels left over from an old save hidden.
 	If !hasBarsAPI()
@@ -299,6 +302,7 @@ function reloadWidgets()
 	endIf
 	WriteLogAndPrintConsole("WidgetController: reloading widgets")
 	config.moduleWidgetReload(iBars, PlayerRef, 0)
+	_updateWillpowerBar()
 	_ensurePresentPrv()
 	Int slot = 1
 	Int total = getSlotCount()
@@ -336,6 +340,7 @@ function toggleUpdateWidgets()
 		Return
 	endIf
 	config.moduleWidgetToggleUpdate(iBars, PlayerRef, 0)
+	_updateWillpowerBar()
 	; Below Status Bars 2.10 a toggle update would load NPC icons that can never
 	; be reconciled into the slot's bars (see hasBarsAPI), so skip the NPC
 	; loop; reloadWidgets releases any leftovers.
@@ -854,4 +859,135 @@ Function loadEmptyIcon()
 	
 endFunction
 
+; ---------------------------------------------------------------------------
+; SLO VE willpower bar
+; ---------------------------------------------------------------------------
+; One iWant Widgets meter with a brain icon to its left, player only. It is a
+; raw Flash widget like the NPC name labels, not a Status Bars icon: its ids
+; die with every game load (OniWantStatusBarsReady forgets them) and it is
+; built when there is something to show. The value comes from the StorageUtil
+; keys SLO VE documents for other mods (slw_interface_slove), so nothing here
+; binds to SLO VE's scripts.
+;
+; (willpowerBarX, willpowerBarY) is the CENTER of the meter on the 1280x720
+; stage. The default sits just above the vanilla health bar.
+Int Property willpowerBarX = 640 Auto Hidden
+Int Property willpowerBarY = 640 Auto Hidden
+; Percent of the meter's own size, which is 334x30 on the stage in the Flash
+; and the Prisma renderer alike. The icon scales with it.
+Int Property willpowerBarScale = 60 Auto Hidden
 
+Int WILLPOWER_METER_W = 334
+; icon edge at 100%: a little taller than the 30 px meter
+Int WILLPOWER_ICON = 48
+Int WILLPOWER_ICON_GAP = 6
+
+Int _willpowerMeterId = -1
+Int _willpowerIconId = -1
+Int _willpowerPrv = -1
+Bool _willpowerShown = False
+; Real time until which the bar is shown whatever the value, so a position set
+; in the MCM can be seen: at 100 willpower there is no bar to look at.
+Float _willpowerPreviewUntil = 0.0
+
+; The ids belong to a Flash stage that is gone (game load). Drop them without
+; touching the stage: the same numbers may be another mod's widgets by now.
+Function _forgetWillpowerBar()
+	_willpowerMeterId = -1
+	_willpowerIconId = -1
+	_willpowerPrv = -1
+	_willpowerShown = False
+	_willpowerPreviewUntil = 0.0
+EndFunction
+
+Function _destroyWillpowerBar()
+	If iBars && iBars.iWidgets && iBars.isReady()
+		If _willpowerMeterId >= 0
+			iBars.iWidgets.destroy(_willpowerMeterId)
+		EndIf
+		If _willpowerIconId >= 0
+			iBars.iWidgets.destroy(_willpowerIconId)
+		EndIf
+	EndIf
+	_willpowerMeterId = -1
+	_willpowerIconId = -1
+	_willpowerPrv = -1
+	_willpowerShown = False
+EndFunction
+
+Function _ensureWillpowerBar()
+	If _willpowerMeterId >= 0
+		Return
+	EndIf
+	iWant_Widgets w = iBars.iWidgets
+	Int iconSize = WILLPOWER_ICON * willpowerBarScale / 100
+	Int meterWidth = WILLPOWER_METER_W * willpowerBarScale / 100
+	Int iconX = willpowerBarX - meterWidth / 2 - iconSize / 2 - WILLPOWER_ICON_GAP
+	_willpowerMeterId = w.loadMeter(willpowerBarX, willpowerBarY, False)
+	w.setZoom(_willpowerMeterId, willpowerBarScale, willpowerBarScale)
+	w.setMeterRGB(_willpowerMeterId, 200, 164, 255, 86, 50, 164, 255, 255, 255)
+	_willpowerIconId = w.loadLibraryWidget("slove/willpower", iconX, willpowerBarY, False)
+	w.setSize(_willpowerIconId, iconSize, iconSize)
+	_willpowerPrv = -1
+	_willpowerShown = False
+EndFunction
+
+; Runs on every update tick and after MCM changes. The bar is up while the
+; player's willpower is below 100 (or a position preview runs) and hidden once
+; it is whole again.
+Function _updateWillpowerBar()
+	If !iBars || !iBars.iWidgets || !iBars.isReady()
+		Return
+	EndIf
+	If config.slw_stopped || !config.module_slove_willpower || !isSloveReady()
+		_destroyWillpowerBar()
+		Return
+	EndIf
+	If !PlayerRef
+		PlayerRef = Game.GetPlayer()
+	EndIf
+	Int value = slw_interface_slove.getSloveWillpower(PlayerRef)
+	If value >= 100 && Utility.GetCurrentRealTime() >= _willpowerPreviewUntil
+		If _willpowerShown
+			iBars.iWidgets.setVisible(_willpowerMeterId, 0)
+			iBars.iWidgets.setVisible(_willpowerIconId, 0)
+			_willpowerShown = False
+		EndIf
+		_willpowerPrv = value
+		Return
+	EndIf
+	_ensureWillpowerBar()
+	If _willpowerMeterId < 0
+		Return
+	EndIf
+	If value != _willpowerPrv
+		iBars.iWidgets.setMeterPercent(_willpowerMeterId, value)
+		If value <= 0
+			; broken: the icon turns red, and the bar flashes on the way there
+			iBars.iWidgets.setRGB(_willpowerIconId, 255, 96, 96)
+			If _willpowerPrv > 0
+				iBars.iWidgets.doMeterFlash(_willpowerMeterId)
+			EndIf
+		Else
+			iBars.iWidgets.setRGB(_willpowerIconId, 255, 255, 255)
+		EndIf
+		_willpowerPrv = value
+	EndIf
+	If !_willpowerShown
+		iBars.iWidgets.setVisible(_willpowerMeterId, 1)
+		iBars.iWidgets.setVisible(_willpowerIconId, 1)
+		_willpowerShown = True
+	EndIf
+EndFunction
+
+; MCM: a new position or size. The widget is rebuilt, not moved (setPos has
+; left a ghost at the old place before, see setNpcLabelOffset), and then shown
+; for half a minute whatever the willpower so the new place can be seen.
+Function setWillpowerBarLayout(Int x, Int y, Int scale)
+	willpowerBarX = x
+	willpowerBarY = y
+	willpowerBarScale = scale
+	_destroyWillpowerBar()
+	_willpowerPreviewUntil = Utility.GetCurrentRealTime() + 30.0
+	_updateWillpowerBar()
+EndFunction

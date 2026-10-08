@@ -91,6 +91,8 @@ Script properties filled via the Creation Kit (CK) in the ESP/ESM must NOT be re
 | `Source/Scripts/slw_module_mme.psc` | Milk module: MME + SGO4 + MAL |
 | `Source/Scripts/slw_menu.psc` | MCM menu (extends SKI_ConfigBase) — 4 pages including NPC Tracking |
 | `Source/Scripts/slw_interface_sgo4.psc` | Thin wrapper for SGO4 script API |
+| `Source/Scripts/slw_interface_slove.psc` | SLO VE willpower, read from StorageUtil (no compile-time dependency on SLO VE) |
+| `build_willpower_icon.py` | Draws the brain icon of the willpower bar (`library/slove/willpower.dds`); rerun it to change the art |
 | `Interface/Translations/SLWidgets_*.txt` | MCM translation strings (10 languages) |
 
 ## Module Pattern
@@ -166,6 +168,18 @@ API calls use the `target` parameter, not the module's `PlayerRef` property. The
 | NPC unloads | next OnUpdate tick: `_isNpcPresent == False` → `_hideNpcLabel`. When NPC re-loads → label reappears |
 
 **Settings presets** (`slw_config.loadSettingsPreset` / `saveSettingsPreset`): JSON via PapyrusUtil. Keys `npc.{slot}.{sub_toggle_name}` store per-slot toggles. Helpers `_loadNpcSlotToggles` / `_saveNpcSlotToggles`. Missing keys in legacy presets fall back to runtime values.
+
+## SLO VE Willpower Bar (2.2.6)
+
+The one thing here that is NOT a Status Bars icon: an iWant Widgets **meter** with a brain icon to its left, for the player's SLO VE willpower. Not run in game when written.
+
+- **No module, no ESP change.** It is a raw Flash widget like the NPC name labels, so it lives in `slw_widget_controller` (the block at the end of the file) and is driven from `OnUpdate`, `reloadWidgets`, `toggleUpdateWidgets` and `stopUpdates`. A `slw_base_module` script would have needed a new script binding in `SLWidgets.esp`.
+- **Ids die with the game load.** `OniWantStatusBarsReady` calls `_forgetWillpowerBar`, which drops the ids WITHOUT touching the stage: after a load the same numbers may belong to another mod's widgets. Only `_destroyWillpowerBar` (in-session) destroys.
+- **Shown below 100 only.** At 100 the widgets are hidden (`setVisible 0`), not destroyed. A layout change from the MCM rebuilds them (`setPos` has left ghosts before) and forces the bar up for 30 s (`_willpowerPreviewUntil`), because at 100 willpower there would be nothing to look at.
+- **Sizes.** An iWant meter is 334x30 on the stage at 100%, in the Flash widget and in the Prisma renderer alike (read from the Prisma `index.html`); positions are widget CENTERS. The meter is scaled with `setZoom` (iWant's docs: do not `setSize` a meter), the icon with `setSize`.
+- **The value is a projection.** SLO VE applies recovery only when the actor's next scene starts, so `slw_interface_slove.getSloveWillpower` adds the recovery for the whole game hours since `SLOVE_LastSexTime` (`SLOVE_RecoverPerHour`, written by SLO VE 0.7.2+; 10 when missing) and treats a break (`SLOVE_BrokenPoints`) as 0 until its hours have passed, then 100. It must stay in step with `SLOVE_Resistance.CalculateStartupResistance` in the SLO VE repo; SLO VE's `docs/authors/integration.md` has the same formula. SLO VE keeps the time stamp current during a scene, which is why the bar does not climb there.
+- **Player only**, and one option on the Toggles page (right column) plus X / Y / size sliders; `module_slove_willpower` is in the settings presets, the position is not (like the NPC group anchor).
+- To see it without a scene: `slovetest willpower 40` (SLO VE's console command; it writes the real willpower).
 
 ## Translation Files
 - Encoding: **UTF-16LE with BOM**, CRLF line endings

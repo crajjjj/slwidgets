@@ -75,6 +75,7 @@ Open the iWant Status Bars MCM → Bars page → assign a hotkey under [b]Press 
 [*]Private Needs - Orgasm
 [*]SLDefeat
 [*]Curse of Life (1.13.2+)
+[*]SLO VE 0.7.2+ (willpower shown as a bar with a brain icon, player only)
 [/list]
 [i]Which icons each mod adds: [url=https://crajjjj.github.io/slwidgets/supported-mods/]Supported Mods →[/url][/i]
 

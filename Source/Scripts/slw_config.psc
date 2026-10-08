@@ -35,6 +35,9 @@ Bool property module_pregnancy_enabled = True auto hidden
 Bool property module_paf_pee = True auto hidden
 Bool property module_paf_poo = True auto hidden
 Bool property module_defeat_enabled = True auto hidden
+; SLO VE willpower: a bar (iWant Widgets meter), not a status icon. Drawn by
+; slw_widget_controller, player only.
+Bool property module_slove_willpower = True auto hidden
 
 ; NPC tracking — slot 0 is player (handled by widget_controller.PlayerRef), slots 1..N_NPC are NPCs
 Actor Property npc1 Auto Hidden
@@ -675,6 +678,7 @@ Bool Function loadSettingsPreset(String presetName)
 	module_paf_pee = jsonutil.GetPathBoolValue(path, "module_paf_pee", module_paf_pee)
 	module_paf_poo = jsonutil.GetPathBoolValue(path, "module_paf_poo", module_paf_poo)
 	module_defeat_enabled = jsonutil.GetPathBoolValue(path, "module_defeat_enabled", module_defeat_enabled)
+	module_slove_willpower = jsonutil.GetPathBoolValue(path, "module_slove_willpower", module_slove_willpower)
 	_loadNpcSlotToggles(path)
 	Return true
 EndFunction
@@ -717,6 +721,7 @@ Bool Function saveSettingsPreset(String presetName)
 	jsonutil.SetPathIntValue(path, "module_paf_pee", module_paf_pee as Int)
 	jsonutil.SetPathIntValue(path, "module_paf_poo", module_paf_poo as Int)
 	jsonutil.SetPathIntValue(path, "module_defeat_enabled", module_defeat_enabled as Int)
+	jsonutil.SetPathIntValue(path, "module_slove_willpower", module_slove_willpower as Int)
 	_saveNpcSlotToggles(path)
 	If !jsonutil.Save(path, false)
 		WriteLog("SLWidgets: Error saving settings preset '" + presetName + "'", 2)

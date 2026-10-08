@@ -46,6 +46,16 @@ Enable or disable individual icon groups. Settings are organised by mod.
 | **Pregnancy Icons Enabled** | Any pregnancy mod | Full set of pregnancy state icons for all detected pregnancy mods |
 | **Defeat Icon Enabled** | `SexLabDefeat.esp` | Weakened/raped state indicator (player only) |
 
+### SLO VE willpower bar
+
+In the right column of the page. A bar with a brain icon, not a status icon: see [Supported Mods](supported-mods.md#slo-ve-willpower-bar).
+
+| Setting | Requires | Description |
+|---------|----------|-------------|
+| **Willpower Bar Enabled** | `SLOVE.esp` | Shows the player's SLO VE willpower while it is below 100 |
+| **Willpower bar X / Y position** | `SLOVE.esp` | Where the middle of the bar sits on the 1280x720 HUD stage (default 640 / 640, above the health bar). After a change the bar is shown for half a minute so you can see the new place |
+| **Willpower bar size** | `SLOVE.esp` | Size of the bar and its icon in percent (default 60) |
+
 ---
 
 ## NPC Tracking
@@ -104,5 +114,5 @@ Maintenance utilities and dependency status. Version number is shown in the head
 | **Dependency Check: Main** | Shows OK / Not Found for: iWant Status Bars, SexLab Aroused, Apropos2, Fill Her Up, MME, MAL, SexLab-Parasites |
 | **Dependency Check: Pregnancy** | Shows OK / Not Found for all nine pregnancy plugins |
 | **Dependency Check: Needs** | Shows OK / Not Found for PAF, MiniNeeds, AlivePeeing, Private Needs |
-| **Dependency Check: Defeat** | Shows OK / Not Found for SLDefeat |
+| **Dependency Check: Defeat** | Shows OK / Not Found for SLDefeat and SLO VE |
 | **Add Icon Placeholder** | Loads a transparent placeholder icon into an iWant bar slot. Useful for reserving space when manually arranging your bar layout. |

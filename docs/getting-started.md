@@ -70,6 +70,7 @@ None of these are required. SL Widgets detects them at runtime and silently skip
 - SexLab-Parasites
 - PAF / MiniNeeds / AlivePeeing SE / Private Needs - Orgasm
 - SLDefeat
+- SLO VE (a willpower bar)
 
 See [Supported Mods](supported-mods.md) for exactly what each one contributes.
 
