@@ -886,8 +886,9 @@ Int _willpowerMeterId = -1
 Int _willpowerIconId = -1
 Int _willpowerPrv = -1
 Bool _willpowerShown = False
-; Real time until which the bar is shown whatever the value, so a position set
-; in the MCM can be seen: at 100 willpower there is no bar to look at.
+; Real time until which the bar is shown whatever the value and the scene, so a
+; position set in the MCM can be seen: outside a scene, or at 100 willpower,
+; there is no bar to look at.
 Float _willpowerPreviewUntil = 0.0
 
 ; The ids belong to a Flash stage that is gone (game load). Drop them without
@@ -933,8 +934,9 @@ Function _ensureWillpowerBar()
 EndFunction
 
 ; Runs on every update tick and after MCM changes. The bar is up while the
-; player's willpower is below 100 (or a position preview runs) and hidden once
-; it is whole again.
+; player is in a scene with willpower below 100 (or a position preview runs)
+; and hidden otherwise: it leaves with the scene, whatever willpower is left,
+; and does not show the recovery between scenes.
 Function _updateWillpowerBar()
 	If !iBars || !iBars.iWidgets || !iBars.isReady()
 		Return
@@ -947,13 +949,15 @@ Function _updateWillpowerBar()
 		PlayerRef = Game.GetPlayer()
 	EndIf
 	Int value = slw_interface_slove.getSloveWillpower(PlayerRef)
-	If value >= 100 && Utility.GetCurrentRealTime() >= _willpowerPreviewUntil
+	Bool preview = Utility.GetCurrentRealTime() < _willpowerPreviewUntil
+	If !preview && (value >= 100 || !slw_interface_slove.isInScene(PlayerRef))
 		If _willpowerShown
 			iBars.iWidgets.setVisible(_willpowerMeterId, 0)
 			iBars.iWidgets.setVisible(_willpowerIconId, 0)
 			_willpowerShown = False
 		EndIf
-		_willpowerPrv = value
+		; _willpowerPrv stays what the meter last drew: willpower recovers
+		; while the bar is hidden, and the next scene has to see the difference.
 		Return
 	EndIf
 	_ensureWillpowerBar()

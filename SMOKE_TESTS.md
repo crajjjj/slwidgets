@@ -177,12 +177,13 @@ Added in 2.2.6, never run in game when written. `slovetest willpower <n>` is SLO
 | # | P | Scenario | Expected | Scripts |
 |---|---|----------|----------|---------|
 | 17.1 | P0 | SLO VE detected | Toggles page, right column: the SLO VE block is enabled; Maintenance page shows `SLO VE (SLOVE.esp)` OK | slw_util, slw_menu |
-| 17.2 | P0 | `slovetest willpower 40` | Within one update interval a bar filled to 40% appears with the brain icon to its left | slw_widget_controller, slw_interface_slove |
-| 17.3 | P0 | `slovetest willpower 100` | The bar and the icon disappear within one update interval | slw_widget_controller |
-| 17.4 | P1 | `slovetest willpower 0` from above 0 | Bar empties and flashes, the icon turns red; it stays until the break hours have passed | slw_widget_controller |
-| 17.5 | P1 | Recovery: `slovetest willpower 40`, then wait game hours | The bar climbs by SLO VE's `pcrecoverperhour` per game hour and hides at 100 | slw_interface_slove |
+| 17.2 | P0 | In a scene: `slovetest willpower 40` | Within one update interval a bar filled to 40% appears with the brain icon to its left | slw_widget_controller, slw_interface_slove |
+| 17.3 | P0 | In a scene: `slovetest willpower 100` | The bar and the icon disappear within one update interval | slw_widget_controller |
+| 17.4 | P1 | In a scene: `slovetest willpower 0` from above 0 | Bar empties and flashes, the icon turns red | slw_widget_controller |
+| 17.5 | P0 | The scene ends with willpower below 100 | The bar and the icon disappear within one update interval; outside a scene `slovetest willpower 40` draws nothing | slw_widget_controller, slw_interface_slove (`isInScene`) |
 | 17.6 | P1 | A real SLO VE scene | The bar follows the drain; it does NOT climb during the scene, however long it runs | slw_interface_slove |
-| 17.7 | P1 | Change X, Y or size in the MCM at 100 willpower | The bar is shown at the new place for half a minute, then hides; no second bar is left at the old place | slw_menu, slw_widget_controller |
+| 17.6b | P1 | Second scene some game hours after one that drained willpower | The bar comes up at the RECOVERED value (SLO VE's `pcrecoverperhour` per game hour), not at the value the first scene ended on | slw_widget_controller (`_willpowerPrv`), slw_interface_slove |
+| 17.7 | P1 | Change X, Y or size in the MCM outside a scene | The bar is shown at the new place for half a minute, then hides; no second bar is left at the old place | slw_menu, slw_widget_controller |
 | 17.8 | P1 | Save with the bar up, load | Exactly one bar after the load, no leftover widget, no other mod's widget moved or hidden | slw_widget_controller (`_forgetWillpowerBar`) |
 | 17.9 | P1 | Toggle off, close the MCM; disable the mod | The bar is gone at once in both cases; back on = back within one interval | slw_menu, slw_widget_controller |
 | 17.10 | P2 | SLO VE not installed | Block greyed out, nothing drawn, no Papyrus errors | slw_util |

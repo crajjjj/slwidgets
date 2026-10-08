@@ -43,3 +43,16 @@ Int Function getSloveWillpower(Actor target) Global
 	endif
 	return value
 EndFunction
+
+; True while a SexLab thread holds the actor, the only time SLO VE drains
+; willpower. Asked of SexLab's animating faction by form id (0xE50F, the same
+; record on classic and P+, and what SexLab's own IsActorActive tests), so
+; nothing here compiles against SexLab either. SexLab.esm is a master of
+; SLOVE.esp: call this only once SLO VE is known to be loaded.
+Bool Function isInScene(Actor target) Global
+	if !target
+		return false
+	endif
+	Faction animating = Game.GetFormFromFile(0xE50F, "SexLab.esm") as Faction
+	return animating && target.IsInFaction(animating)
+EndFunction

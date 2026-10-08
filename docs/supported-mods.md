@@ -148,17 +148,18 @@ NPC support: **No** - SLDefeat uses a player-only magic effect.
 
 ### SLO VE (willpower bar)
 
-*Requires:* `SLOVE.esp` (SLO VE 0.7.2 or newer for the recovery between scenes)
+*Requires:* `SLOVE.esp` (SLO VE 0.7.2 or newer)
 
-Not a status icon but a **bar**: an iWant Widgets meter with a brain icon beside it, showing the player's [willpower](https://crajjjj.github.io/SLOVE/resistance/).
+Not a status icon but a **bar**: an iWant Widgets meter with a brain icon beside it, showing the player's [willpower](https://crajjjj.github.io/SLOVE/resistance/) during a scene.
 
 | State | What you see |
 |-------|--------------|
-| Willpower at `100` | Nothing: the bar is hidden |
-| Below `100` | The bar, filled to the current willpower. It drains during a scene and climbs back as game hours pass |
-| Broken (`0`) | The bar flashes and empties, and the icon turns red until the break has passed |
+| Outside a scene | Nothing: the bar is hidden, whatever willpower is left |
+| In a scene, willpower at `100` | Nothing: the bar is hidden |
+| In a scene, below `100` | The bar, filled to the current willpower, draining as the scene goes on |
+| In a scene, broken (`0`) | The bar flashes and empties, and the icon turns red |
 
-The value is read from the StorageUtil keys SLO VE publishes; between scenes SL Widgets works out the recovery SLO VE will apply at the next scene. Position, size and the on/off switch are on the **Toggles** page of the MCM, right column. The bar is updated on the normal update interval (5 seconds by default).
+The value is read from the StorageUtil keys SLO VE publishes, with the recovery since the last scene worked out, so the bar starts a scene where SLO VE will. Whether the player is in a scene is asked of SexLab's animating faction. Position, size and the on/off switch are on the **Toggles** page of the MCM, right column. The bar is updated on the normal update interval (5 seconds by default), so it comes and goes up to that long after the scene does.
 
 NPC support: **No** - the bar is for the player.
 

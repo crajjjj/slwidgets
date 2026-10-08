@@ -52,7 +52,7 @@ In the right column of the page. A bar with a brain icon, not a status icon: see
 
 | Setting | Requires | Description |
 |---------|----------|-------------|
-| **Willpower Bar Enabled** | `SLOVE.esp` | Shows the player's SLO VE willpower while it is below 100 |
+| **Willpower Bar Enabled** | `SLOVE.esp` | Shows the player's SLO VE willpower during a scene, while it is below 100 |
 | **Willpower bar X / Y position** | `SLOVE.esp` | Where the middle of the bar sits on the 1280x720 HUD stage (default 640 / 640, above the health bar). After a change the bar is shown for half a minute so you can see the new place |
 | **Willpower bar size** | `SLOVE.esp` | Size of the bar and its icon in percent (default 60) |
 
