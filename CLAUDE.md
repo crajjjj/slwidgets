@@ -53,7 +53,8 @@ Script properties filled via the Creation Kit (CK) in the ESP/ESM must NOT be re
 - Max 128 elements. Size must be an integer literal (`new int[128]`), not a variable.
 - `array[i] += 5` does NOT compile -- use `array[i] = array[i] + 5`.
 - No arrays of arrays. Arrays are passed/assigned by reference.
-- `Find()`/`RFind()` and SKSE string functions are case-insensitive. `==` string comparison is case-sensitive.
+- String comparison is case-insensitive everywhere, `==` included, as are `Find()`/`RFind()` and the SKSE string functions. The VM keeps one copy of each string regardless of case, with the casing it was first seen in by ANY loaded script, so a string built at run time can come back in another mod's casing (`"$SLW_Meter_" + "willpower"` came out `$SLW_Meter_Willpower`).
+- SkyUI's translation lookup IS case-sensitive, so write every `$` MCM key as one whole literal, never by concatenation (see `slw_menu._meterLabel`).
 
 ### Properties & optional mod dependencies
 - Global/static function calls (e.g. `MME_Storage.getMilkCurrent(...)`) resolve lazily at call time, not script load. Safe to reference optional mods if guarded by `Game.GetModByName()`.

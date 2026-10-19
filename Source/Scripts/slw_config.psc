@@ -224,9 +224,10 @@ EndFunction
 ; Meter numbers, which are also the stack's top-to-bottom order:
 ; 0 SLO VE willpower, 1 arousal, 2-5 Fill Her Up total / vaginal / anal /
 ; oral, 6-8 Apropos2 wear and tear vaginal / anal / oral.
-; The key names the meter in settings presets and in the MCM's
-; $SLW_Meter_<key> strings. Lower case because JsonUtil lowercases the key it
-; is asked for, so a hand-written preset key with a capital never matches.
+; The key names the meter in settings presets. Lower case because JsonUtil
+; lowercases the key it is asked for, so a hand-written preset key with a
+; capital never matches. The MCM labels do not build on it: see
+; slw_menu._meterLabel for why they are spelled out whole.
 String Function getMeterKey(Int meter)
 	If meter == 0
 		Return "willpower"
