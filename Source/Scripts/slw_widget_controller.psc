@@ -201,13 +201,21 @@ Function startUpdates()
 	UnregisterForUpdate()
 	UnregisterForModEvent(STATUS_BARS_EVENT_NAME)
 	RegisterForModEvent(STATUS_BARS_EVENT_NAME, "OniWantStatusBarsReady")
-	;
+	; Runs on every game load. Mod event registrations do not survive one, and
+	; the pass bookkeeping is real time from the last session, which restarts
+	; near 0 with the game: a stamp left from there would hold a refresh off
+	; for as long as that session ran.
+	_registerRefreshEvents()
+	_passRunning = False
+	_lastPassAt = 0.0
+	_refreshAt = 0.0
 	RegisterForSingleUpdate(3)
 EndFunction
 
 Function stopUpdates()
 	UnregisterForUpdate()
 	UnregisterForModEvent(STATUS_BARS_EVENT_NAME)
+	_unregisterRefreshEvents()
 	_hideAllNpcLabels()
 	_destroyMeters()
 EndFunction
@@ -221,13 +229,163 @@ Function _hideAllNpcLabels()
 	EndWhile
 EndFunction
 
+; ---------------------------------------------------------------------------
+; Event-driven refresh
+; ---------------------------------------------------------------------------
+; The loop polls every updateInterval seconds. These mod events pull the next
+; pass forward, so a value that just changed reaches the icons and meters in
+; a second or two; polling stays the fallback for everything no event covers.
+; - fhu.playerCumUpdate (Fill Her Up, player only): sent after a pool's new
+;   amount is stored, on every fill, absorption and leak.
+; - Apropos2WearTearChanged (Apropos2 SE 1.0020+): sent from the actor on
+;   every wear and tear stage change.
+; - sla_UpdateComplete (SLA NG): the end of a scan cycle.
+; - slaUpdateExposure / slaSetArousalEffect / slaModArousalEffect /
+;   slaOrgasm, and SexLabOrgasm: requests that SLA applies in its own
+;   handler, so the pass waits a moment for it to land.
+; A handler of a ModEvent.Create event must take exactly the arguments the
+; sender pushes, or the VM never calls it: the signatures below copy SLA's
+; and FHU's own.
+
+; seconds from an event to its pass
+Float REFRESH_SOON = 0.2
+Float REFRESH_AFTER_SLA = 1.5
+; Shortest gap between two passes an event can ask for, so a burst (FHU
+; leaking, a vibrating device) cannot turn the loop into a busy loop.
+Float REFRESH_MIN_GAP = 1.0
+; real time of the pass an event asked for, 0 = none pending
+Float _refreshAt = 0.0
+; real time the last pass started
+Float _lastPassAt = 0.0
+Bool _passRunning = False
+
+Function _registerRefreshEvents()
+	RegisterForModEvent("fhu.playerCumUpdate", "OnFhuPlayerCumUpdate")
+	RegisterForModEvent("Apropos2WearTearChanged", "OnApropos2WearTearChanged")
+	RegisterForModEvent("sla_UpdateComplete", "OnSlaUpdateComplete")
+	RegisterForModEvent("slaUpdateExposure", "OnSlaUpdateExposure")
+	RegisterForModEvent("slaSetArousalEffect", "OnSlaSetArousalEffect")
+	RegisterForModEvent("slaModArousalEffect", "OnSlaModArousalEffect")
+	RegisterForModEvent("slaOrgasm", "OnSlaOrgasm")
+	RegisterForModEvent("SexLabOrgasm", "OnSexLabOrgasm")
+EndFunction
+
+Function _unregisterRefreshEvents()
+	UnregisterForModEvent("fhu.playerCumUpdate")
+	UnregisterForModEvent("Apropos2WearTearChanged")
+	UnregisterForModEvent("sla_UpdateComplete")
+	UnregisterForModEvent("slaUpdateExposure")
+	UnregisterForModEvent("slaSetArousalEffect")
+	UnregisterForModEvent("slaModArousalEffect")
+	UnregisterForModEvent("slaOrgasm")
+	UnregisterForModEvent("SexLabOrgasm")
+EndFunction
+
+Event OnFhuPlayerCumUpdate(Float current, Bool isAnal)
+	_refreshSoon(REFRESH_SOON)
+EndEvent
+
+Event OnApropos2WearTearChanged(String eventName, String bodyPart, Float stage, Form sender)
+	If _isShown(sender as Actor)
+		_refreshSoon(REFRESH_SOON)
+	EndIf
+EndEvent
+
+Event OnSlaUpdateComplete(String eventName, String strArg, Float numArg, Form sender)
+	_refreshSoon(REFRESH_SOON)
+EndEvent
+
+Event OnSlaUpdateExposure(Form actorForm, Float exposureValue)
+	If _isShown(actorForm as Actor)
+		_refreshSoon(REFRESH_AFTER_SLA)
+	EndIf
+EndEvent
+
+Event OnSlaSetArousalEffect(Form whoF, String effectId, Float initialValue, Int functionId, Float param, Float limit)
+	If _isShown(whoF as Actor)
+		_refreshSoon(REFRESH_AFTER_SLA)
+	EndIf
+EndEvent
+
+Event OnSlaModArousalEffect(Form whoF, String effectId, Float modifier, Float limit)
+	If _isShown(whoF as Actor)
+		_refreshSoon(REFRESH_AFTER_SLA)
+	EndIf
+EndEvent
+
+Event OnSlaOrgasm(Form whoF, Float enjoyment)
+	If _isShown(whoF as Actor)
+		_refreshSoon(REFRESH_AFTER_SLA)
+	EndIf
+EndEvent
+
+Event OnSexLabOrgasm(Form who, Int enjoyment, Int orgasms)
+	If _isShown(who as Actor)
+		_refreshSoon(REFRESH_AFTER_SLA)
+	EndIf
+EndEvent
+
+; The player or an actor in an NPC slot: anyone else's change shows nowhere.
+Bool Function _isShown(Actor a)
+	Return a && (a == PlayerRef || config.findNpcSlot(a) > 0)
+EndFunction
+
+; Pulls the next pass forward to delay seconds from now, but no sooner than
+; REFRESH_MIN_GAP after the last one started. Registering a single update
+; replaces the pending one, so the loop's own next tick moves with it.
+Function _refreshSoon(Float delay)
+	If config.slw_stopped
+		Return
+	EndIf
+	Float now = Utility.GetCurrentRealTime()
+	Float at = now + delay
+	If at < _lastPassAt + REFRESH_MIN_GAP
+		at = _lastPassAt + REFRESH_MIN_GAP
+	EndIf
+	; an earlier refresh already pending covers this one
+	If _refreshAt > now && _refreshAt <= at
+		Return
+	EndIf
+	_refreshAt = at
+	; a pass that is running schedules the refresh itself as it ends
+	If !_passRunning
+		RegisterForSingleUpdate(at - now)
+	EndIf
+EndFunction
+
+; After a pass: the normal tick, or sooner when an event asked for a refresh
+; while the pass ran.
+Function _scheduleNextTick()
+	Float wait = config.updateInterval as Float
+	Float now = Utility.GetCurrentRealTime()
+	If _refreshAt > now && _refreshAt - now < wait
+		wait = _refreshAt - now
+	EndIf
+	RegisterForSingleUpdate(wait)
+EndFunction
+
 ;Main update function
 Event OnUpdate()
 	if config.slw_stopped
 		return
 	endif
+	; One pass at a time. A mod event can pull a pass forward while the last
+	; one is still running (every external call lets another thread in); the
+	; running pass then owes one more, which it schedules as it ends.
+	If _passRunning
+		_refreshAt = Utility.GetCurrentRealTime() + REFRESH_MIN_GAP
+		Return
+	EndIf
+	_passRunning = True
+	_lastPassAt = Utility.GetCurrentRealTime()
+	_refreshAt = 0.0
+	_updatePass()
+	_passRunning = False
+	_scheduleNextTick()
+EndEvent
+
+Function _updatePass()
 	if !iBars || !iBars.isReady()
-		RegisterForSingleUpdate(config.updateInterval)
 		return
 	endif
 	If !PlayerRef
@@ -240,7 +398,6 @@ Event OnUpdate()
 	; hasBarsAPI. Keep labels left over from an old save hidden.
 	If !hasBarsAPI()
 		_hideAllNpcLabels()
-		RegisterForSingleUpdate(config.updateInterval)
 		Return
 	EndIf
 	; Slots 1..N_NPC — NPC targets; skip if unset or not currently loaded/alive.
@@ -285,8 +442,7 @@ Event OnUpdate()
 	If anyActive
 		iBars._drawAllBars()
 	EndIf
-	RegisterForSingleUpdate(config.updateInterval)
-EndEvent
+EndFunction
 
 ; True when the actor exists, is loaded into 3D, alive, and not deleted —
 ; i.e. it makes sense to show their icons + name label on screen.

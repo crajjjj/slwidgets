@@ -214,6 +214,23 @@ Added in 2.3.0, never run in game when written. Player only. Values are read onc
 | 18.14 | P0 | In a scene: `slovetest willpower 40`, fade mode, nothing else changing | Willpower row (top) comes up at 40% with the brain and STAYS up for the whole scene; other rows fade as usual | slw_widget_controller (meter 0) |
 | 18.15 | P1 | Always Show Meters on, outside a scene | Every row up except willpower, which stays hidden until a scene | slw_widget_controller |
 
+## 19. Event-driven refresh
+
+Added in 2.3.0, never run in game when written. Set the update interval to 60 s on the General page first, so a change that shows within a couple of seconds can only have come from an event.
+
+| # | P | Scenario | Expected | Scripts |
+|---|---|----------|----------|---------|
+| 19.1 | P0 | FHU: a scene that inflates the player | FHU icons and meters move within about a second of the inflation finishing | slw_widget_controller (`OnFhuPlayerCumUpdate`) |
+| 19.2 | P1 | FHU: let the player leak | The FHU meters follow the leak about once a second, not faster; no Papyrus log spam | `_refreshSoon` (`REFRESH_MIN_GAP`) |
+| 19.3 | P0 | Apropos2 SE 1.0020: a scene that raises a W&T stage, or a stage set in its Wear And Tear Actors page | The W&T icon and meter move within about a second | `OnApropos2WearTearChanged` |
+| 19.4 | P2 | Stock Apropos2 (or 1.0019) | W&T still updates, on the 60 s interval; no errors | polling |
+| 19.5 | P0 | SLA: an orgasm in a scene | Arousal icon and meter drop within about 2 s | `OnSexLabOrgasm` |
+| 19.6 | P1 | SLA NG: wait for a scan (120 s default) | Arousal follows at the scan's end | `OnSlaUpdateComplete` |
+| 19.7 | P1 | Track an NPC; Apropos2 W&T changes for that NPC | That NPC slot's W&T icons move within about a second; an untracked NPC's change does not trigger a pass | `_isShown` |
+| 19.8 | P1 | Save, load, trigger 19.1 | Still within a second after the load (events re-registered on load) | `startUpdates` |
+| 19.9 | P1 | Disable the mod, trigger 19.1 | Nothing drawn, no pass runs | `stopUpdates`, `_refreshSoon` |
+| 19.10 | P2 | Papyrus log after a scene with all three mods | No "incorrect number of arguments" or handler errors for these events | handler signatures |
+
 ---
 
 *Last updated: 2026-10-08*

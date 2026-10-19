@@ -11,7 +11,7 @@ Core enable/disable control, update timing, and preset management.
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
 | **Enable/Disable Mod** | Toggle | Off | Master switch. Disabling unloads all modules and hides all icons. Enabling reloads and starts the update loop. |
-| **Update Interval** | Slider 1–60 | 5 | Seconds between status checks. Lower values are more responsive but add script overhead. |
+| **Update Interval** | Slider 1-60 | 5 | Seconds between status checks. Lower values are more responsive but add script overhead. Changes that SLA, Fill Her Up or Apropos2 SE 1.0020+ report (see [Supported Mods](supported-mods.md)) are checked within a second or two whatever the interval. |
 | **Settings Preset** | Menu | Default | Load a saved settings preset (toggles + per-NPC state). Presets are `.json` files in `SKSE/Plugins/SlWidgets/SettingsPresets/`. |
 | **Save Settings Preset** | Button | - | Save the current state (update interval, color preset, all player toggles, all per-NPC toggles, everything on the Meters page, the stack's position and size included) to the active preset. Prompts before overwriting. |
 | **Color Preset** | Menu | Default | Load an icon color scheme. Presets are `.json` files in `SKSE/Plugins/SlWidgets/IconPresets/`. |

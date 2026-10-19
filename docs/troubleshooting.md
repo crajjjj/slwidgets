@@ -88,7 +88,7 @@ If you press the hotkey and nothing happens, check each of these conditions.
 ## Icons are there but never change
 
 - Confirm the dependent mod is actually running (not just installed). For example, SLA won't report values until SexLab itself is initialised.
-- Check the **Update Interval** (MCM → General). At 60 seconds, an icon update takes up to a minute to reflect.
+- Check the **Update Interval** (MCM → General). At 60 seconds, an icon update takes up to a minute to reflect, except for the changes SLA, Fill Her Up and Apropos2 SE 1.0020+ report, which show within a second or two.
 - For MAL (Mammaries and Lactation), values are one tick behind by design — this is normal.
 
 ---

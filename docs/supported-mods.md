@@ -19,6 +19,8 @@ Stage icons display a continuously-updating 9-state bar (empty → full). They a
 
 NPC support: **Yes** — both icons work per-actor.
 
+Updates: on the update interval, and within a couple of seconds of an orgasm or of a change another mod asks SLA for (its exposure and arousal-effect events). With SLA NG also at the end of each SLA scan.
+
 ---
 
 ### Apropos2 — Wear & Tear
@@ -32,6 +34,8 @@ NPC support: **Yes** — both icons work per-actor.
 | **Oral W&T** | 9 stages tracking oral wear state |
 
 NPC support: **Yes** — all three W&T icons work per-actor.
+
+Updates: on the update interval; with **Apropos2 SE 1.0020** or newer also within about a second of every stage change, which that version announces.
 
 ---
 
@@ -47,6 +51,8 @@ NPC support: **Yes** — all three W&T icons work per-actor.
 | **Oral pool** | 9 stages tracking oral cum only |
 
 NPC support: **Yes** — all four FHU icons work per-actor.
+
+Updates: on the update interval; for the player also within about a second of every fill, absorption and leak, which FHU announces.
 
 !!! tip
     For NPC slots the default configuration shows **Cum total** only to save bar space. Enable the per-orifice icons in the NPC Tracking page per slot if you want the detail.
@@ -186,7 +192,7 @@ How they show is one switch on the MCM's **Meters** page (willpower keeps its ow
 | Fade after a change (default) | A meter fades in when its value changes and fades out again after the hold time (10 seconds by default) |
 | Always show | Every meter stays on screen |
 
-Values are read on the normal update interval (5 seconds by default), so a meter can appear and fade up to that long after the change. Only meters that are switched on and whose mod is installed get a row, and a row keeps its place while its meter is faded out. Each meter has its own switch; position, size, the display mode and the hold time are on the same page, and a settings preset saves all of them.
+Values are read on the normal update interval (5 seconds by default), and sooner when SLA, FHU or Apropos2 SE 1.0020+ report a change (see each mod above), so a meter appears within a second or two of such a change. Fading out is decided on the next check, so it can come up to an interval late. Only meters that are switched on and whose mod is installed get a row, and a row keeps its place while its meter is faded out. Each meter has its own switch; position, size, the display mode and the hold time are on the same page, and a settings preset saves all of them.
 
 NPC support: **No** - the meters are for the player. NPCs keep their status icons.
 

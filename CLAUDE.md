@@ -194,6 +194,22 @@ The things here that are NOT Status Bars icons: one stack of iWant Widgets **met
 - "In a scene" is `slw_interface_slove.isInScene`: SexLab's animating faction (`SexLab.esm` 0xE50F, the test behind SexLab's own `IsActorActive`, same record on classic and P+), looked up by form id so nothing compiles against SexLab.
 - To see it without a scene: change the stack's X, Y or size in the MCM (the 30 s preview). `slovetest willpower 40` (SLO VE's console command; it writes the real willpower) only shows the bar during a scene.
 
+## Event-Driven Refresh (2.3.0)
+
+The update loop polls every `updateInterval` seconds; some mod events pull the next pass forward so icons and meters follow a change in a second or two. Code: the "Event-driven refresh" block in `slw_widget_controller`, right after `stopUpdates`.
+
+| Event | Sender | Delay | Notes |
+|---|---|---|---|
+| `fhu.playerCumUpdate` (Float, Bool) | Fill Her Up, player only | 0.2 s | after the pool's new amount is stored: fills, absorption, leaks (bursty) |
+| `Apropos2WearTearChanged` (standard, sender = actor) | Apropos2 SE 1.0020+ | 0.2 s | added to the user's Apropos2 SE fork for this; stock Apropos2 sends nothing |
+| `sla_UpdateComplete` (standard) | SLA NG | 0.2 s | end of SLA's scan, 120 s by default |
+| `slaUpdateExposure` (Form, Float), `slaSetArousalEffect` (Form, String, Float, Int, Float, Float), `slaModArousalEffect` (Form, String, Float, Float), `slaOrgasm` (Form, Float), `SexLabOrgasm` (Form, Int, Int) | other mods asking SLA for a change, SexLab | 1.5 s | SLA applies them in its own handler, so the pass waits; SLA NG has no arousal-changed event, and direct native calls into SLA NG are left to polling |
+
+- **Handler signatures must match the pushed arguments exactly** for `ModEvent.Create` events, or the VM never calls the handler; the table copies SLA's and FHU's own handlers.
+- Registered in `startUpdates` (every game load, through `slw_system_alias`, since registrations do not survive a load), unregistered in `stopUpdates`. Events for actors that are neither the player nor in an NPC slot are ignored (`_isShown`).
+- `_refreshSoon` re-registers the single update (which REPLACES the pending one), never sooner than `REFRESH_MIN_GAP` (1 s) after the last pass started, and not when an earlier refresh is already pending.
+- `OnUpdate` is now a guard around `_updatePass`: `_passRunning` keeps an event-pulled pass from overlapping a running one, and `_scheduleNextTick` ends every pass with the normal interval or a refresh asked for meanwhile. `startUpdates` resets `_passRunning`, `_lastPassAt` and `_refreshAt` on every load: a pass that died with the session must not block the loop, and real-time stamps from the last session (the clock restarts near 0) would hold a refresh off for as long as that session ran.
+
 ## Translation Files
 - Encoding: **UTF-16LE with BOM**, CRLF line endings
 - Format: `$KEY\tValue` (tab-separated)
