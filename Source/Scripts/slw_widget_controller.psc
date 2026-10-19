@@ -204,10 +204,12 @@ Function startUpdates()
 	; Runs on every game load. Mod event registrations do not survive one, and
 	; the pass bookkeeping is real time from the last session, which restarts
 	; near 0 with the game: a stamp left from there would hold a refresh off
-	; for as long as that session ran.
+	; for as long as that session ran. A pass the save carried over (Papyrus
+	; resumes saved stacks) sees _passGen move and leaves the loop alone.
 	_registerRefreshEvents()
+	_passGen += 1
 	_passRunning = False
-	_lastPassAt = 0.0
+	_lastPassEnd = 0.0
 	_refreshAt = 0.0
 	RegisterForSingleUpdate(3)
 EndFunction
@@ -217,7 +219,7 @@ Function stopUpdates()
 	UnregisterForModEvent(STATUS_BARS_EVENT_NAME)
 	_unregisterRefreshEvents()
 	_hideAllNpcLabels()
-	_destroyMeters()
+	_stopMeters()
 EndFunction
 
 Function _hideAllNpcLabels()
@@ -250,14 +252,18 @@ EndFunction
 ; seconds from an event to its pass
 Float REFRESH_SOON = 0.2
 Float REFRESH_AFTER_SLA = 1.5
-; Shortest gap between two passes an event can ask for, so a burst (FHU
-; leaking, a vibrating device) cannot turn the loop into a busy loop.
+; Shortest idle time between the end of a pass and the next pass an event
+; asks for, so a burst (FHU leaking, a vibrating device) cannot run passes
+; back to back however long a pass takes.
 Float REFRESH_MIN_GAP = 1.0
-; real time of the pass an event asked for, 0 = none pending
+; real time of the pass an event asked for and no pass has served yet,
+; 0 = none owed
 Float _refreshAt = 0.0
-; real time the last pass started
-Float _lastPassAt = 0.0
+; real time the last pass ended
+Float _lastPassEnd = 0.0
 Bool _passRunning = False
+; bumped on every game load, see startUpdates
+Int _passGen = 0
 
 Function _registerRefreshEvents()
 	RegisterForModEvent("fhu.playerCumUpdate", "OnFhuPlayerCumUpdate")
@@ -330,57 +336,76 @@ Bool Function _isShown(Actor a)
 	Return a && (a == PlayerRef || config.findNpcSlot(a) > 0)
 EndFunction
 
-; Pulls the next pass forward to delay seconds from now, but no sooner than
-; REFRESH_MIN_GAP after the last one started. Registering a single update
-; replaces the pending one, so the loop's own next tick moves with it.
+; Asks for a pass delay seconds from now, but no sooner than REFRESH_MIN_GAP
+; after the last pass ended. Registering a single update replaces the pending
+; one, so the loop's own next tick moves with it.
 Function _refreshSoon(Float delay)
 	If config.slw_stopped
 		Return
 	EndIf
 	Float now = Utility.GetCurrentRealTime()
 	Float at = now + delay
-	If at < _lastPassAt + REFRESH_MIN_GAP
-		at = _lastPassAt + REFRESH_MIN_GAP
+	If at < _lastPassEnd + REFRESH_MIN_GAP
+		at = _lastPassEnd + REFRESH_MIN_GAP
 	EndIf
-	; an earlier refresh already pending covers this one
-	If _refreshAt > now && _refreshAt <= at
+	; a refresh already owed at or before then covers this one
+	If _refreshAt > 0.0 && _refreshAt <= at
 		Return
 	EndIf
 	_refreshAt = at
-	; a pass that is running schedules the refresh itself as it ends
+	; a running pass schedules what it owes as it ends
 	If !_passRunning
 		RegisterForSingleUpdate(at - now)
 	EndIf
 EndFunction
 
-; After a pass: the normal tick, or sooner when an event asked for a refresh
-; while the pass ran.
+; After a pass: the normal tick, or an owed refresh. One whose time has
+; already gone by (asked for while the pass ran, after it had read that
+; value) is still owed, REFRESH_MIN_GAP from now.
 Function _scheduleNextTick()
 	Float wait = config.updateInterval as Float
-	Float now = Utility.GetCurrentRealTime()
-	If _refreshAt > now && _refreshAt - now < wait
-		wait = _refreshAt - now
+	If _refreshAt > 0.0
+		Float owed = _refreshAt - Utility.GetCurrentRealTime()
+		If owed < REFRESH_MIN_GAP
+			owed = REFRESH_MIN_GAP
+		EndIf
+		If owed < wait
+			wait = owed
+		EndIf
 	EndIf
 	RegisterForSingleUpdate(wait)
 EndFunction
 
 ;Main update function
 Event OnUpdate()
-	if config.slw_stopped
-		return
-	endif
-	; One pass at a time. A mod event can pull a pass forward while the last
-	; one is still running (every external call lets another thread in); the
-	; running pass then owes one more, which it schedules as it ends.
+	; One pass at a time, claimed before the first external call: that call
+	; lets other threads in, and an event arriving then has to see the pass as
+	; running, or the end of this pass would overwrite the refresh it asks for.
 	If _passRunning
-		_refreshAt = Utility.GetCurrentRealTime() + REFRESH_MIN_GAP
+		; a tick pulled forward while a pass runs: that pass owes one more
+		If _refreshAt <= 0.0
+			_refreshAt = Utility.GetCurrentRealTime()
+		EndIf
 		Return
 	EndIf
 	_passRunning = True
-	_lastPassAt = Utility.GetCurrentRealTime()
-	_refreshAt = 0.0
+	Int gen = _passGen
+	; An owed refresh that is due now is what this pass serves. A later one
+	; (an SLA request still landing) stays owed for the end of the pass.
+	If _refreshAt <= Utility.GetCurrentRealTime() + 0.1
+		_refreshAt = 0.0
+	EndIf
+	If config.slw_stopped
+		_passRunning = False
+		Return
+	EndIf
 	_updatePass()
+	If gen != _passGen
+		; a game load came in the middle, startUpdates owns the loop now
+		Return
+	EndIf
 	_passRunning = False
+	_lastPassEnd = Utility.GetCurrentRealTime()
 	_scheduleNextTick()
 EndEvent
 
@@ -1031,7 +1056,7 @@ endFunction
 ; (metersX, metersY) is the CENTER of the whole stack on the 1280x720 stage;
 ; the default sits at the right edge, half way down. Only meters that are
 ; switched on and whose mod is loaded get a row, top to bottom in meter number
-; order (slw_config.getMeterKey), and a row keeps its place while its meter is
+; order (slw_config.getMeterPresetKey), and a row keeps its place while its meter is
 ; faded out, so each meter is always found in the same spot.
 ;
 ; Meter 0, willpower, keeps the rule it had as a bar of its own: up during a
@@ -1062,9 +1087,9 @@ Int[] _meterIconX
 Int[] _meterIconY
 ; percent the meter widget last drew, -1 = nothing yet
 Int[] _meterDrawn
-; The last value read, -1 = never. Unlike the ids this survives a game load:
-; a meter fades in on a CHANGE, and the first read after a load is not one
-; (the value is still the one the save holds).
+; The value a meter last counted a change at, -1 = never. Unlike the ids it
+; survives a game load: a meter fades in on a CHANGE, and the first read after
+; a load is not one (the value is still the one the save holds).
 Int[] _meterSeen
 Float[] _meterChangedAt
 Bool[] _meterShown
@@ -1074,6 +1099,16 @@ Bool _metersRebuild = False
 Bool _metersPreviewPending = False
 Bool _metersBusy = False
 Float _metersPreviewUntil = 0.0
+; Bumped whenever the stack's widgets are dropped behind a running pass's back
+; (game load, mod disabled). The pass checks it after every widget it creates
+; and stops when it moved, so it can neither store an id into the new stack
+; nor leave a widget on screen. A pass the save carried over (Papyrus resumes
+; saved stacks) is the same case.
+Int _metersGen = 0
+; In fade mode a meter comes up when its value moves this many points from
+; where it last did, or its icon changes stage. Every smaller step would keep
+; a slowly draining value (FHU absorption, decaying arousal) up for good.
+Int METER_CHANGE_MIN = 5
 
 ; The willpower bar's own place and state from 2.2.6, before it became the
 ; stack's top row. Unused; kept so the saves that hold them load clean.
@@ -1124,6 +1159,7 @@ EndFunction
 ; _meterSeen stays.
 Function _forgetMeters()
 	_ensureMeterArrays()
+	_metersGen += 1
 	Int i = 0
 	While i < 9
 		_meterBarId[i] = -1
@@ -1138,7 +1174,17 @@ Function _forgetMeters()
 	_metersRebuild = False
 	_metersPreviewPending = False
 	_metersPreviewUntil = 0.0
-	; a pass that held it died with the old stage
+	; a pass that held it stops at its next check of _metersGen
+	_metersBusy = False
+EndFunction
+
+; The mod is being disabled: everything goes, including what a running pass is
+; still building, which stops at its next check of _metersGen.
+Function _stopMeters()
+	_metersGen += 1
+	_destroyMeters()
+	_metersRebuild = False
+	_metersPreviewPending = False
 	_metersBusy = False
 EndFunction
 
@@ -1167,10 +1213,8 @@ EndFunction
 
 ; MCM: the stack changed (a meter switched, a new place or size). It is
 ; rebuilt, not moved (setPos has left ghosts before, see setNpcLabelOffset),
-; on the next pass, which the MCM runs as it closes: nothing on the HUD can be
-; seen behind the menu. That pass also shows the whole stack for half a
-; minute, willpower included, since in fade mode or outside a scene there
-; would otherwise be nothing to look at.
+; and then shown whole for half a minute, willpower included, since in fade
+; mode or outside a scene there would otherwise be nothing to look at.
 Function requestMetersRebuild()
 	_metersRebuild = True
 	_metersPreviewPending = True
@@ -1183,39 +1227,51 @@ Function setMetersLayout(Int x, Int y, Int scale)
 	requestMetersRebuild()
 EndFunction
 
-; Runs on every update tick and after MCM changes: builds the stack when the
-; set of meters changed, then draws each value and fades rows in and out.
 Function _updateMeters()
 	If !iBars || !iBars.iWidgets || !iBars.isReady()
 		Return
 	EndIf
-	; One pass at a time. The update tick and the MCM both get here, every
-	; widget call lets the other thread in, and two passes building the stack
-	; at once would leave a set of widgets on screen that nothing has an id for.
+	; One pass at a time: the update tick and the MCM both get here, and every
+	; widget call lets the other thread in. Two passes building at once would
+	; leave widgets on screen that nothing has an id for. The pass that finds
+	; the stack busy asks for another soon instead of waiting out an interval.
 	If _metersBusy
+		_refreshSoon(REFRESH_SOON)
 		Return
 	EndIf
 	_metersBusy = True
+	Int gen = _metersGen
 	_ensureMeterArrays()
 	If !PlayerRef
 		PlayerRef = Game.GetPlayer()
 	EndIf
 	Bool[] wanted = new Bool[9]
 	Int mask = _wantedMeters(wanted)
+	If gen != _metersGen
+		Return
+	EndIf
 	If mask != _metersBuiltMask || _metersRebuild
 		_metersRebuild = False
 		_destroyMeters()
-		If mask != 0
-			_buildMeters(wanted)
+		If mask != 0 && !_buildMeters(wanted, gen)
+			Return
 		EndIf
 		_metersBuiltMask = mask
 	EndIf
+	; The preview starts outside menus only, or a change made in the MCM (a
+	; preset loaded there too) would spend its half minute behind the menu.
+	; Updates wait while a menu is open, so the asked-for pass is the first one
+	; after it closes.
 	If _metersPreviewPending
-		_metersPreviewPending = False
-		_metersPreviewUntil = Utility.GetCurrentRealTime() + 30.0
+		If Utility.IsInMenuMode()
+			_refreshSoon(REFRESH_SOON)
+		Else
+			_metersPreviewPending = False
+			_metersPreviewUntil = Utility.GetCurrentRealTime() + 30.0
+		EndIf
 	EndIf
-	If mask != 0
-		_drawMeters(wanted)
+	If mask != 0 && !_drawMeters(wanted, gen)
+		Return
 	EndIf
 	_metersBusy = False
 EndFunction
@@ -1226,6 +1282,7 @@ Int Function _wantedMeters(Bool[] wanted)
 	If config.slw_stopped
 		Return 0
 	EndIf
+	Bool[] switches = config.getMeterSwitches()
 	Bool sloveLoaded = isSloveReady()
 	Bool slaLoaded = config.module_sla.isInterfaceActive()
 	Bool fhuLoaded = config.module_fhu.isInterfaceActive()
@@ -1242,7 +1299,7 @@ Int Function _wantedMeters(Bool[] wanted)
 		ElseIf i <= 5
 			loaded = fhuLoaded
 		EndIf
-		If loaded && config.isMeterOn(i)
+		If loaded && switches[i]
 			wanted[i] = True
 			mask += bit
 		EndIf
@@ -1290,8 +1347,9 @@ Int[] Function _readMeters(Bool[] wanted)
 EndFunction
 
 ; One row per wanted meter, created faded out; _drawMeters brings them up.
-; The icons come later, once the value and so the stage is known.
-Function _buildMeters(Bool[] wanted)
+; The icons come later, once the value and so the stage is known. False when
+; _metersGen moved under it.
+Bool Function _buildMeters(Bool[] wanted, Int gen)
 	iWant_Widgets w = iBars.iWidgets
 	Int rows = 0
 	Int i = 0
@@ -1310,20 +1368,26 @@ Function _buildMeters(Bool[] wanted)
 	While i < 9
 		If wanted[i]
 			Int id = w.loadMeter(metersX, y, False)
+			If gen != _metersGen
+				w.destroy(id)
+				Return False
+			EndIf
+			_meterBarId[i] = id
+			_meterIconX[i] = iconX
+			_meterIconY[i] = y
 			w.setZoom(id, metersScale, metersScale)
 			_colorMeter(i, id)
 			w.setTransparency(id, 0)
 			w.setVisible(id, 1)
-			_meterBarId[i] = id
-			_meterIconX[i] = iconX
-			_meterIconY[i] = y
 			y += pitch
 		EndIf
 		i += 1
 	EndWhile
+	Return True
 EndFunction
 
-Function _drawMeters(Bool[] wanted)
+; False when _metersGen moved under it.
+Bool Function _drawMeters(Bool[] wanted, Int gen)
 	Int[] v = _readMeters(wanted)
 	Float now = Utility.GetCurrentRealTime()
 	Bool preview = now < _metersPreviewUntil
@@ -1331,6 +1395,9 @@ Function _drawMeters(Bool[] wanted)
 	Bool inScene = wanted[0] && slw_interface_slove.isInScene(PlayerRef)
 	Int i = 0
 	While i < 9
+		If gen != _metersGen
+			Return False
+		EndIf
 		If wanted[i] && _meterBarId[i] >= 0
 			Int pct = v[i]
 			If pct != _meterDrawn[i]
@@ -1342,18 +1409,23 @@ Function _drawMeters(Bool[] wanted)
 				_meterDrawn[i] = pct
 			EndIf
 			Int stage = _meterStage(i, pct)
-			If stage != _meterIconStage[i]
-				_loadMeterIcon(i, stage)
+			If stage != _meterIconStage[i] && !_loadMeterIcon(i, stage, gen)
+				Return False
 			EndIf
 			; A meter never read before counts as changed, so a fresh install
 			; in fade mode shows its meters once instead of nothing at all.
-			If pct != _meterSeen[i]
+			Int seen = _meterSeen[i]
+			Int moved = pct - seen
+			If moved < 0
+				moved = -moved
+			EndIf
+			If seen < 0 || moved >= METER_CHANGE_MIN || stage != _meterStage(i, seen)
 				_meterChangedAt[i] = now
+				_meterSeen[i] = pct
 			ElseIf _meterChangedAt[i] > now
 				; from the last session: the real-time clock restarts with the game
 				_meterChangedAt[i] = 0.0
 			EndIf
-			_meterSeen[i] = pct
 			Bool show = preview
 			If i == 0
 				show = show || (inScene && pct < 100)
@@ -1366,6 +1438,7 @@ Function _drawMeters(Bool[] wanted)
 		EndIf
 		i += 1
 	EndWhile
+	Return True
 EndFunction
 
 Function _fadeMeter(Int meter, Bool show)
@@ -1380,15 +1453,22 @@ Function _fadeMeter(Int meter, Bool show)
 	_meterShown[meter] = show
 EndFunction
 
-; A library widget's art is fixed at load, so a new stage means a new widget.
-; Stages change rarely.
-Function _loadMeterIcon(Int meter, Int stage)
+; A library widget's art is fixed at load, so a new stage means a new widget;
+; stages change rarely. False when _metersGen moved under it.
+Bool Function _loadMeterIcon(Int meter, Int stage, Int gen)
 	iWant_Widgets w = iBars.iWidgets
 	If _meterIconId[meter] >= 0
 		w.destroy(_meterIconId[meter])
+		_meterIconId[meter] = -1
 	EndIf
 	Int iconSize = METER_ICON * metersScale / 100
 	Int id = w.loadLibraryWidget(_meterIconPath(meter, stage), _meterIconX[meter], _meterIconY[meter], False)
+	If gen != _metersGen
+		w.destroy(id)
+		Return False
+	EndIf
+	_meterIconId[meter] = id
+	_meterIconStage[meter] = stage
 	w.setSize(id, iconSize, iconSize)
 	_tintMeterIcon(meter, stage, id)
 	If _meterShown[meter]
@@ -1397,8 +1477,7 @@ Function _loadMeterIcon(Int meter, Int stage)
 		w.setTransparency(id, 0)
 	EndIf
 	w.setVisible(id, 1)
-	_meterIconId[meter] = id
-	_meterIconStage[meter] = stage
+	Return True
 EndFunction
 
 ; The stage the meter's icon shows in the Status Bars for the same value.

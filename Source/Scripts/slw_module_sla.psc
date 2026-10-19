@@ -119,7 +119,8 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	endIf
 EndEvent
 
-; Arousal 0-100 for the meter stack. Call only while isInterfaceActive().
+; Arousal 0-100. Call only while isInterfaceActive(): the SLA quest and
+; faction are unset before.
 Int Function getArousalPercentFor(Actor target)
 	Return getArousalPercent(pArousalFaction, sla, target)
 EndFunction

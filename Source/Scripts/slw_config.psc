@@ -40,7 +40,7 @@ Bool property module_defeat_enabled = True auto hidden
 Bool property module_slove_willpower = True auto hidden
 
 ; The meter stack (slw_widget_controller): one switch per meter, player only.
-; Indexed by meter number, see getMeterKey; slot 0 is unused, willpower keeps
+; Indexed by meter number, see getMeterPresetKey; slot 0 is unused, willpower keeps
 ; module_slove_willpower. Lazily created, all on.
 Bool[] _meter_use
 
@@ -224,29 +224,30 @@ EndFunction
 ; Meter numbers, which are also the stack's top-to-bottom order:
 ; 0 SLO VE willpower, 1 arousal, 2-5 Fill Her Up total / vaginal / anal /
 ; oral, 6-8 Apropos2 wear and tear vaginal / anal / oral.
-; The key names the meter in settings presets. Lower case because JsonUtil
-; lowercases the key it is asked for, so a hand-written preset key with a
-; capital never matches. The MCM labels do not build on it: see
-; slw_menu._meterLabel for why they are spelled out whole.
-String Function getMeterKey(Int meter)
-	If meter == 0
-		Return "willpower"
-	ElseIf meter == 1
-		Return "arousal"
+; The meter's key in a settings preset. Each is one whole literal: JsonUtil's
+; path functions match keys verbatim and case-sensitively, and Papyrus keeps
+; one casing per string, so a key built from parts ("meter." + "arousal") can
+; come out in another script's casing ("Arousal") and miss the file's key.
+; Willpower travels as module_slove_willpower instead.
+String Function getMeterPresetKey(Int meter)
+	If meter == 1
+		Return "meter.arousal"
 	ElseIf meter == 2
-		Return "fhu_total"
+		Return "meter.fhu_total"
 	ElseIf meter == 3
-		Return "fhu_vaginal"
+		Return "meter.fhu_vaginal"
 	ElseIf meter == 4
-		Return "fhu_anal"
+		Return "meter.fhu_anal"
 	ElseIf meter == 5
-		Return "fhu_oral"
+		Return "meter.fhu_oral"
 	ElseIf meter == 6
-		Return "wt_vaginal"
+		Return "meter.wt_vaginal"
 	ElseIf meter == 7
-		Return "wt_anal"
+		Return "meter.wt_anal"
+	ElseIf meter == 8
+		Return "meter.wt_oral"
 	EndIf
-	Return "wt_oral"
+	Return "meter.willpower"
 EndFunction
 
 Function _ensureMeterToggles()
@@ -272,6 +273,14 @@ Function setMeterOn(Int meter, Bool enabled)
 	EndIf
 	_ensureMeterToggles()
 	_meter_use[meter] = enabled
+EndFunction
+
+; All switches in one array, for a caller that reads every one of them each
+; pass and would otherwise pay a cross-script call per meter. Read only.
+Bool[] Function getMeterSwitches()
+	_ensureMeterToggles()
+	_meter_use[0] = module_slove_willpower
+	Return _meter_use
 EndFunction
 
 ; Wraps iBars.loadIcon. For NPC slots, registers the icon without triggering
@@ -756,7 +765,7 @@ Function _loadMeterSettings(String path)
 	_ensureMeterToggles()
 	Int i = 1
 	While i < getMeterCount()
-		_meter_use[i] = jsonutil.GetPathBoolValue(path, "meter." + getMeterKey(i), _meter_use[i])
+		_meter_use[i] = jsonutil.GetPathBoolValue(path, getMeterPresetKey(i), _meter_use[i])
 		i += 1
 	EndWhile
 	slw_widget_controller wc = widget_controller
@@ -764,22 +773,33 @@ Function _loadMeterSettings(String path)
 		Return
 	EndIf
 	wc.metersAlwaysShow = jsonutil.GetPathBoolValue(path, "meters.alwaysshow", wc.metersAlwaysShow)
-	wc.metersHoldSeconds = jsonutil.GetPathIntValue(path, "meters.holdseconds", wc.metersHoldSeconds)
+	; A preset is a file anyone can edit: held to the MCM's slider ranges, so a
+	; 0 cannot make every meter invisible (no hold time, zero size).
+	wc.metersHoldSeconds = _clampInt(jsonutil.GetPathIntValue(path, "meters.holdseconds", wc.metersHoldSeconds), 2, 120)
 	; Only a real move goes through the layout setter: it rebuilds the stack
 	; and shows it for half a minute at the new place.
-	Int x = jsonutil.GetPathIntValue(path, "meters.x", wc.metersX)
-	Int y = jsonutil.GetPathIntValue(path, "meters.y", wc.metersY)
-	Int scale = jsonutil.GetPathIntValue(path, "meters.scale", wc.metersScale)
+	Int x = _clampInt(jsonutil.GetPathIntValue(path, "meters.x", wc.metersX), -1280, 2560)
+	Int y = _clampInt(jsonutil.GetPathIntValue(path, "meters.y", wc.metersY), -720, 719)
+	Int scale = _clampInt(jsonutil.GetPathIntValue(path, "meters.scale", wc.metersScale), 20, 200)
 	If x != wc.metersX || y != wc.metersY || scale != wc.metersScale
 		wc.setMetersLayout(x, y, scale)
 	EndIf
+EndFunction
+
+Int Function _clampInt(Int value, Int low, Int high)
+	If value < low
+		Return low
+	ElseIf value > high
+		Return high
+	EndIf
+	Return value
 EndFunction
 
 Function _saveMeterSettings(String path)
 	_ensureMeterToggles()
 	Int i = 1
 	While i < getMeterCount()
-		jsonutil.SetPathIntValue(path, "meter." + getMeterKey(i), _meter_use[i] as Int)
+		jsonutil.SetPathIntValue(path, getMeterPresetKey(i), _meter_use[i] as Int)
 		i += 1
 	EndWhile
 	slw_widget_controller wc = widget_controller

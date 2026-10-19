@@ -58,7 +58,7 @@ Left column.
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| **Always Show Meters** | Toggle | Off | On: every meter stays on screen. Off: a meter appears when its value changes and fades out again after the time below. The willpower meter keeps its own rule either way: up during a scene, while willpower is below 100 |
+| **Always Show Meters** | Toggle | Off | On: every meter stays on screen. Off: a meter appears when its value moves by 5 points or more, or its icon changes stage, and fades out again after the time below. The willpower meter keeps its own rule either way: up during a scene, while willpower is below 100 |
 | **Fade Out After** | Slider 2-120 s | 10 | How long a meter stays up after a change. Greyed out while meters are always shown |
 | **Meters X / Y position** | Sliders | 1150 / 360 | Where the middle of the stack sits on the 1280x720 HUD stage: at the right edge, half way down. The stack grows up and down from Y |
 | **Meters size** | Slider 20-200% | 60 | Size of the meters, their icons and the spacing between them |

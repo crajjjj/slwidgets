@@ -37,7 +37,7 @@ int _meters_hold_slider
 int _meters_x_slider
 int _meters_y_slider
 int _meters_scale_slider
-; one toggle per meter, indexed by meter number (slw_config.getMeterKey)
+; one toggle per meter, indexed by meter number (slw_config.getMeterPresetKey)
 int[] _meter_toggle
 
 ; NPC Tracking page option IDs (resolved each OnPageReset)
@@ -211,7 +211,7 @@ Function _addMeterToggle(Int meter, Bool loaded)
 EndFunction
 
 ; Each label is one translation key, spelled out whole rather than built from
-; getMeterKey. Papyrus keeps one copy per string regardless of case, so
+; parts. Papyrus keeps one copy per string regardless of case, so
 ; "$SLW_Meter_" + "willpower" came out as "$SLW_Meter_Willpower" once another
 ; loaded script had used that casing first, and the translation lookup is
 ; case-sensitive: the MCM showed the raw key. A whole literal has no other copy

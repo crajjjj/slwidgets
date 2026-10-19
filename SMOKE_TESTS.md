@@ -213,6 +213,10 @@ Added in 2.3.0, never run in game when written. Player only. Values are read onc
 | 18.13 | P2 | Three NPCs tracked at the default anchors | Check overlap of NPC slot 3 (y 390) with the stack (y ~230-490 with all nine rows); move either if they collide | layout |
 | 18.14 | P0 | In a scene: `slovetest willpower 40`, fade mode, nothing else changing | Willpower row (top) comes up at 40% with the brain and STAYS up for the whole scene; other rows fade as usual | slw_widget_controller (meter 0) |
 | 18.15 | P1 | Always Show Meters on, outside a scene | Every row up except willpower, which stays hidden until a scene | slw_widget_controller |
+| 18.16 | P1 | Fade mode, FHU absorbing or arousal slowly wearing off | The meter shows again only every 5 points (or on an icon stage change), not continuously | `_drawMeters` (`METER_CHANGE_MIN`) |
+| 18.17 | P1 | Disable the mod on the General page right after closing the MCM with a layout change (stack being built) | No meter or icon left on screen | `_stopMeters`, `_metersGen` |
+| 18.18 | P1 | Quicksave right after a load while the stack builds (3 s after load), then load that save | Every row comes back | `_forgetMeters`, `_metersGen` |
+| 18.19 | P1 | Load a settings preset with a different stack position, stay in the MCM more than 30 s, then close it | The stack is shown at the new place for 30 s after closing | `_updateMeters` (preview outside menu mode) |
 
 ## 19. Event-driven refresh
 
@@ -230,6 +234,8 @@ Added in 2.3.0, never run in game when written. Set the update interval to 60 s 
 | 19.8 | P1 | Save, load, trigger 19.1 | Still within a second after the load (events re-registered on load) | `startUpdates` |
 | 19.9 | P1 | Disable the mod, trigger 19.1 | Nothing drawn, no pass runs | `stopUpdates`, `_refreshSoon` |
 | 19.10 | P2 | Papyrus log after a scene with all three mods | No "incorrect number of arguments" or handler errors for these events | handler signatures |
+| 19.11 | P1 | Three NPCs tracked (long passes); trigger 19.1 repeatedly | Every change still shows within about 2 s; the controller is idle at least a second between passes | `_scheduleNextTick` (owed refresh), `_lastPassEnd` |
+| 19.12 | P1 | A SexLab orgasm right as a normal tick starts | The arousal drop still shows within about 2 s, not on the next 60 s tick | `OnUpdate` (later owed refresh kept) |
 
 ---
 

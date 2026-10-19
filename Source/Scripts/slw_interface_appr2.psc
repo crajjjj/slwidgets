@@ -31,36 +31,14 @@ ReferenceAlias Function GetAproposAlias(Actor akTarget, Quest apropos2Quest ) Gl
 	Return aproposTwoAlias
 EndFunction
 	
-Int Function GetWearStateAnal(Actor akTarget,  Quest apropos2Quest) Global
-	ReferenceAlias aproposTwoAlias = GetAproposAlias(akTarget, apropos2Quest) 
-	if aproposTwoAlias != None
-		Int damage =  (aproposTwoAlias as Apropos2ActorAlias).AnalWearTearState - 1
-		If damage < 0
-			return 0
-		Elseif  damage <= 8
-			return damage
-		else
-			return 8
-		EndIf
-	Else
-		return 0
-	Endif
+Int Function GetWearStateAnal(Actor akTarget, Quest apropos2Quest) Global
+	Int[] states = GetWearStates(akTarget, apropos2Quest)
+	return states[1]
 EndFunction
 
-Int Function GetWearStateVaginal(Actor akTarget,  Quest apropos2Quest) Global 
-	ReferenceAlias aproposTwoAlias = GetAproposAlias(akTarget, apropos2Quest)
-	if aproposTwoAlias != None
-		Int damage = (aproposTwoAlias as Apropos2ActorAlias).VaginalWearTearState - 1
-		If damage < 0
-			return 0
-		Elseif  damage <= 8
-			return damage
-		else
-			return 8
-		EndIf
-	Else
-		return 0
-	Endif
+Int Function GetWearStateVaginal(Actor akTarget, Quest apropos2Quest) Global
+	Int[] states = GetWearStates(akTarget, apropos2Quest)
+	return states[0]
 EndFunction
 
 ; All three stages (0-8) from one alias search: [0] vaginal, [1] anal,
@@ -90,17 +68,6 @@ Int Function ClampWearState(Int wearTearState) Global
 EndFunction
 
 Int Function GetWearStateOral(Actor akTarget, Quest apropos2Quest) Global
-	ReferenceAlias aproposTwoAlias = GetAproposAlias(akTarget, apropos2Quest)
-	if aproposTwoAlias != None
-		Int damage = (aproposTwoAlias as Apropos2ActorAlias).OralWearTearState - 1
-		If damage < 0
-			return 0
-		Elseif  damage <= 8
-			return damage
-		else
-			return 8
-		EndIf
-	Else
-		return 0
-	Endif
+	Int[] states = GetWearStates(akTarget, apropos2Quest)
+	return states[2]
 EndFunction

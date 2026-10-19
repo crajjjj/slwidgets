@@ -18,6 +18,14 @@ int EMPTY = -1
 int[] vag_prv
 int[] oral_prv
 int[] anal_prv
+; The status icons and the meter stack both read the player every pass, and
+; every read walks all aliases of the Apropos2 actors quest: a read this young
+; is handed out again. An event-driven pass comes at least a second after the
+; last one ended, so it always reads afresh.
+Int[] _wearCache
+Actor _wearCacheTarget
+Float _wearCacheAt = 0.0
+Float WEAR_CACHE_SECONDS = 0.5
 
 ;override
 Bool Function isInterfaceActive()
@@ -115,7 +123,7 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 		return
 	endif
 	if (config.isOnForSlot(config.module_apropos_two_wt, slot, config.MOD_AP2) && isInterfaceActive())
-		int[] states = GetWearStates(target, ActorsQuest)
+		int[] states = _readWearStates(target)
 		int oral_curr = states[2]
 		if oral_prv[slot] == EMPTY || oral_curr != oral_prv[slot]
 			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(ORAL_STATE, slot), oral_curr)
@@ -134,10 +142,22 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	endIf
 EndEvent
 
-; Wear and tear stages (0-8) for the meter stack: [0] vaginal, [1] anal,
-; [2] oral. Call only while isInterfaceActive().
+; Wear and tear stages (0-8): [0] vaginal, [1] anal, [2] oral. Call only
+; while isInterfaceActive(): the actors quest is unset before. Read only.
 Int[] Function getWearStatesFor(Actor target)
-	Return GetWearStates(target, ActorsQuest)
+	Return _readWearStates(target)
+EndFunction
+
+Int[] Function _readWearStates(Actor target)
+	Float now = Utility.GetCurrentRealTime()
+	; a stamp ahead of the clock is from the last session
+	If _wearCache && target == _wearCacheTarget && now >= _wearCacheAt && now - _wearCacheAt < WEAR_CACHE_SECONDS
+		Return _wearCache
+	EndIf
+	_wearCache = GetWearStates(target, ActorsQuest)
+	_wearCacheTarget = target
+	_wearCacheAt = now
+	Return _wearCache
 EndFunction
 
 Function _loadApropos2Oral(iWant_Status_Bars iBars, Int slot)

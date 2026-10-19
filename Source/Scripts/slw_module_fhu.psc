@@ -170,8 +170,8 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 
 EndEvent
 
-; Fill level 0-100 for the meter stack. part: 0 total, 1 vaginal, 2 anal,
-; 3 oral. Call only while isInterfaceActive().
+; Fill level 0-100. part: 0 total, 1 vaginal, 2 anal, 3 oral. Call only
+; while isInterfaceActive(): the inflation quest is unset before.
 Int Function getCumPercentFor(Actor target, Int part)
 	If part == 1
 		Return GetCumPercentVag(target, FhuInflateQuest)
