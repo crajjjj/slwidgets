@@ -6,6 +6,11 @@ import slw_util
 ;SLA
 ;--------------------------------------
 Int Function getArousalLevel(Faction arousalFaction, Quest sla, Actor act) global
+	return percentToState9NotStrict(getArousalPercent(arousalFaction, sla, act))
+EndFunction
+
+; Arousal 0-100, the number behind the arousal icon's stage.
+Int Function getArousalPercent(Faction arousalFaction, Quest sla, Actor act) global
 	if !sla || !act
 		return 0
 	endif
@@ -19,7 +24,7 @@ Int Function getArousalLevel(Faction arousalFaction, Quest sla, Actor act) globa
 			 arousal = (sla as slaFrameworkScr).GetActorArousal(act)
 		EndIf
 	endif
-	return percentToState9NotStrict(arousal)
+	return arousal
 EndFunction
 
 Int Function getExposureLevel(Faction exposureFaction, Quest sla, Actor akTarget) Global

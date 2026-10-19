@@ -170,6 +170,19 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 
 EndEvent
 
+; Fill level 0-100 for the meter stack. part: 0 total, 1 vaginal, 2 anal,
+; 3 oral. Call only while isInterfaceActive().
+Int Function getCumPercentFor(Actor target, Int part)
+	If part == 1
+		Return GetCumPercentVag(target, FhuInflateQuest)
+	ElseIf part == 2
+		Return GetCumPercentAnal(target, FhuInflateQuest)
+	ElseIf part == 3
+		Return GetCumPercentOral(target, FhuInflateQuest)
+	EndIf
+	Return GetCumPercent(target, FhuInflateQuest)
+EndFunction
+
 Function _loadCumIcons(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[9]
 	String[] d = new String[9]

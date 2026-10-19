@@ -9,6 +9,7 @@ A plugin for [b]iWant Status Bars[/b] that adds adult-mod status widgets — aro
 [*][b]Two icon mechanics[/b] — 9-stage gauges that fill with a mod's value (arousal, milk, cum, wear & tear, needs) and condition toggles that pop in/out (pregnancy, parasites, defeat). [url=https://crajjjj.github.io/slwidgets/icons/]See every icon →[/url]
 [*][b]NPC tracking[/b] — watch up to 3 NPCs alongside the player: aim at an NPC, press a hotkey, and they get their own icon set and a floating name label. [url=https://crajjjj.github.io/slwidgets/npc-tracking/]How it works →[/url]
 [*][b]Broad mod support[/b] — SexLab Aroused, Apropos2, Fill Her Up, MME / SGO4 / MAL, the major pregnancy frameworks, and more. [url=https://crajjjj.github.io/slwidgets/supported-mods/]Full list →[/url]
+[*][b]Meters[/b]: arousal, the Fill Her Up pools and Apropos2 wear & tear also as bars at the right edge of the screen, each with its icon beside it, always shown or fading in when a value changes. [url=https://crajjjj.github.io/slwidgets/supported-mods/#meter-stack]How they work →[/url]
 [*][b]Custom icon packs[/b] — restyle any icon set; grab one from the download section. [url=https://crajjjj.github.io/slwidgets/custom-packs/]Preview packs →[/url]
 [*][b]Settings presets[/b] — save and load your toggle setup, handy for new saves
 [/list]

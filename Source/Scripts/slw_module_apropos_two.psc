@@ -115,17 +115,18 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 		return
 	endif
 	if (config.isOnForSlot(config.module_apropos_two_wt, slot, config.MOD_AP2) && isInterfaceActive())
-		int oral_curr = GetWearStateOral(target, ActorsQuest)
+		int[] states = GetWearStates(target, ActorsQuest)
+		int oral_curr = states[2]
 		if oral_prv[slot] == EMPTY || oral_curr != oral_prv[slot]
 			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(ORAL_STATE, slot), oral_curr)
 			oral_prv[slot] = oral_curr
 		endif
-		int anal_curr = GetWearStateAnal(target, ActorsQuest)
+		int anal_curr = states[1]
 		if anal_prv[slot] == EMPTY || anal_curr != anal_prv[slot]
 			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(ANAL_STATE, slot), anal_curr)
 			anal_prv[slot] = anal_curr
 		endif
-		int vag_curr = GetWearStateVaginal(target, ActorsQuest)
+		int vag_curr = states[0]
 		if vag_prv[slot] == EMPTY || vag_curr != vag_prv[slot]
 			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(VAG_STATE, slot), vag_curr)
 			vag_prv[slot] = vag_curr
@@ -133,7 +134,11 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	endIf
 EndEvent
 
-
+; Wear and tear stages (0-8) for the meter stack: [0] vaginal, [1] anal,
+; [2] oral. Call only while isInterfaceActive().
+Int[] Function getWearStatesFor(Actor target)
+	Return GetWearStates(target, ActorsQuest)
+EndFunction
 
 Function _loadApropos2Oral(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[9]

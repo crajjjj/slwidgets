@@ -119,6 +119,11 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	endIf
 EndEvent
 
+; Arousal 0-100 for the meter stack. Call only while isInterfaceActive().
+Int Function getArousalPercentFor(Actor target)
+	Return getArousalPercent(pArousalFaction, sla, target)
+EndFunction
+
 Function _loadArousedIcons(iWant_Status_Bars iBars, Int slot)
 	String[] s = new String[9]
 	String[] d = new String[9]

@@ -182,6 +182,7 @@ Event OniWantStatusBarsReady(String eventName, String strArg, Float numArg, Form
 		_iBarsApiProbed = False
 		_iBarsApiOk = False
 		_forgetWillpowerBar()
+		_forgetMeters()
 		if iBars
 			WriteLog("WidgetController: iBars ready")
 			config.loadPreset(config.activePreset)
@@ -210,6 +211,7 @@ Function stopUpdates()
 	UnregisterForModEvent(STATUS_BARS_EVENT_NAME)
 	_hideAllNpcLabels()
 	_destroyWillpowerBar()
+	_destroyMeters()
 EndFunction
 
 Function _hideAllNpcLabels()
@@ -236,6 +238,7 @@ Event OnUpdate()
 	; Slot 0 - player, always updates
 	config.moduleWidgetStateUpdate(iBars, PlayerRef, 0)
 	_updateWillpowerBar()
+	_updateMeters()
 	; Status Bars older than 2.10: the NPC layer stays off, see
 	; hasBarsAPI. Keep labels left over from an old save hidden.
 	If !hasBarsAPI()
@@ -303,6 +306,7 @@ function reloadWidgets()
 	WriteLogAndPrintConsole("WidgetController: reloading widgets")
 	config.moduleWidgetReload(iBars, PlayerRef, 0)
 	_updateWillpowerBar()
+	_updateMeters()
 	_ensurePresentPrv()
 	Int slot = 1
 	Int total = getSlotCount()
@@ -341,6 +345,7 @@ function toggleUpdateWidgets()
 	endIf
 	config.moduleWidgetToggleUpdate(iBars, PlayerRef, 0)
 	_updateWillpowerBar()
+	_updateMeters()
 	; Below Status Bars 2.10 a toggle update would load NPC icons that can never
 	; be reconciled into the slot's bars (see hasBarsAPI), so skip the NPC
 	; loop; reloadWidgets releases any leftovers.
@@ -994,4 +999,394 @@ Function setWillpowerBarLayout(Int x, Int y, Int scale)
 	_destroyWillpowerBar()
 	_willpowerPreviewUntil = Utility.GetCurrentRealTime() + 30.0
 	_updateWillpowerBar()
+EndFunction
+
+; ---------------------------------------------------------------------------
+; Meter stack: SLA arousal, Fill Her Up pools, Apropos2 wear and tear
+; ---------------------------------------------------------------------------
+; Player only. One iWant Widgets meter per value with that value's Status Bars
+; icon to its left, the icon's art following the same stage the icon in the
+; bar shows (so a custom icon pack reaches the stack too). Raw Flash widgets
+; like the willpower bar, under the same rules: the ids die with every game
+; load (OniWantStatusBarsReady forgets them) and positions are widget centers.
+;
+; (metersX, metersY) is the CENTER of the whole stack on the 1280x720 stage;
+; the default sits at the right edge, half way down. Only meters that are
+; switched on and whose mod is loaded get a row, top to bottom in meter number
+; order (slw_config.getMeterKey), and a row keeps its place while its meter is
+; faded out, so each meter is always found in the same spot.
+Int Property metersX = 1150 Auto Hidden
+Int Property metersY = 360 Auto Hidden
+Int Property metersScale = 60 Auto Hidden
+; False: a meter comes up when its value changes and fades out
+; metersHoldSeconds later. True: every meter stays up.
+Bool Property metersAlwaysShow = False Auto Hidden
+Int Property metersHoldSeconds = 10 Auto Hidden
+
+; row pitch at 100%: the 48 px icon plus a gap
+Int METER_ROW_PITCH = 56
+; the fade Status Bars uses for its icons, 15 frames at 30 fps
+Int METER_FADE_FRAMES = 15
+
+Int[] _meterBarId
+Int[] _meterIconId
+; stage of the icon on screen, -1 = no icon widget
+Int[] _meterIconStage
+Int[] _meterIconX
+Int[] _meterIconY
+; percent the meter widget last drew, -1 = nothing yet
+Int[] _meterDrawn
+; The last value read, -1 = never. Unlike the ids this survives a game load:
+; a meter fades in on a CHANGE, and the first read after a load is not one
+; (the value is still the one the save holds).
+Int[] _meterSeen
+Float[] _meterChangedAt
+Bool[] _meterShown
+; one bit per meter that has a row on screen, 0 = no stack
+Int _metersBuiltMask = 0
+Bool _metersRebuild = False
+Bool _metersPreviewPending = False
+Bool _metersBusy = False
+Float _metersPreviewUntil = 0.0
+
+Function _ensureMeterArrays()
+	If !_meterBarId
+		_meterBarId = Utility.CreateIntArray(8, -1)
+	EndIf
+	If !_meterIconId
+		_meterIconId = Utility.CreateIntArray(8, -1)
+	EndIf
+	If !_meterIconStage
+		_meterIconStage = Utility.CreateIntArray(8, -1)
+	EndIf
+	If !_meterIconX
+		_meterIconX = Utility.CreateIntArray(8, 0)
+	EndIf
+	If !_meterIconY
+		_meterIconY = Utility.CreateIntArray(8, 0)
+	EndIf
+	If !_meterDrawn
+		_meterDrawn = Utility.CreateIntArray(8, -1)
+	EndIf
+	If !_meterSeen
+		_meterSeen = Utility.CreateIntArray(8, -1)
+	EndIf
+	If !_meterChangedAt
+		_meterChangedAt = Utility.CreateFloatArray(8, 0.0)
+	EndIf
+	If !_meterShown
+		_meterShown = Utility.CreateBoolArray(8, False)
+	EndIf
+EndFunction
+
+; The ids belong to a Flash stage that is gone (game load). Drop them without
+; touching the stage, as _forgetWillpowerBar does. _meterSeen stays.
+Function _forgetMeters()
+	_ensureMeterArrays()
+	Int i = 0
+	While i < 8
+		_meterBarId[i] = -1
+		_meterIconId[i] = -1
+		_meterIconStage[i] = -1
+		_meterDrawn[i] = -1
+		_meterChangedAt[i] = 0.0
+		_meterShown[i] = False
+		i += 1
+	EndWhile
+	_metersBuiltMask = 0
+	_metersRebuild = False
+	_metersPreviewPending = False
+	_metersPreviewUntil = 0.0
+	; a pass that held it died with the old stage
+	_metersBusy = False
+EndFunction
+
+Function _destroyMeters()
+	_ensureMeterArrays()
+	Bool live = iBars && iBars.iWidgets && iBars.isReady()
+	Int i = 0
+	While i < 8
+		If live
+			If _meterBarId[i] >= 0
+				iBars.iWidgets.destroy(_meterBarId[i])
+			EndIf
+			If _meterIconId[i] >= 0
+				iBars.iWidgets.destroy(_meterIconId[i])
+			EndIf
+		EndIf
+		_meterBarId[i] = -1
+		_meterIconId[i] = -1
+		_meterIconStage[i] = -1
+		_meterDrawn[i] = -1
+		_meterShown[i] = False
+		i += 1
+	EndWhile
+	_metersBuiltMask = 0
+EndFunction
+
+; MCM: the stack changed (a meter switched, a new place or size). It is
+; rebuilt, not moved (setPos has left ghosts before, see setNpcLabelOffset),
+; on the next pass, which the MCM runs as it closes: nothing on the HUD can be
+; seen behind the menu. That pass also shows the whole stack for half a
+; minute, since in fade mode there would otherwise be nothing to look at.
+Function requestMetersRebuild()
+	_metersRebuild = True
+	_metersPreviewPending = True
+EndFunction
+
+Function setMetersLayout(Int x, Int y, Int scale)
+	metersX = x
+	metersY = y
+	metersScale = scale
+	requestMetersRebuild()
+EndFunction
+
+; Runs on every update tick and after MCM changes: builds the stack when the
+; set of meters changed, then draws each value and fades rows in and out.
+Function _updateMeters()
+	If !iBars || !iBars.iWidgets || !iBars.isReady()
+		Return
+	EndIf
+	; One pass at a time. The update tick and the MCM both get here, every
+	; widget call lets the other thread in, and two passes building the stack
+	; at once would leave a set of widgets on screen that nothing has an id for.
+	If _metersBusy
+		Return
+	EndIf
+	_metersBusy = True
+	_ensureMeterArrays()
+	If !PlayerRef
+		PlayerRef = Game.GetPlayer()
+	EndIf
+	Bool[] wanted = new Bool[8]
+	Int mask = _wantedMeters(wanted)
+	If mask != _metersBuiltMask || _metersRebuild
+		_metersRebuild = False
+		_destroyMeters()
+		If mask != 0
+			_buildMeters(wanted)
+		EndIf
+		_metersBuiltMask = mask
+	EndIf
+	If _metersPreviewPending
+		_metersPreviewPending = False
+		_metersPreviewUntil = Utility.GetCurrentRealTime() + 30.0
+	EndIf
+	If mask != 0
+		_drawMeters(wanted)
+	EndIf
+	_metersBusy = False
+EndFunction
+
+; Which meters get a row: switched on and their mod loaded. Fills wanted and
+; returns the same set as a bit mask, so a change of the set is one compare.
+Int Function _wantedMeters(Bool[] wanted)
+	If config.slw_stopped
+		Return 0
+	EndIf
+	Bool slaLoaded = config.module_sla.isInterfaceActive()
+	Bool fhuLoaded = config.module_fhu.isInterfaceActive()
+	Bool wtLoaded = config.module_apropos_two.isInterfaceActive()
+	Int mask = 0
+	Int bit = 1
+	Int i = 0
+	While i < 8
+		Bool loaded = wtLoaded
+		If i == 0
+			loaded = slaLoaded
+		ElseIf i <= 4
+			loaded = fhuLoaded
+		EndIf
+		If loaded && config.isMeterOn(i)
+			wanted[i] = True
+			mask += bit
+		EndIf
+		bit *= 2
+		i += 1
+	EndWhile
+	Return mask
+EndFunction
+
+; Values 0-100 of the wanted meters. Apropos2 only shares the wear and tear
+; stage (0-8), so those meters move in eighths.
+Int[] Function _readMeters(Bool[] wanted)
+	Int[] v = Utility.CreateIntArray(8, 0)
+	If wanted[0]
+		v[0] = config.module_sla.getArousalPercentFor(PlayerRef)
+	EndIf
+	Int i = 1
+	While i <= 4
+		If wanted[i]
+			v[i] = config.module_fhu.getCumPercentFor(PlayerRef, i - 1)
+		EndIf
+		i += 1
+	EndWhile
+	If wanted[5] || wanted[6] || wanted[7]
+		Int[] wear = config.module_apropos_two.getWearStatesFor(PlayerRef)
+		v[5] = wear[0] * 100 / 8
+		v[6] = wear[1] * 100 / 8
+		v[7] = wear[2] * 100 / 8
+	EndIf
+	i = 0
+	While i < 8
+		If v[i] < 0
+			v[i] = 0
+		ElseIf v[i] > 100
+			v[i] = 100
+		EndIf
+		i += 1
+	EndWhile
+	Return v
+EndFunction
+
+; One row per wanted meter, created faded out; _drawMeters brings them up.
+; The icons come later, once the value and so the stage is known.
+Function _buildMeters(Bool[] wanted)
+	iWant_Widgets w = iBars.iWidgets
+	Int rows = 0
+	Int i = 0
+	While i < 8
+		If wanted[i]
+			rows += 1
+		EndIf
+		i += 1
+	EndWhile
+	Int pitch = METER_ROW_PITCH * metersScale / 100
+	Int iconSize = WILLPOWER_ICON * metersScale / 100
+	Int meterWidth = WILLPOWER_METER_W * metersScale / 100
+	Int iconX = metersX - meterWidth / 2 - iconSize / 2 - WILLPOWER_ICON_GAP
+	Int y = metersY - (rows - 1) * pitch / 2
+	i = 0
+	While i < 8
+		If wanted[i]
+			Int id = w.loadMeter(metersX, y, False)
+			w.setZoom(id, metersScale, metersScale)
+			_colorMeter(i, id)
+			w.setTransparency(id, 0)
+			w.setVisible(id, 1)
+			_meterBarId[i] = id
+			_meterIconX[i] = iconX
+			_meterIconY[i] = y
+			y += pitch
+		EndIf
+		i += 1
+	EndWhile
+EndFunction
+
+Function _drawMeters(Bool[] wanted)
+	Int[] v = _readMeters(wanted)
+	Float now = Utility.GetCurrentRealTime()
+	Bool preview = now < _metersPreviewUntil
+	Int i = 0
+	While i < 8
+		If wanted[i] && _meterBarId[i] >= 0
+			Int pct = v[i]
+			If pct != _meterDrawn[i]
+				iBars.iWidgets.setMeterPercent(_meterBarId[i], pct)
+				_meterDrawn[i] = pct
+			EndIf
+			Int stage = _meterStage(i, pct)
+			If stage != _meterIconStage[i]
+				_loadMeterIcon(i, stage)
+			EndIf
+			; A meter never read before counts as changed, so a fresh install
+			; in fade mode shows its meters once instead of nothing at all.
+			If pct != _meterSeen[i]
+				_meterChangedAt[i] = now
+			ElseIf _meterChangedAt[i] > now
+				; from the last session: the real-time clock restarts with the game
+				_meterChangedAt[i] = 0.0
+			EndIf
+			_meterSeen[i] = pct
+			Bool show = metersAlwaysShow || preview || (_meterChangedAt[i] > 0.0 && now < _meterChangedAt[i] + metersHoldSeconds)
+			If show != _meterShown[i]
+				_fadeMeter(i, show)
+			EndIf
+		EndIf
+		i += 1
+	EndWhile
+EndFunction
+
+Function _fadeMeter(Int meter, Bool show)
+	Int alpha = 0
+	If show
+		alpha = 100
+	EndIf
+	iBars.iWidgets.doTransition(_meterBarId[meter], alpha, METER_FADE_FRAMES)
+	If _meterIconId[meter] >= 0
+		iBars.iWidgets.doTransition(_meterIconId[meter], alpha, METER_FADE_FRAMES)
+	EndIf
+	_meterShown[meter] = show
+EndFunction
+
+; A library widget's art is fixed at load, so a new stage means a new widget.
+Function _loadMeterIcon(Int meter, Int stage)
+	iWant_Widgets w = iBars.iWidgets
+	If _meterIconId[meter] >= 0
+		w.destroy(_meterIconId[meter])
+	EndIf
+	Int iconSize = WILLPOWER_ICON * metersScale / 100
+	Int id = w.loadLibraryWidget(_meterIconPath(meter, stage), _meterIconX[meter], _meterIconY[meter], False)
+	w.setSize(id, iconSize, iconSize)
+	_tintMeterIcon(meter, id)
+	If _meterShown[meter]
+		w.setTransparency(id, 100)
+	Else
+		w.setTransparency(id, 0)
+	EndIf
+	w.setVisible(id, 1)
+	_meterIconId[meter] = id
+	_meterIconStage[meter] = stage
+EndFunction
+
+; The stage the meter's icon shows in the Status Bars for the same value.
+Int Function _meterStage(Int meter, Int pct)
+	If meter == 0
+		Return percentToState9NotStrict(pct)
+	ElseIf meter <= 4
+		Return percentToState9(pct)
+	EndIf
+	; back from eighths, rounded: 12 -> 1, 87 -> 7
+	Return (pct * 8 + 50) / 100
+EndFunction
+
+String Function _meterIconPath(Int meter, Int stage)
+	String base = "apropos2/oral/oral"
+	If meter == 0
+		base = "sla/arousal/aroused"
+	ElseIf meter == 1
+		base = "fhu/total/cum"
+	ElseIf meter == 2
+		base = "fhu/vaginal/cum"
+	ElseIf meter == 3
+		base = "fhu/anal/cum"
+	ElseIf meter == 4
+		base = "fhu/oral/cum"
+	ElseIf meter == 5
+		base = "apropos2/vaginal/vag"
+	ElseIf meter == 6
+		base = "apropos2/anal/ass"
+	EndIf
+	Return base + stage
+EndFunction
+
+; Colors from the icons' own stages: arousal pink, cum cream, wear and tear red.
+Function _colorMeter(Int meter, Int id)
+	If meter == 0
+		iBars.iWidgets.setMeterRGB(id, 255, 112, 192, 128, 28, 88, 255, 255, 255)
+	ElseIf meter <= 4
+		iBars.iWidgets.setMeterRGB(id, 251, 245, 233, 128, 118, 100, 255, 255, 255)
+	Else
+		iBars.iWidgets.setMeterRGB(id, 255, 72, 72, 128, 16, 16, 255, 255, 255)
+	EndIf
+EndFunction
+
+Function _tintMeterIcon(Int meter, Int id)
+	If meter == 0
+		iBars.iWidgets.setRGB(id, 255, 140, 202)
+	ElseIf meter <= 4
+		iBars.iWidgets.setRGB(id, 251, 245, 233)
+	Else
+		iBars.iWidgets.setRGB(id, 255, 114, 114)
+	EndIf
 EndFunction

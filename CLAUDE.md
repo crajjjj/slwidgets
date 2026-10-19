@@ -86,10 +86,10 @@ Script properties filled via the Creation Kit (CK) in the ESP/ESM must NOT be re
 |------|---------|
 | `Source/Scripts/slw_util.psc` | Global helpers, all `isXxxReady()` dependency checks, slot constants + `getIconNameForSlot()` |
 | `Source/Scripts/slw_config.psc` | Central config; wires all modules, holds player toggle properties, NPC slot management, per-slot sub-toggle arrays, hotkey, settings preset save/load |
-| `Source/Scripts/slw_widget_controller.psc` | Main update loop, NPC bar reconciliation, name label management, default layout |
+| `Source/Scripts/slw_widget_controller.psc` | Main update loop, NPC bar reconciliation, name label management, default layout; the willpower bar and the meter stack at the end |
 | `Source/Scripts/slw_base_module.psc` | Base class for all modules (extends Quest) |
 | `Source/Scripts/slw_module_mme.psc` | Milk module: MME + SGO4 + MAL |
-| `Source/Scripts/slw_menu.psc` | MCM menu (extends SKI_ConfigBase) — 4 pages including NPC Tracking |
+| `Source/Scripts/slw_menu.psc` | MCM menu (extends SKI_ConfigBase), 5 pages including Meters and NPC Tracking |
 | `Source/Scripts/slw_interface_sgo4.psc` | Thin wrapper for SGO4 script API |
 | `Source/Scripts/slw_interface_slove.psc` | SLO VE willpower, read from StorageUtil (no compile-time dependency on SLO VE) |
 | `build_willpower_icon.py` | Draws the brain icon of the willpower bar (`library/slove/willpower.dds`); rerun it to change the art |
@@ -179,8 +179,22 @@ The one thing here that is NOT a Status Bars icon: an iWant Widgets **meter** wi
 - **`_willpowerPrv` is the value the meter last DREW**, not the last value read: the hidden branch must not touch it. Willpower recovers while the bar is hidden, so the next scene only redraws the meter if it can still see the difference.
 - **Sizes.** An iWant meter is 334x30 on the stage at 100%, in the Flash widget and in the Prisma renderer alike (read from the Prisma `index.html`); positions are widget CENTERS. The meter is scaled with `setZoom` (iWant's docs: do not `setSize` a meter), the icon with `setSize`.
 - **The value is a projection.** SLO VE applies recovery only when the actor's next scene starts, so `slw_interface_slove.getSloveWillpower` adds the recovery for the whole game hours since `SLOVE_LastSexTime` (`SLOVE_RecoverPerHour`, written by SLO VE 0.7.2+; 10 when missing) and treats a break (`SLOVE_BrokenPoints`) as 0 until its hours have passed, then 100. It must stay in step with `SLOVE_Resistance.CalculateStartupResistance` in the SLO VE repo; SLO VE's `docs/authors/integration.md` has the same formula. SLO VE keeps the time stamp current during a scene, which is why the bar does not climb there.
-- **Player only**, and one option on the Toggles page (right column) plus X / Y / size sliders; `module_slove_willpower` is in the settings presets, the position is not (like the NPC group anchor).
+- **Player only**, and one option on the Meters page (right column, the Toggles page before 2.3.0) plus X / Y / size sliders; `module_slove_willpower` is in the settings presets, the position is not (like the NPC group anchor).
 - To see it without a scene: change X, Y or size in the MCM (the 30 s preview). `slovetest willpower 40` (SLO VE's console command; it writes the real willpower) only draws the bar during a scene.
+
+## Meter Stack (2.3.0)
+
+The willpower bar's pattern for other values: one iWant Widgets meter per value with that value's Status Bars icon to its left, player only, stacked at the right edge half way down. Eight meters, numbered in stack order: 0 SLA arousal, 1-4 FHU total / vaginal / anal / oral, 5-7 Apropos2 W&T vaginal / anal / oral (`slw_config.getMeterKey`).
+
+- **Same home and lifecycle as the willpower bar**: the block at the end of `slw_widget_controller`, `_updateMeters` from `OnUpdate` / `reloadWidgets` / `toggleUpdateWidgets`, `_destroyMeters` from `stopUpdates`, `_forgetMeters` from `OniWantStatusBarsReady`. No module, no ESP change.
+- **Values come from the modules**, not from the icons: `getArousalPercentFor` / `getCumPercentFor` / `getWearStatesFor`, which wrap the `slw_interface_*` percent readers. The meters work with the status icons switched off. Apropos2 keeps the W&T amount private, so those meters show the stage (0-8) as eighths.
+- **The icon follows the stage** the status icon would show (`_meterStage`, same `percentToState9*` thresholds), from the same library paths, so custom packs apply. A library widget's art is fixed at load, so a stage change destroys and reloads the icon widget (`_loadMeterIcon`); stages change rarely.
+- **Rows are a bit mask** (`_wantedMeters`): switched on (`config.isMeterOn`, a `Bool[]`, all on) AND the module's `isInterfaceActive()`. A changed mask, or `_metersRebuild`, destroys and rebuilds the whole stack; a row keeps its place while faded out. The stack is centered on (`metersX`, `metersY`), default 1150 / 360.
+- **Fade mode** (`metersAlwaysShow` False, the default): a value change stamps `_meterChangedAt`, and the row is up until `metersHoldSeconds` after it, faded in and out with `doTransition` (15 frames, as Status Bars does). The fade-out is decided on the update tick, NOT with a delayed `doTransition`: the Prisma renderer cancels a pending delayed transition when a new one starts, but nothing here could confirm the Flash original does, and a stale delayed fade would hide a meter that just changed again.
+- **`_meterSeen` survives the game load on purpose** (only the ids are forgotten), so the first read after a load is not a change and nothing pops up. A meter never read (-1) counts as changed, so an updated save shows its meters once.
+- **MCM changes only flag** (`requestMetersRebuild`, `setMetersLayout`); the rebuild runs in the toggle pass `OnConfigClose` triggers, because nothing on the HUD is visible behind the menu, and that pass starts the 30 s preview.
+- **`_metersBusy`** keeps the tick and the MCM-driven pass from building two stacks at once (every widget call lets the other thread in). `_forgetMeters` clears it: a pass that held it died with the old stage.
+- Settings presets carry `meter.<key>`, `meters.alwaysShow` and `meters.holdSeconds`; not the position or size.
 
 ## Translation Files
 - Encoding: **UTF-16LE with BOM**, CRLF line endings

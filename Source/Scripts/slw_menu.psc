@@ -30,6 +30,13 @@ int _slove_willpower_Toggle
 int _slove_bar_x_slider
 int _slove_bar_y_slider
 int _slove_bar_scale_slider
+int _meters_always_toggle
+int _meters_hold_slider
+int _meters_x_slider
+int _meters_y_slider
+int _meters_scale_slider
+; one toggle per meter, indexed by meter number (slw_config.getMeterKey)
+int[] _meter_toggle
 
 ; NPC Tracking page option IDs (resolved each OnPageReset)
 int _npc_hotkey_option
@@ -78,11 +85,12 @@ Event OnConfigClose()
 EndEvent
 
 Event OnConfigOpen()
-		Pages = New String[4]
+		Pages = New String[5]
 		Pages[0] = "$SLW_General_Page"
 		Pages[1] = "$SLW_Toggles_Page"
-		Pages[2] = "$SLW_NPC_Page"
-		Pages[3] = "$SLW_Debug_Page"
+		Pages[2] = "$SLW_Meters_Page"
+		Pages[3] = "$SLW_NPC_Page"
+		Pages[4] = "$SLW_Debug_Page"
 EndEvent
 
 Event OnPageReset(string page)
@@ -92,6 +100,8 @@ Event OnPageReset(string page)
 		General()
 	elseIf (page == "$SLW_Toggles_Page")
 		Toggles()
+	elseIf (page == "$SLW_Meters_Page")
+		Meters()
 	elseIf (page == "$SLW_NPC_Page")
 		NpcTracking()
 	elseIf (page == "$SLW_Debug_Page")
@@ -155,9 +165,41 @@ Function Toggles()
 	AddHeaderOption("$SLW_Defeat")
 	Int defeatFlag = _getFlag(config.module_defeat.isInterfaceActive())
 	_defeat_mod_Toggle = addToggleOption("$SLW_Defeat_Icon", config.module_defeat_enabled, defeatFlag)
+EndFunction
 
-	; Right column: the SLO VE willpower bar. A bar, not a Status Bars icon,
-	; so it has a place and a size of its own.
+; The bars, as opposed to the Status Bars icons: iWant Widgets meters with a
+; place and a size of their own. Left: the meter stack. Right: the SLO VE
+; willpower bar, which has rules of its own (scene only).
+Function Meters()
+	SetCursorFillMode(TOP_TO_BOTTOM)
+	SetCursorPosition(0)
+	If !_meter_toggle
+		_meter_toggle = Utility.CreateIntArray(config.getMeterCount(), -1)
+	EndIf
+	AddHeaderOption("$SLW_Meters")
+	_meters_always_toggle = AddToggleOption("$SLW_Meters_Always", widget_controller.metersAlwaysShow)
+	_meters_hold_slider = AddSliderOption("$SLW_Meters_Hold", widget_controller.metersHoldSeconds, "{0} s", _getFlag(!widget_controller.metersAlwaysShow))
+	_meters_x_slider = AddSliderOption("$SLW_Meters_X", widget_controller.metersX, "{0}")
+	_meters_y_slider = AddSliderOption("$SLW_Meters_Y", widget_controller.metersY, "{0}")
+	_meters_scale_slider = AddSliderOption("$SLW_Meters_Scale", widget_controller.metersScale, "{0}%")
+
+	AddHeaderOption("$SLW_Sexlab_Aroused")
+	_addMeterToggle(0, config.module_sla.isInterfaceActive())
+	AddHeaderOption("$SLW_FHU")
+	Bool fhuLoaded = config.module_fhu.isInterfaceActive()
+	Int i = 1
+	While i <= 4
+		_addMeterToggle(i, fhuLoaded)
+		i += 1
+	EndWhile
+	AddHeaderOption("$SLW_Apropos2")
+	Bool wtLoaded = config.module_apropos_two.isInterfaceActive()
+	i = 5
+	While i < config.getMeterCount()
+		_addMeterToggle(i, wtLoaded)
+		i += 1
+	EndWhile
+
 	SetCursorPosition(1)
 	AddHeaderOption("$SLW_SLOVE")
 	Int sloveFlag = _getFlag(isSloveReady())
@@ -165,6 +207,27 @@ Function Toggles()
 	_slove_bar_x_slider = AddSliderOption("$SLW_Willpower_Bar_X", widget_controller.willpowerBarX, "{0}", sloveFlag)
 	_slove_bar_y_slider = AddSliderOption("$SLW_Willpower_Bar_Y", widget_controller.willpowerBarY, "{0}", sloveFlag)
 	_slove_bar_scale_slider = AddSliderOption("$SLW_Willpower_Bar_Scale", widget_controller.willpowerBarScale, "{0}%", sloveFlag)
+EndFunction
+
+; The whole label is one translation key, built from the meter's key, which
+; SkyUI still translates.
+Function _addMeterToggle(Int meter, Bool loaded)
+	_meter_toggle[meter] = AddToggleOption("$SLW_Meter_" + config.getMeterKey(meter), config.isMeterOn(meter), _getFlag(loaded))
+EndFunction
+
+; Meter number of a meter toggle, -1 for any other option.
+Int Function _findMeterForOption(Int mcm_option)
+	If !_meter_toggle
+		Return -1
+	EndIf
+	Int i = 0
+	While i < _meter_toggle.Length
+		If _meter_toggle[i] == mcm_option
+			Return i
+		EndIf
+		i += 1
+	EndWhile
+	Return -1
 EndFunction
 
 String Function _slotName(Int slot)
@@ -368,6 +431,25 @@ Event onOptionHighlight(int mcm_option)
 		SetInfoText("$SLW_Willpower_Bar_Y_Info")
 	ElseIf (mcm_option == _slove_bar_scale_slider)
 		SetInfoText("$SLW_Willpower_Bar_Scale_Info")
+	ElseIf (mcm_option == _meters_always_toggle)
+		SetInfoText("$SLW_Meters_Always_Info")
+	ElseIf (mcm_option == _meters_hold_slider)
+		SetInfoText("$SLW_Meters_Hold_Info")
+	ElseIf (mcm_option == _meters_x_slider)
+		SetInfoText("$SLW_Meters_X_Info")
+	ElseIf (mcm_option == _meters_y_slider)
+		SetInfoText("$SLW_Meters_Y_Info")
+	ElseIf (mcm_option == _meters_scale_slider)
+		SetInfoText("$SLW_Meters_Scale_Info")
+	Else
+		Int meter = _findMeterForOption(mcm_option)
+		If meter == 0
+			SetInfoText("$SLW_Meter_Arousal_Info")
+		ElseIf meter >= 1 && meter <= 4
+			SetInfoText("$SLW_Meter_FHU_Info")
+		ElseIf meter >= 5
+			SetInfoText("$SLW_Meter_WT_Info")
+		EndIf
 	endIf
 EndEvent
 
@@ -434,8 +516,21 @@ Event onOptionSelect(int mcm_option)
 		_v = !config.module_slove_willpower
 		config.module_slove_willpower = _v
 		setToggleOptionValue(mcm_option, _v)
+	elseIf(mcm_option == _meters_always_toggle)
+		_v = !widget_controller.metersAlwaysShow
+		widget_controller.metersAlwaysShow = _v
+		setToggleOptionValue(mcm_option, _v)
+		SetOptionFlags(_meters_hold_slider, _getFlag(!_v))
 	Else
-		_handleNpcPageSelect(mcm_option)
+		Int meter = _findMeterForOption(mcm_option)
+		If meter >= 0
+			_v = !config.isMeterOn(meter)
+			config.setMeterOn(meter, _v)
+			setToggleOptionValue(mcm_option, _v)
+			widget_controller.requestMetersRebuild()
+		Else
+			_handleNpcPageSelect(mcm_option)
+		EndIf
 	endIf
 EndEvent
 
@@ -617,6 +712,34 @@ Event OnOptionSliderOpen(Int mcm_option)
 		SetSliderDialogDefaultValue(60)
 		Return
 	EndIf
+	If mcm_option == _meters_hold_slider
+		SetSliderDialogStartValue(widget_controller.metersHoldSeconds)
+		SetSliderDialogRange(2, 120)
+		SetSliderDialogInterval(1.0)
+		SetSliderDialogDefaultValue(10)
+		Return
+	EndIf
+	If mcm_option == _meters_x_slider
+		SetSliderDialogStartValue(widget_controller.metersX)
+		SetSliderDialogRange(-1280, 2560)
+		SetSliderDialogInterval(5.0)
+		SetSliderDialogDefaultValue(1150)
+		Return
+	EndIf
+	If mcm_option == _meters_y_slider
+		SetSliderDialogStartValue(widget_controller.metersY)
+		SetSliderDialogRange(-720, 719)
+		SetSliderDialogInterval(5.0)
+		SetSliderDialogDefaultValue(360)
+		Return
+	EndIf
+	If mcm_option == _meters_scale_slider
+		SetSliderDialogStartValue(widget_controller.metersScale)
+		SetSliderDialogRange(20, 200)
+		SetSliderDialogInterval(5.0)
+		SetSliderDialogDefaultValue(60)
+		Return
+	EndIf
 	_initNpcOptionArrays()
 	If mcm_option == _npc_group_x_slider
 		SetSliderDialogStartValue(widget_controller.npcGroupX)
@@ -738,6 +861,31 @@ Event OnOptionSliderAccept(Int mcm_option, Float Value)
 	EndIf
 	If mcm_option == _slove_bar_scale_slider
 		widget_controller.setWillpowerBarLayout(widget_controller.willpowerBarX, widget_controller.willpowerBarY, Value as Int)
+		SetSliderOptionValue(mcm_option, Value, "{0}%")
+		Return
+	EndIf
+	; The meter stack is rebuilt as the menu closes (requestMetersRebuild),
+	; through the toggle pass OnConfigClose runs for a dirty page.
+	If mcm_option == _meters_hold_slider
+		widget_controller.metersHoldSeconds = Value as Int
+		SetSliderOptionValue(mcm_option, Value, "{0} s")
+		Return
+	EndIf
+	If mcm_option == _meters_x_slider
+		widget_controller.setMetersLayout(Value as Int, widget_controller.metersY, widget_controller.metersScale)
+		_togglesDirty = true
+		SetSliderOptionValue(mcm_option, Value, "{0}")
+		Return
+	EndIf
+	If mcm_option == _meters_y_slider
+		widget_controller.setMetersLayout(widget_controller.metersX, Value as Int, widget_controller.metersScale)
+		_togglesDirty = true
+		SetSliderOptionValue(mcm_option, Value, "{0}")
+		Return
+	EndIf
+	If mcm_option == _meters_scale_slider
+		widget_controller.setMetersLayout(widget_controller.metersX, widget_controller.metersY, Value as Int)
+		_togglesDirty = true
 		SetSliderOptionValue(mcm_option, Value, "{0}%")
 		Return
 	EndIf

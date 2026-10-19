@@ -159,9 +159,35 @@ Not a status icon but a **bar**: an iWant Widgets meter with a brain icon beside
 | In a scene, below `100` | The bar, filled to the current willpower, draining as the scene goes on |
 | In a scene, broken (`0`) | The bar flashes and empties, and the icon turns red |
 
-The value is read from the StorageUtil keys SLO VE publishes, with the recovery since the last scene worked out, so the bar starts a scene where SLO VE will. Whether the player is in a scene is asked of SexLab's animating faction. Position, size and the on/off switch are on the **Toggles** page of the MCM, right column. The bar is updated on the normal update interval (5 seconds by default), so it comes and goes up to that long after the scene does.
+The value is read from the StorageUtil keys SLO VE publishes, with the recovery since the last scene worked out, so the bar starts a scene where SLO VE will. Whether the player is in a scene is asked of SexLab's animating faction. Position, size and the on/off switch are on the **Meters** page of the MCM, right column. The bar is updated on the normal update interval (5 seconds by default), so it comes and goes up to that long after the scene does.
 
 NPC support: **No** - the bar is for the player.
+
+---
+
+## Meter stack
+
+*Requires:* any of SexLab Aroused, Fill Her Up, Apropos2
+
+The same values as some of the stage icons above, also shown as **bars**: one iWant Widgets meter per value, stacked at the right edge of the screen, half way down. Beside each meter sits that value's status icon, at the same stage it shows in the status bar (so a custom icon pack changes it too).
+
+| Meter | Mod | Value |
+|-------|-----|-------|
+| **Arousal** | SexLab Aroused | Arousal, 0-100 |
+| **FHU Total** | Fill Her Up | The combined cum pool, in percent of the max inflation |
+| **FHU Vaginal / Anal / Oral Pool** | Fill Her Up | How full that pool is |
+| **Vaginal / Anal / Oral W&T** | Apropos2 | The wear and tear stage. Apropos2 only shares the stage (0-8), so these bars move in eighths |
+
+How they show is one switch on the MCM's **Meters** page:
+
+| Mode | What you see |
+|------|--------------|
+| Fade after a change (default) | A meter fades in when its value changes and fades out again after the hold time (10 seconds by default) |
+| Always show | Every meter stays on screen |
+
+Values are read on the normal update interval (5 seconds by default), so a meter can appear and fade up to that long after the change. Only meters that are switched on and whose mod is installed get a row, and a row keeps its place while its meter is faded out. Each meter has its own switch; position, size, the display mode and the hold time are on the same page.
+
+NPC support: **No** - the meters are for the player. NPCs keep their status icons.
 
 ---
 
@@ -186,3 +212,5 @@ NPC support: **No** - the bar is for the player.
 | SGO4 (pregnancy) | — | Varies | Yes |
 | SLDefeat | - | 1 | Player only |
 | SLO VE | a willpower bar, not an icon | - | Player only |
+
+SexLab Aroused (arousal), Fill Her Up and Apropos2 also have bars in the [meter stack](#meter-stack), player only.

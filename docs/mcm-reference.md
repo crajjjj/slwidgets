@@ -1,6 +1,6 @@
 # MCM Reference
 
-SL Widgets adds a four-page MCM menu accessible from SkyUI.
+SL Widgets adds a five-page MCM menu accessible from SkyUI.
 
 ---
 
@@ -13,7 +13,7 @@ Core enable/disable control, update timing, and preset management.
 | **Enable/Disable Mod** | Toggle | Off | Master switch. Disabling unloads all modules and hides all icons. Enabling reloads and starts the update loop. |
 | **Update Interval** | Slider 1–60 | 5 | Seconds between status checks. Lower values are more responsive but add script overhead. |
 | **Settings Preset** | Menu | Default | Load a saved settings preset (toggles + per-NPC state). Presets are `.json` files in `SKSE/Plugins/SlWidgets/SettingsPresets/`. |
-| **Save Settings Preset** | Button | — | Save the current state (update interval, color preset, all player toggles, all per-NPC toggles) to the active preset. Prompts before overwriting. |
+| **Save Settings Preset** | Button | - | Save the current state (update interval, color preset, all player toggles, all per-NPC toggles, the meter switches and display mode) to the active preset. Meter and bar positions are not part of a preset. Prompts before overwriting. |
 | **Color Preset** | Menu | Default | Load an icon color scheme. Presets are `.json` files in `SKSE/Plugins/SlWidgets/IconPresets/`. |
 
 ---
@@ -46,9 +46,31 @@ Enable or disable individual icon groups. Settings are organised by mod.
 | **Pregnancy Icons Enabled** | Any pregnancy mod | Full set of pregnancy state icons for all detected pregnancy mods |
 | **Defeat Icon Enabled** | `SexLabDefeat.esp` | Weakened/raped state indicator (player only) |
 
+---
+
+## Meters
+
+Bars rather than status icons: iWant Widgets meters with a place and a size of their own, for the player only. See [Supported Mods](supported-mods.md#meter-stack).
+
+### Meter stack
+
+Left column. One meter per value, stacked at the right edge of the screen, half way down, each with that value's status icon to its left.
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| **Always Show Meters** | Toggle | Off | On: every meter stays on screen. Off: a meter appears when its value changes and fades out again after the time below |
+| **Fade Out After** | Slider 2-120 s | 10 | How long a meter stays up after a change. Greyed out while meters are always shown |
+| **Meters X / Y position** | Sliders | 1150 / 360 | Where the middle of the stack sits on the 1280x720 HUD stage. The stack grows up and down from Y |
+| **Meters size** | Slider 20-200% | 60 | Size of the meters, their icons and the spacing between them |
+| **Arousal Meter Enabled** | Toggle (`SexLabAroused.esm`) | On | SexLab Aroused arousal |
+| **FHU Total / Vaginal Pool / Anal Pool / Oral Pool Meter Enabled** | Toggles (`sr_FillHerUp.esp`) | On | Fill Her Up pools |
+| **Vaginal / Anal / Oral W&T Meter Enabled** | Toggles (`Apropos2.esp`) | On | Apropos2 wear and tear |
+
+A change to the switches, the position or the size takes effect when the menu closes, and then the whole stack is shown for half a minute so you can see where it sits.
+
 ### SLO VE willpower bar
 
-In the right column of the page. A bar with a brain icon, not a status icon: see [Supported Mods](supported-mods.md#slo-ve-willpower-bar).
+Right column. A bar with a brain icon: see [Supported Mods](supported-mods.md#slo-ve-willpower-bar). It keeps its own rules (shown during a scene only); the stack's display mode does not apply to it.
 
 | Setting | Requires | Description |
 |---------|----------|-------------|

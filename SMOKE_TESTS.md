@@ -189,6 +189,28 @@ Added in 2.2.6, never run in game when written. `slovetest willpower <n>` is SLO
 | 17.10 | P2 | SLO VE not installed | Block greyed out, nothing drawn, no Papyrus errors | slw_util |
 | 17.11 | P2 | Prisma renderer and the Flash renderer | Same size and place in both (the meter is 334x30 at 100% in each) | iWant Widgets |
 
+Since 2.3.0 the willpower options sit on the **Meters** page, right column (17.1 and 17.7 read "Meters page" for "Toggles page").
+
+## 18. Meter stack (arousal, FHU, W&T)
+
+Added in 2.3.0, never run in game when written. Player only. Values are read once per update interval, so "at once" below means within one interval of the MCM closing.
+
+| # | P | Scenario | Expected | Scripts |
+|---|---|----------|----------|---------|
+| 18.1 | P0 | SLA, FHU and Apropos2 installed, existing save updated to 2.3.0 | Meters page lists all 8 meter switches enabled; within one interval 8 meters appear stacked at the right edge, half way down, each with its icon to the left, then fade out after ~10 s (fade mode, first read counts as a change) | slw_menu, slw_widget_controller |
+| 18.2 | P0 | Fade mode: `slainc` or a SexLab scene raising arousal | The arousal meter fades in at the new value, the heart icon at the matching stage, and fades out ~10 s later (up to one interval more) | slw_widget_controller, slw_module_sla |
+| 18.3 | P0 | Fade mode: an orgasm with FHU inflation | The FHU meters that changed fade in; the unchanged ones stay hidden in their own rows | slw_widget_controller, slw_module_fhu |
+| 18.4 | P1 | Apropos2 W&T rises one stage | That W&T meter fades in one eighth further, its icon one stage up | slw_module_apropos_two, slw_interface_appr2 |
+| 18.5 | P0 | Always Show Meters on, close the MCM | Every meter stays up; nothing fades | slw_menu, slw_widget_controller |
+| 18.6 | P1 | Switch one meter off, close the MCM | That row is gone, the rest re-stack around Y and all show for 30 s | slw_menu, slw_widget_controller (`requestMetersRebuild`) |
+| 18.7 | P1 | Change X, Y or size, close the MCM | The stack is drawn at the new place for 30 s, no second stack at the old place | slw_widget_controller (`setMetersLayout`) |
+| 18.8 | P1 | Save with meters up, load | Exactly one stack after the load, nothing fades in just because of the load (fade mode), no other mod's widget moved or hidden | slw_widget_controller (`_forgetMeters`, `_meterSeen`) |
+| 18.9 | P1 | Disable the mod on the General page | The whole stack is gone at once; enable = back | slw_widget_controller (`stopUpdates`) |
+| 18.10 | P2 | Only SLA installed | One row (arousal), FHU and W&T switches greyed out, no Papyrus errors | slw_menu, slw_widget_controller |
+| 18.11 | P2 | Save a settings preset, change meter switches and the mode, load the preset | Switches and mode come back; position does not change | slw_config (`_loadMeterSettings`) |
+| 18.12 | P2 | Status icons switched off, meters on | Meters still update (they read the mods themselves, not the icons) | slw_widget_controller |
+| 18.13 | P2 | Three NPCs tracked at the default anchors | Check overlap of NPC slot 3 (y 390) with the stack (y ~245-475); move either if they collide | layout |
+
 ---
 
 *Last updated: 2026-10-08*

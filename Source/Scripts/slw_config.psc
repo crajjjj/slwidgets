@@ -39,6 +39,10 @@ Bool property module_defeat_enabled = True auto hidden
 ; slw_widget_controller, player only.
 Bool property module_slove_willpower = True auto hidden
 
+; The meter stack (slw_widget_controller): one switch per meter, player only.
+; Indexed by meter number, see getMeterKey. Lazily created, all on.
+Bool[] _meter_use
+
 ; NPC tracking — slot 0 is player (handled by widget_controller.PlayerRef), slots 1..N_NPC are NPCs
 Actor Property npc1 Auto Hidden
 Actor Property npc2 Auto Hidden
@@ -208,6 +212,52 @@ Function setSlotModuleEnable(Int slot, Int subCode, Bool enabled)
 	ElseIf subCode == MOD_PREG
 		_slot_use_preg[slot] = enabled
 	EndIf
+EndFunction
+
+; --- Meter stack ---
+
+Int Function getMeterCount()
+	Return 8
+EndFunction
+
+; Meter numbers, which are also the stack's top-to-bottom order:
+; 0 arousal, 1-4 Fill Her Up total / vaginal / anal / oral,
+; 5-7 Apropos2 wear and tear vaginal / anal / oral.
+; The key names the meter in settings presets and in the MCM's
+; $SLW_Meter_<key> strings.
+String Function getMeterKey(Int meter)
+	If meter == 0
+		Return "Arousal"
+	ElseIf meter == 1
+		Return "FHU_Total"
+	ElseIf meter == 2
+		Return "FHU_Vaginal"
+	ElseIf meter == 3
+		Return "FHU_Anal"
+	ElseIf meter == 4
+		Return "FHU_Oral"
+	ElseIf meter == 5
+		Return "WT_Vaginal"
+	ElseIf meter == 6
+		Return "WT_Anal"
+	EndIf
+	Return "WT_Oral"
+EndFunction
+
+Function _ensureMeterToggles()
+	If !_meter_use
+		_meter_use = Utility.CreateBoolArray(8, True)
+	EndIf
+EndFunction
+
+Bool Function isMeterOn(Int meter)
+	_ensureMeterToggles()
+	Return _meter_use[meter]
+EndFunction
+
+Function setMeterOn(Int meter, Bool enabled)
+	_ensureMeterToggles()
+	_meter_use[meter] = enabled
 EndFunction
 
 ; Wraps iBars.loadIcon. For NPC slots, registers the icon without triggering
@@ -679,8 +729,37 @@ Bool Function loadSettingsPreset(String presetName)
 	module_paf_poo = jsonutil.GetPathBoolValue(path, "module_paf_poo", module_paf_poo)
 	module_defeat_enabled = jsonutil.GetPathBoolValue(path, "module_defeat_enabled", module_defeat_enabled)
 	module_slove_willpower = jsonutil.GetPathBoolValue(path, "module_slove_willpower", module_slove_willpower)
+	_loadMeterSettings(path)
 	_loadNpcSlotToggles(path)
 	Return true
+EndFunction
+
+; Which meters are on and how they show. The stack's place and size are not
+; part of a preset, like the NPC group anchor and the willpower bar's place.
+Function _loadMeterSettings(String path)
+	_ensureMeterToggles()
+	Int i = 0
+	While i < getMeterCount()
+		_meter_use[i] = jsonutil.GetPathBoolValue(path, "meter." + getMeterKey(i), _meter_use[i])
+		i += 1
+	EndWhile
+	If widget_controller
+		widget_controller.metersAlwaysShow = jsonutil.GetPathBoolValue(path, "meters.alwaysShow", widget_controller.metersAlwaysShow)
+		widget_controller.metersHoldSeconds = jsonutil.GetPathIntValue(path, "meters.holdSeconds", widget_controller.metersHoldSeconds)
+	EndIf
+EndFunction
+
+Function _saveMeterSettings(String path)
+	_ensureMeterToggles()
+	Int i = 0
+	While i < getMeterCount()
+		jsonutil.SetPathIntValue(path, "meter." + getMeterKey(i), _meter_use[i] as Int)
+		i += 1
+	EndWhile
+	If widget_controller
+		jsonutil.SetPathIntValue(path, "meters.alwaysShow", widget_controller.metersAlwaysShow as Int)
+		jsonutil.SetPathIntValue(path, "meters.holdSeconds", widget_controller.metersHoldSeconds)
+	EndIf
 EndFunction
 
 Function _loadNpcSlotToggles(String path)
@@ -722,6 +801,7 @@ Bool Function saveSettingsPreset(String presetName)
 	jsonutil.SetPathIntValue(path, "module_paf_poo", module_paf_poo as Int)
 	jsonutil.SetPathIntValue(path, "module_defeat_enabled", module_defeat_enabled as Int)
 	jsonutil.SetPathIntValue(path, "module_slove_willpower", module_slove_willpower as Int)
+	_saveMeterSettings(path)
 	_saveNpcSlotToggles(path)
 	If !jsonutil.Save(path, false)
 		WriteLog("SLWidgets: Error saving settings preset '" + presetName + "'", 2)
