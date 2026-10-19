@@ -181,7 +181,6 @@ Event OniWantStatusBarsReady(String eventName, String strArg, Float numArg, Form
 		; e.g. the user changed Status Bars version mid-save. Re-probe.
 		_iBarsApiProbed = False
 		_iBarsApiOk = False
-		_forgetWillpowerBar()
 		_forgetMeters()
 		if iBars
 			WriteLog("WidgetController: iBars ready")
@@ -210,7 +209,6 @@ Function stopUpdates()
 	UnregisterForUpdate()
 	UnregisterForModEvent(STATUS_BARS_EVENT_NAME)
 	_hideAllNpcLabels()
-	_destroyWillpowerBar()
 	_destroyMeters()
 EndFunction
 
@@ -237,7 +235,6 @@ Event OnUpdate()
 	EndIf
 	; Slot 0 - player, always updates
 	config.moduleWidgetStateUpdate(iBars, PlayerRef, 0)
-	_updateWillpowerBar()
 	_updateMeters()
 	; Status Bars older than 2.10: the NPC layer stays off, see
 	; hasBarsAPI. Keep labels left over from an old save hidden.
@@ -305,7 +302,6 @@ function reloadWidgets()
 	endIf
 	WriteLogAndPrintConsole("WidgetController: reloading widgets")
 	config.moduleWidgetReload(iBars, PlayerRef, 0)
-	_updateWillpowerBar()
 	_updateMeters()
 	_ensurePresentPrv()
 	Int slot = 1
@@ -344,7 +340,6 @@ function toggleUpdateWidgets()
 		Return
 	endIf
 	config.moduleWidgetToggleUpdate(iBars, PlayerRef, 0)
-	_updateWillpowerBar()
 	_updateMeters()
 	; Below Status Bars 2.10 a toggle update would load NPC icons that can never
 	; be reconciled into the slot's bars (see hasBarsAPI), so skip the NPC
@@ -865,156 +860,27 @@ Function loadEmptyIcon()
 endFunction
 
 ; ---------------------------------------------------------------------------
-; SLO VE willpower bar
+; Meter stack: SLO VE willpower, SLA arousal, Fill Her Up pools, Apropos2
+; wear and tear
 ; ---------------------------------------------------------------------------
-; One iWant Widgets meter with a brain icon to its left, player only. It is a
-; raw Flash widget like the NPC name labels, not a Status Bars icon: its ids
-; die with every game load (OniWantStatusBarsReady forgets them) and it is
-; built when there is something to show. The value comes from the StorageUtil
-; keys SLO VE documents for other mods (slw_interface_slove), so nothing here
-; binds to SLO VE's scripts.
-;
-; (willpowerBarX, willpowerBarY) is the CENTER of the meter on the 1280x720
-; stage. The default sits just above the vanilla health bar.
-Int Property willpowerBarX = 640 Auto Hidden
-Int Property willpowerBarY = 640 Auto Hidden
-; Percent of the meter's own size, which is 334x30 on the stage in the Flash
-; and the Prisma renderer alike. The icon scales with it.
-Int Property willpowerBarScale = 60 Auto Hidden
-
-Int WILLPOWER_METER_W = 334
-; icon edge at 100%: a little taller than the 30 px meter
-Int WILLPOWER_ICON = 48
-Int WILLPOWER_ICON_GAP = 6
-
-Int _willpowerMeterId = -1
-Int _willpowerIconId = -1
-Int _willpowerPrv = -1
-Bool _willpowerShown = False
-; Real time until which the bar is shown whatever the value and the scene, so a
-; position set in the MCM can be seen: outside a scene, or at 100 willpower,
-; there is no bar to look at.
-Float _willpowerPreviewUntil = 0.0
-
-; The ids belong to a Flash stage that is gone (game load). Drop them without
-; touching the stage: the same numbers may be another mod's widgets by now.
-Function _forgetWillpowerBar()
-	_willpowerMeterId = -1
-	_willpowerIconId = -1
-	_willpowerPrv = -1
-	_willpowerShown = False
-	_willpowerPreviewUntil = 0.0
-EndFunction
-
-Function _destroyWillpowerBar()
-	If iBars && iBars.iWidgets && iBars.isReady()
-		If _willpowerMeterId >= 0
-			iBars.iWidgets.destroy(_willpowerMeterId)
-		EndIf
-		If _willpowerIconId >= 0
-			iBars.iWidgets.destroy(_willpowerIconId)
-		EndIf
-	EndIf
-	_willpowerMeterId = -1
-	_willpowerIconId = -1
-	_willpowerPrv = -1
-	_willpowerShown = False
-EndFunction
-
-Function _ensureWillpowerBar()
-	If _willpowerMeterId >= 0
-		Return
-	EndIf
-	iWant_Widgets w = iBars.iWidgets
-	Int iconSize = WILLPOWER_ICON * willpowerBarScale / 100
-	Int meterWidth = WILLPOWER_METER_W * willpowerBarScale / 100
-	Int iconX = willpowerBarX - meterWidth / 2 - iconSize / 2 - WILLPOWER_ICON_GAP
-	_willpowerMeterId = w.loadMeter(willpowerBarX, willpowerBarY, False)
-	w.setZoom(_willpowerMeterId, willpowerBarScale, willpowerBarScale)
-	w.setMeterRGB(_willpowerMeterId, 200, 164, 255, 86, 50, 164, 255, 255, 255)
-	_willpowerIconId = w.loadLibraryWidget("slove/willpower", iconX, willpowerBarY, False)
-	w.setSize(_willpowerIconId, iconSize, iconSize)
-	_willpowerPrv = -1
-	_willpowerShown = False
-EndFunction
-
-; Runs on every update tick and after MCM changes. The bar is up while the
-; player is in a scene with willpower below 100 (or a position preview runs)
-; and hidden otherwise: it leaves with the scene, whatever willpower is left,
-; and does not show the recovery between scenes.
-Function _updateWillpowerBar()
-	If !iBars || !iBars.iWidgets || !iBars.isReady()
-		Return
-	EndIf
-	If config.slw_stopped || !config.module_slove_willpower || !isSloveReady()
-		_destroyWillpowerBar()
-		Return
-	EndIf
-	If !PlayerRef
-		PlayerRef = Game.GetPlayer()
-	EndIf
-	Int value = slw_interface_slove.getSloveWillpower(PlayerRef)
-	Bool preview = Utility.GetCurrentRealTime() < _willpowerPreviewUntil
-	If !preview && (value >= 100 || !slw_interface_slove.isInScene(PlayerRef))
-		If _willpowerShown
-			iBars.iWidgets.setVisible(_willpowerMeterId, 0)
-			iBars.iWidgets.setVisible(_willpowerIconId, 0)
-			_willpowerShown = False
-		EndIf
-		; _willpowerPrv stays what the meter last drew: willpower recovers
-		; while the bar is hidden, and the next scene has to see the difference.
-		Return
-	EndIf
-	_ensureWillpowerBar()
-	If _willpowerMeterId < 0
-		Return
-	EndIf
-	If value != _willpowerPrv
-		iBars.iWidgets.setMeterPercent(_willpowerMeterId, value)
-		If value <= 0
-			; broken: the icon turns red, and the bar flashes on the way there
-			iBars.iWidgets.setRGB(_willpowerIconId, 255, 96, 96)
-			If _willpowerPrv > 0
-				iBars.iWidgets.doMeterFlash(_willpowerMeterId)
-			EndIf
-		Else
-			iBars.iWidgets.setRGB(_willpowerIconId, 255, 255, 255)
-		EndIf
-		_willpowerPrv = value
-	EndIf
-	If !_willpowerShown
-		iBars.iWidgets.setVisible(_willpowerMeterId, 1)
-		iBars.iWidgets.setVisible(_willpowerIconId, 1)
-		_willpowerShown = True
-	EndIf
-EndFunction
-
-; MCM: a new position or size. The widget is rebuilt, not moved (setPos has
-; left a ghost at the old place before, see setNpcLabelOffset), and then shown
-; for half a minute whatever the willpower so the new place can be seen.
-Function setWillpowerBarLayout(Int x, Int y, Int scale)
-	willpowerBarX = x
-	willpowerBarY = y
-	willpowerBarScale = scale
-	_destroyWillpowerBar()
-	_willpowerPreviewUntil = Utility.GetCurrentRealTime() + 30.0
-	_updateWillpowerBar()
-EndFunction
-
-; ---------------------------------------------------------------------------
-; Meter stack: SLA arousal, Fill Her Up pools, Apropos2 wear and tear
-; ---------------------------------------------------------------------------
-; Player only. One iWant Widgets meter per value with that value's Status Bars
-; icon to its left, the icon's art following the same stage the icon in the
-; bar shows (so a custom icon pack reaches the stack too). Raw Flash widgets
-; like the willpower bar, under the same rules: the ids die with every game
-; load (OniWantStatusBarsReady forgets them) and positions are widget centers.
+; Player only. One iWant Widgets meter per value with an icon to its left: the
+; brain for willpower, otherwise that value's Status Bars icon at the stage the
+; icon in the bar shows (so a custom icon pack reaches the stack too). Raw
+; Flash widgets like the NPC name labels, not Status Bars icons: the ids die
+; with every game load (OniWantStatusBarsReady forgets them) and positions are
+; widget CENTERS. An iWant meter is 334x30 on the stage at 100%, in the Flash
+; widget and in the Prisma renderer alike; it is scaled with setZoom (iWant's
+; docs: do not setSize a meter), the icon with setSize.
 ;
 ; (metersX, metersY) is the CENTER of the whole stack on the 1280x720 stage;
 ; the default sits at the right edge, half way down. Only meters that are
 ; switched on and whose mod is loaded get a row, top to bottom in meter number
 ; order (slw_config.getMeterKey), and a row keeps its place while its meter is
 ; faded out, so each meter is always found in the same spot.
+;
+; Meter 0, willpower, keeps the rule it had as a bar of its own: up during a
+; scene while willpower is below 100, whatever the display mode. The others
+; follow metersAlwaysShow.
 Int Property metersX = 1150 Auto Hidden
 Int Property metersY = 360 Auto Hidden
 Int Property metersScale = 60 Auto Hidden
@@ -1023,7 +889,11 @@ Int Property metersScale = 60 Auto Hidden
 Bool Property metersAlwaysShow = False Auto Hidden
 Int Property metersHoldSeconds = 10 Auto Hidden
 
-; row pitch at 100%: the 48 px icon plus a gap
+Int METER_W = 334
+; icon edge at 100%: a little taller than the 30 px meter
+Int METER_ICON = 48
+Int METER_ICON_GAP = 6
+; row pitch at 100%: the icon plus a gap
 Int METER_ROW_PITCH = 56
 ; the fade Status Bars uses for its icons, 15 frames at 30 fps
 Int METER_FADE_FRAMES = 15
@@ -1049,42 +919,57 @@ Bool _metersPreviewPending = False
 Bool _metersBusy = False
 Float _metersPreviewUntil = 0.0
 
+; The willpower bar's own place and state from 2.2.6, before it became the
+; stack's top row. Unused; kept so the saves that hold them load clean.
+Int Property willpowerBarX = 640 Auto Hidden
+Int Property willpowerBarY = 640 Auto Hidden
+Int Property willpowerBarScale = 60 Auto Hidden
+Int WILLPOWER_METER_W = 334
+Int WILLPOWER_ICON = 48
+Int WILLPOWER_ICON_GAP = 6
+Int _willpowerMeterId = -1
+Int _willpowerIconId = -1
+Int _willpowerPrv = -1
+Bool _willpowerShown = False
+Float _willpowerPreviewUntil = 0.0
+
 Function _ensureMeterArrays()
 	If !_meterBarId
-		_meterBarId = Utility.CreateIntArray(8, -1)
+		_meterBarId = Utility.CreateIntArray(9, -1)
 	EndIf
 	If !_meterIconId
-		_meterIconId = Utility.CreateIntArray(8, -1)
+		_meterIconId = Utility.CreateIntArray(9, -1)
 	EndIf
 	If !_meterIconStage
-		_meterIconStage = Utility.CreateIntArray(8, -1)
+		_meterIconStage = Utility.CreateIntArray(9, -1)
 	EndIf
 	If !_meterIconX
-		_meterIconX = Utility.CreateIntArray(8, 0)
+		_meterIconX = Utility.CreateIntArray(9, 0)
 	EndIf
 	If !_meterIconY
-		_meterIconY = Utility.CreateIntArray(8, 0)
+		_meterIconY = Utility.CreateIntArray(9, 0)
 	EndIf
 	If !_meterDrawn
-		_meterDrawn = Utility.CreateIntArray(8, -1)
+		_meterDrawn = Utility.CreateIntArray(9, -1)
 	EndIf
 	If !_meterSeen
-		_meterSeen = Utility.CreateIntArray(8, -1)
+		_meterSeen = Utility.CreateIntArray(9, -1)
 	EndIf
 	If !_meterChangedAt
-		_meterChangedAt = Utility.CreateFloatArray(8, 0.0)
+		_meterChangedAt = Utility.CreateFloatArray(9, 0.0)
 	EndIf
 	If !_meterShown
-		_meterShown = Utility.CreateBoolArray(8, False)
+		_meterShown = Utility.CreateBoolArray(9, False)
 	EndIf
 EndFunction
 
 ; The ids belong to a Flash stage that is gone (game load). Drop them without
-; touching the stage, as _forgetWillpowerBar does. _meterSeen stays.
+; touching the stage: the same numbers may be another mod's widgets by now.
+; _meterSeen stays.
 Function _forgetMeters()
 	_ensureMeterArrays()
 	Int i = 0
-	While i < 8
+	While i < 9
 		_meterBarId[i] = -1
 		_meterIconId[i] = -1
 		_meterIconStage[i] = -1
@@ -1105,7 +990,7 @@ Function _destroyMeters()
 	_ensureMeterArrays()
 	Bool live = iBars && iBars.iWidgets && iBars.isReady()
 	Int i = 0
-	While i < 8
+	While i < 9
 		If live
 			If _meterBarId[i] >= 0
 				iBars.iWidgets.destroy(_meterBarId[i])
@@ -1128,7 +1013,8 @@ EndFunction
 ; rebuilt, not moved (setPos has left ghosts before, see setNpcLabelOffset),
 ; on the next pass, which the MCM runs as it closes: nothing on the HUD can be
 ; seen behind the menu. That pass also shows the whole stack for half a
-; minute, since in fade mode there would otherwise be nothing to look at.
+; minute, willpower included, since in fade mode or outside a scene there
+; would otherwise be nothing to look at.
 Function requestMetersRebuild()
 	_metersRebuild = True
 	_metersPreviewPending = True
@@ -1158,7 +1044,7 @@ Function _updateMeters()
 	If !PlayerRef
 		PlayerRef = Game.GetPlayer()
 	EndIf
-	Bool[] wanted = new Bool[8]
+	Bool[] wanted = new Bool[9]
 	Int mask = _wantedMeters(wanted)
 	If mask != _metersBuiltMask || _metersRebuild
 		_metersRebuild = False
@@ -1184,17 +1070,20 @@ Int Function _wantedMeters(Bool[] wanted)
 	If config.slw_stopped
 		Return 0
 	EndIf
+	Bool sloveLoaded = isSloveReady()
 	Bool slaLoaded = config.module_sla.isInterfaceActive()
 	Bool fhuLoaded = config.module_fhu.isInterfaceActive()
 	Bool wtLoaded = config.module_apropos_two.isInterfaceActive()
 	Int mask = 0
 	Int bit = 1
 	Int i = 0
-	While i < 8
+	While i < 9
 		Bool loaded = wtLoaded
 		If i == 0
+			loaded = sloveLoaded
+		ElseIf i == 1
 			loaded = slaLoaded
-		ElseIf i <= 4
+		ElseIf i <= 5
 			loaded = fhuLoaded
 		EndIf
 		If loaded && config.isMeterOn(i)
@@ -1207,28 +1096,33 @@ Int Function _wantedMeters(Bool[] wanted)
 	Return mask
 EndFunction
 
-; Values 0-100 of the wanted meters. Apropos2 only shares the wear and tear
-; stage (0-8), so those meters move in eighths.
+; Values 0-100 of the wanted meters. Willpower comes from the StorageUtil keys
+; SLO VE documents for other mods (slw_interface_slove), so nothing here binds
+; to SLO VE's scripts. Apropos2 only shares the wear and tear stage (0-8), so
+; those meters move in eighths.
 Int[] Function _readMeters(Bool[] wanted)
-	Int[] v = Utility.CreateIntArray(8, 0)
+	Int[] v = Utility.CreateIntArray(9, 0)
 	If wanted[0]
-		v[0] = config.module_sla.getArousalPercentFor(PlayerRef)
+		v[0] = slw_interface_slove.getSloveWillpower(PlayerRef)
 	EndIf
-	Int i = 1
-	While i <= 4
+	If wanted[1]
+		v[1] = config.module_sla.getArousalPercentFor(PlayerRef)
+	EndIf
+	Int i = 2
+	While i <= 5
 		If wanted[i]
-			v[i] = config.module_fhu.getCumPercentFor(PlayerRef, i - 1)
+			v[i] = config.module_fhu.getCumPercentFor(PlayerRef, i - 2)
 		EndIf
 		i += 1
 	EndWhile
-	If wanted[5] || wanted[6] || wanted[7]
+	If wanted[6] || wanted[7] || wanted[8]
 		Int[] wear = config.module_apropos_two.getWearStatesFor(PlayerRef)
-		v[5] = wear[0] * 100 / 8
-		v[6] = wear[1] * 100 / 8
-		v[7] = wear[2] * 100 / 8
+		v[6] = wear[0] * 100 / 8
+		v[7] = wear[1] * 100 / 8
+		v[8] = wear[2] * 100 / 8
 	EndIf
 	i = 0
-	While i < 8
+	While i < 9
 		If v[i] < 0
 			v[i] = 0
 		ElseIf v[i] > 100
@@ -1245,19 +1139,19 @@ Function _buildMeters(Bool[] wanted)
 	iWant_Widgets w = iBars.iWidgets
 	Int rows = 0
 	Int i = 0
-	While i < 8
+	While i < 9
 		If wanted[i]
 			rows += 1
 		EndIf
 		i += 1
 	EndWhile
 	Int pitch = METER_ROW_PITCH * metersScale / 100
-	Int iconSize = WILLPOWER_ICON * metersScale / 100
-	Int meterWidth = WILLPOWER_METER_W * metersScale / 100
-	Int iconX = metersX - meterWidth / 2 - iconSize / 2 - WILLPOWER_ICON_GAP
+	Int iconSize = METER_ICON * metersScale / 100
+	Int meterWidth = METER_W * metersScale / 100
+	Int iconX = metersX - meterWidth / 2 - iconSize / 2 - METER_ICON_GAP
 	Int y = metersY - (rows - 1) * pitch / 2
 	i = 0
-	While i < 8
+	While i < 9
 		If wanted[i]
 			Int id = w.loadMeter(metersX, y, False)
 			w.setZoom(id, metersScale, metersScale)
@@ -1277,12 +1171,18 @@ Function _drawMeters(Bool[] wanted)
 	Int[] v = _readMeters(wanted)
 	Float now = Utility.GetCurrentRealTime()
 	Bool preview = now < _metersPreviewUntil
+	; willpower drains only in a scene, which is when its row is up
+	Bool inScene = wanted[0] && slw_interface_slove.isInScene(PlayerRef)
 	Int i = 0
-	While i < 8
+	While i < 9
 		If wanted[i] && _meterBarId[i] >= 0
 			Int pct = v[i]
 			If pct != _meterDrawn[i]
 				iBars.iWidgets.setMeterPercent(_meterBarId[i], pct)
+				; willpower broken: the bar flashes on the way to 0
+				If i == 0 && pct <= 0 && _meterDrawn[i] > 0
+					iBars.iWidgets.doMeterFlash(_meterBarId[i])
+				EndIf
 				_meterDrawn[i] = pct
 			EndIf
 			Int stage = _meterStage(i, pct)
@@ -1298,7 +1198,12 @@ Function _drawMeters(Bool[] wanted)
 				_meterChangedAt[i] = 0.0
 			EndIf
 			_meterSeen[i] = pct
-			Bool show = metersAlwaysShow || preview || (_meterChangedAt[i] > 0.0 && now < _meterChangedAt[i] + metersHoldSeconds)
+			Bool show = preview
+			If i == 0
+				show = show || (inScene && pct < 100)
+			Else
+				show = show || metersAlwaysShow || (_meterChangedAt[i] > 0.0 && now < _meterChangedAt[i] + metersHoldSeconds)
+			EndIf
 			If show != _meterShown[i]
 				_fadeMeter(i, show)
 			EndIf
@@ -1320,15 +1225,16 @@ Function _fadeMeter(Int meter, Bool show)
 EndFunction
 
 ; A library widget's art is fixed at load, so a new stage means a new widget.
+; Stages change rarely.
 Function _loadMeterIcon(Int meter, Int stage)
 	iWant_Widgets w = iBars.iWidgets
 	If _meterIconId[meter] >= 0
 		w.destroy(_meterIconId[meter])
 	EndIf
-	Int iconSize = WILLPOWER_ICON * metersScale / 100
+	Int iconSize = METER_ICON * metersScale / 100
 	Int id = w.loadLibraryWidget(_meterIconPath(meter, stage), _meterIconX[meter], _meterIconY[meter], False)
 	w.setSize(id, iconSize, iconSize)
-	_tintMeterIcon(meter, id)
+	_tintMeterIcon(meter, stage, id)
 	If _meterShown[meter]
 		w.setTransparency(id, 100)
 	Else
@@ -1340,10 +1246,16 @@ Function _loadMeterIcon(Int meter, Int stage)
 EndFunction
 
 ; The stage the meter's icon shows in the Status Bars for the same value.
+; Willpower has no status icon: its two stages are broken (0) and not.
 Int Function _meterStage(Int meter, Int pct)
 	If meter == 0
+		If pct <= 0
+			Return 0
+		EndIf
+		Return 1
+	ElseIf meter == 1
 		Return percentToState9NotStrict(pct)
-	ElseIf meter <= 4
+	ElseIf meter <= 5
 		Return percentToState9(pct)
 	EndIf
 	; back from eighths, rounded: 12 -> 1, 87 -> 7
@@ -1351,40 +1263,54 @@ Int Function _meterStage(Int meter, Int pct)
 EndFunction
 
 String Function _meterIconPath(Int meter, Int stage)
-	String base = "apropos2/oral/oral"
 	If meter == 0
+		; drawn by build_willpower_icon.py
+		Return "slove/willpower"
+	EndIf
+	String base = "apropos2/oral/oral"
+	If meter == 1
 		base = "sla/arousal/aroused"
-	ElseIf meter == 1
-		base = "fhu/total/cum"
 	ElseIf meter == 2
-		base = "fhu/vaginal/cum"
+		base = "fhu/total/cum"
 	ElseIf meter == 3
-		base = "fhu/anal/cum"
+		base = "fhu/vaginal/cum"
 	ElseIf meter == 4
-		base = "fhu/oral/cum"
+		base = "fhu/anal/cum"
 	ElseIf meter == 5
-		base = "apropos2/vaginal/vag"
+		base = "fhu/oral/cum"
 	ElseIf meter == 6
+		base = "apropos2/vaginal/vag"
+	ElseIf meter == 7
 		base = "apropos2/anal/ass"
 	EndIf
 	Return base + stage
 EndFunction
 
-; Colors from the icons' own stages: arousal pink, cum cream, wear and tear red.
+; Willpower purple; the others take the colors of their icons' stages:
+; arousal pink, cum cream, wear and tear red.
 Function _colorMeter(Int meter, Int id)
 	If meter == 0
+		iBars.iWidgets.setMeterRGB(id, 200, 164, 255, 86, 50, 164, 255, 255, 255)
+	ElseIf meter == 1
 		iBars.iWidgets.setMeterRGB(id, 255, 112, 192, 128, 28, 88, 255, 255, 255)
-	ElseIf meter <= 4
+	ElseIf meter <= 5
 		iBars.iWidgets.setMeterRGB(id, 251, 245, 233, 128, 118, 100, 255, 255, 255)
 	Else
 		iBars.iWidgets.setMeterRGB(id, 255, 72, 72, 128, 16, 16, 255, 255, 255)
 	EndIf
 EndFunction
 
-Function _tintMeterIcon(Int meter, Int id)
+Function _tintMeterIcon(Int meter, Int stage, Int id)
 	If meter == 0
+		If stage == 0
+			; broken
+			iBars.iWidgets.setRGB(id, 255, 96, 96)
+		Else
+			iBars.iWidgets.setRGB(id, 255, 255, 255)
+		EndIf
+	ElseIf meter == 1
 		iBars.iWidgets.setRGB(id, 255, 140, 202)
-	ElseIf meter <= 4
+	ElseIf meter <= 5
 		iBars.iWidgets.setRGB(id, 251, 245, 233)
 	Else
 		iBars.iWidgets.setRGB(id, 255, 114, 114)

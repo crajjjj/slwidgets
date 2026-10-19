@@ -35,12 +35,13 @@ Bool property module_pregnancy_enabled = True auto hidden
 Bool property module_paf_pee = True auto hidden
 Bool property module_paf_poo = True auto hidden
 Bool property module_defeat_enabled = True auto hidden
-; SLO VE willpower: a bar (iWant Widgets meter), not a status icon. Drawn by
-; slw_widget_controller, player only.
+; SLO VE willpower: a bar (iWant Widgets meter), not a status icon. Meter 0 of
+; the meter stack, and its switch (isMeterOn(0)), player only.
 Bool property module_slove_willpower = True auto hidden
 
 ; The meter stack (slw_widget_controller): one switch per meter, player only.
-; Indexed by meter number, see getMeterKey. Lazily created, all on.
+; Indexed by meter number, see getMeterKey; slot 0 is unused, willpower keeps
+; module_slove_willpower. Lazily created, all on.
 Bool[] _meter_use
 
 ; NPC tracking — slot 0 is player (handled by widget_controller.PlayerRef), slots 1..N_NPC are NPCs
@@ -217,45 +218,57 @@ EndFunction
 ; --- Meter stack ---
 
 Int Function getMeterCount()
-	Return 8
+	Return 9
 EndFunction
 
 ; Meter numbers, which are also the stack's top-to-bottom order:
-; 0 arousal, 1-4 Fill Her Up total / vaginal / anal / oral,
-; 5-7 Apropos2 wear and tear vaginal / anal / oral.
+; 0 SLO VE willpower, 1 arousal, 2-5 Fill Her Up total / vaginal / anal /
+; oral, 6-8 Apropos2 wear and tear vaginal / anal / oral.
 ; The key names the meter in settings presets and in the MCM's
-; $SLW_Meter_<key> strings.
+; $SLW_Meter_<key> strings. Lower case because JsonUtil lowercases the key it
+; is asked for, so a hand-written preset key with a capital never matches.
 String Function getMeterKey(Int meter)
 	If meter == 0
-		Return "Arousal"
+		Return "willpower"
 	ElseIf meter == 1
-		Return "FHU_Total"
+		Return "arousal"
 	ElseIf meter == 2
-		Return "FHU_Vaginal"
+		Return "fhu_total"
 	ElseIf meter == 3
-		Return "FHU_Anal"
+		Return "fhu_vaginal"
 	ElseIf meter == 4
-		Return "FHU_Oral"
+		Return "fhu_anal"
 	ElseIf meter == 5
-		Return "WT_Vaginal"
+		Return "fhu_oral"
 	ElseIf meter == 6
-		Return "WT_Anal"
+		Return "wt_vaginal"
+	ElseIf meter == 7
+		Return "wt_anal"
 	EndIf
-	Return "WT_Oral"
+	Return "wt_oral"
 EndFunction
 
 Function _ensureMeterToggles()
 	If !_meter_use
-		_meter_use = Utility.CreateBoolArray(8, True)
+		_meter_use = Utility.CreateBoolArray(9, True)
 	EndIf
 EndFunction
 
+; Willpower's switch predates the stack and stays module_slove_willpower, the
+; name existing saves and settings presets know it by.
 Bool Function isMeterOn(Int meter)
+	If meter == 0
+		Return module_slove_willpower
+	EndIf
 	_ensureMeterToggles()
 	Return _meter_use[meter]
 EndFunction
 
 Function setMeterOn(Int meter, Bool enabled)
+	If meter == 0
+		module_slove_willpower = enabled
+		Return
+	EndIf
 	_ensureMeterToggles()
 	_meter_use[meter] = enabled
 EndFunction
@@ -734,32 +747,49 @@ Bool Function loadSettingsPreset(String presetName)
 	Return true
 EndFunction
 
-; Which meters are on and how they show. The stack's place and size are not
-; part of a preset, like the NPC group anchor and the willpower bar's place.
+; Everything on the Meters page: which meters are on, how they show, and the
+; stack's place and size. Willpower's switch travels as module_slove_willpower,
+; so the loops start at meter 1. A preset without these keys (older ones, the
+; shipped ones) leaves the current values alone.
 Function _loadMeterSettings(String path)
 	_ensureMeterToggles()
-	Int i = 0
+	Int i = 1
 	While i < getMeterCount()
 		_meter_use[i] = jsonutil.GetPathBoolValue(path, "meter." + getMeterKey(i), _meter_use[i])
 		i += 1
 	EndWhile
-	If widget_controller
-		widget_controller.metersAlwaysShow = jsonutil.GetPathBoolValue(path, "meters.alwaysShow", widget_controller.metersAlwaysShow)
-		widget_controller.metersHoldSeconds = jsonutil.GetPathIntValue(path, "meters.holdSeconds", widget_controller.metersHoldSeconds)
+	slw_widget_controller wc = widget_controller
+	If !wc
+		Return
+	EndIf
+	wc.metersAlwaysShow = jsonutil.GetPathBoolValue(path, "meters.alwaysshow", wc.metersAlwaysShow)
+	wc.metersHoldSeconds = jsonutil.GetPathIntValue(path, "meters.holdseconds", wc.metersHoldSeconds)
+	; Only a real move goes through the layout setter: it rebuilds the stack
+	; and shows it for half a minute at the new place.
+	Int x = jsonutil.GetPathIntValue(path, "meters.x", wc.metersX)
+	Int y = jsonutil.GetPathIntValue(path, "meters.y", wc.metersY)
+	Int scale = jsonutil.GetPathIntValue(path, "meters.scale", wc.metersScale)
+	If x != wc.metersX || y != wc.metersY || scale != wc.metersScale
+		wc.setMetersLayout(x, y, scale)
 	EndIf
 EndFunction
 
 Function _saveMeterSettings(String path)
 	_ensureMeterToggles()
-	Int i = 0
+	Int i = 1
 	While i < getMeterCount()
 		jsonutil.SetPathIntValue(path, "meter." + getMeterKey(i), _meter_use[i] as Int)
 		i += 1
 	EndWhile
-	If widget_controller
-		jsonutil.SetPathIntValue(path, "meters.alwaysShow", widget_controller.metersAlwaysShow as Int)
-		jsonutil.SetPathIntValue(path, "meters.holdSeconds", widget_controller.metersHoldSeconds)
+	slw_widget_controller wc = widget_controller
+	If !wc
+		Return
 	EndIf
+	jsonutil.SetPathIntValue(path, "meters.alwaysshow", wc.metersAlwaysShow as Int)
+	jsonutil.SetPathIntValue(path, "meters.holdseconds", wc.metersHoldSeconds)
+	jsonutil.SetPathIntValue(path, "meters.x", wc.metersX)
+	jsonutil.SetPathIntValue(path, "meters.y", wc.metersY)
+	jsonutil.SetPathIntValue(path, "meters.scale", wc.metersScale)
 EndFunction
 
 Function _loadNpcSlotToggles(String path)

@@ -12,7 +12,7 @@ Full docs, icon previews, custom packs and guides: https://crajjjj.github.io/slw
 - Two icon mechanics — 9-stage gauges that fill with a mod's value (arousal, milk, cum, wear & tear, needs) and condition toggles that pop in/out (pregnancy, parasites, defeat)
 - NPC tracking — watch up to 3 NPCs alongside the player: aim at an NPC, press a hotkey, and they get their own icon set and a floating name label
 - Broad mod support — SexLab Aroused, Apropos2, Fill Her Up, MME / SGO4 / MAL, the major pregnancy frameworks, and more
-- Meters: arousal, the Fill Her Up pools and Apropos2 wear & tear also as bars at the right edge of the screen, each with its icon beside it, always shown or fading in when a value changes
+- Meters: SLO VE willpower, arousal, the Fill Her Up pools and Apropos2 wear & tear as one stack of bars at the right edge of the screen, each with its icon beside it, always shown or fading in when a value changes
 - Custom icon packs — restyle any icon set; grab one from the download section
 - Settings presets — save and load your toggle setup, handy for new saves
 
