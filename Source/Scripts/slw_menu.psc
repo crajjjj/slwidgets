@@ -136,6 +136,11 @@ event OnVersionUpdate(int a_version)
 		; defaults and the modules register their icons on the next widget
 		; reload, so there is nothing to migrate; the block marks the step.
 	EndIf
+	If a_version >= 30001 && CurrentVersion < 30001
+		Debug.Trace(self + ": Updating script to version 30001")
+		; 3.0.1: the Default preset at full alpha. The widget controller
+		; reloads the icons once (ICONS_VERSION), so there is nothing to do here.
+	EndIf
 endEvent
 
 Function General()

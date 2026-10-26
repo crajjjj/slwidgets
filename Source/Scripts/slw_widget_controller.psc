@@ -178,10 +178,10 @@ EndEvent
 ; registered its icons with an older build therefore keeps the old colours
 ; (and lacks icons that build did not have) until a widget reload. This does
 ; that reload once per ICONS_VERSION: bump it when the registered icons or
-; their default colours change. 30000 = 3.0.0 (the 13 new icons, the Default
-; preset at full alpha). A read-only property, not a variable: a variable added
+; their default colours change. 30001 = 3.0.1 (the Default preset at full
+; alpha; also brings 3.0.0's 13 new icons to saves upgraded from 2.3.0). A read-only property, not a variable: a variable added
 ; to a script an existing save holds could come up 0 there.
-Int Property ICONS_VERSION = 30000 AutoReadOnly Hidden
+Int Property ICONS_VERSION = 30001 AutoReadOnly Hidden
 Int _iconsVersion = 0
 
 Function _reloadIconsOnce()
