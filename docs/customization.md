@@ -80,14 +80,11 @@ A saved preset includes:
 
 ## Icon styles
 
-Since 3.0.0 the installer offers two icon styles and installs exactly one:
+Since 3.0.0 the mod ships one icon set: every icon drawn in the same style, a progress ring around a glyph that fills from the bottom, tinted from white through gold and orange to red as the value worsens. Milk and lactacid keep one colour. The `Default` colour preset is that ramp (and `HideEmpty` is the same ramp with the empty stage hidden).
 
-- **Ring icons**: every icon drawn in one style, a progress ring around a glyph that fills from the bottom, tinted from white through gold and orange to red as the value worsens. Milk and lactacid keep one colour. The `Default` colour preset is that ramp.
-- **Classic icons**: the art SL Widgets shipped before 3.0.0, with its `Default` colour preset.
+The icons SL Widgets shipped before 3.0.0 are an optional download, **SLWidgets Classic Icons**, in the Nexus files section. Install it after SL Widgets and let it overwrite: it puts the old textures back for the sets that existed before 3.0.0, together with their `Default` and `HideEmpty` colour presets. The sets new in 3.0.0 (food, thirst, cold, fatigue, dirtiness, wetness, hair, baby health, stress, fear, injuries, diseases) have no classic art and keep the ring style. To return to the ring icons, reinstall SL Widgets. Custom icon packs lay over either.
 
-The icon sets new in 3.0.0 (food, thirst, cold, fatigue, dirtiness, wetness, hair, baby health, stress, fear, injuries, diseases) exist only in the ring style and are installed with either choice. To switch styles later, reinstall and pick the other option. Custom icon packs lay over either style.
-
-![The ring icon set](assets/ring-style.png)
+![The icon set](assets/ring-style.png)
 
 ---
 

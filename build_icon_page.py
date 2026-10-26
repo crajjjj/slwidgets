@@ -80,7 +80,8 @@ para(
     "The icons SL Widgets can display, grouped by source mod. "
     "**Stage icons** fill through 9 steps (0 = empty, 8 = full) as a value rises — "
     "only a few representative steps are shown here. "
-    "**Toggle icons** simply appear when their condition is active and vanish when it clears.\n"
+    "**Toggle icons** simply appear when their condition is active and vanish when it clears. "
+    "Since 3.0.0 the whole set is drawn in one ring style; the classic icons are an optional download.\n"
 )
 para(
     "!!! note\n"
@@ -95,7 +96,7 @@ h(2, "Stage icons")
 h(3, "SexLab Aroused")
 para("*Requires SexLabAroused.esm (SLA SE / SLAX / SLAM).*")
 stage_row("sla_arousal", "sla/arousal", "aroused", 9, "Arousal", "Heart icon that fills as arousal rises.")
-stage_row("sla_exposure", "sla/exposure", "exp", 9, "Exposure", "Face icon that fills as exposure / nudity rises.")
+stage_row("sla_exposure", "sla/exposure", "exp", 9, "Exposure", "Eye icon that fills as exposure / nudity rises.")
 
 h(3, "Apropos2 — Wear & Tear")
 para("*Requires Apropos2.esp.*")
@@ -121,7 +122,7 @@ stage_row("paf_pee", "paf/pee", "pee", 5, "Pee (bladder)")
 stage_row("paf_poop", "paf/poop", "poop", 5, "Poop (bowel)")
 
 h(3, "Survival, hygiene and health (3.0.0)")
-para("*Drawn in the ring style only, so they look the same with either icon style. Player only unless noted.*")
+para("*New in 3.0.0. Player only unless noted.*")
 stage_row("sh_food", "sunhelm/food", "food", 9, "Food (SunHelm)")
 stage_row("sh_thirst", "sunhelm/thirst", "thirst", 9, "Thirst (SunHelm)")
 stage_row("sh_cold", "sunhelm/cold", "cold", 9, "Cold (SunHelm)", "A sun while warm, a snowflake from Chilly on.")
@@ -191,11 +192,11 @@ h(3, "SLDefeat")
 para("*Requires SexLabDefeat.esp. Player only.*")
 toggle_grid([("defeatmod/raped.dds", "Weakened / raped")], "defeat")
 
-h(2, "Ring icon style")
+h(2, "The whole set")
 para(
-    "Since 3.0.0 the installer offers the whole set in one drawn style: a progress ring around a glyph, "
-    "tinted white to red as the value worsens (milk and lactacid keep one colour). The classic art above "
-    "is the other choice. See [Icon styles](customization.md#icon-styles)."
+    "Since 3.0.0 every icon is drawn in one style: a progress ring around a glyph, tinted white to red "
+    "as the value worsens (milk and lactacid keep one colour). The icons from before 3.0.0 are an optional "
+    "download. See [Icon styles](customization.md#icon-styles)."
 )
 md.append("![The ring icon set](../assets/ring-style.png)\n")
 

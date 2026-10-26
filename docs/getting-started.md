@@ -23,7 +23,7 @@ These must be installed and working before SL Widgets will function at all.
 ## Installation
 
 1. Install all hard requirements first and confirm iWant Status Bars is displaying correctly.
-2. Install SL Widgets via your mod manager. The installer asks for an **icon style**, ring or classic (see [Icon styles](customization.md#icon-styles)); a manual install takes `00 Core` plus one of the two icon folders.
+2. Install SL Widgets via your mod manager as a normal mod. Prefer the icons from before 3.0.0? Add the optional **SLWidgets Classic Icons** download on top (see [Icon styles](customization.md#icon-styles)).
 3. The ESP is **ESL-flagged** — it will not consume a load order slot on SE.
 4. Launch the game, open the MCM, and find **SL Widgets** in the list.
 

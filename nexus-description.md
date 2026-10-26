@@ -1,6 +1,6 @@
 A plugin for [b]iWant Status Bars[/b] that adds adult-mod status widgets — arousal, pregnancy, milk, cum, wear & tear, needs and more — to Skyrim's HUD, for the player [b]and up to 3 NPCs[/b].
 
-210+ icons in two styles. Fully configurable in-game through the MCM.
+210+ icons. Fully configurable in-game through the MCM.
 
 [url=https://crajjjj.github.io/slwidgets/]📖 SLWidgets Wiki — full docs with icon previews[/url]
 
@@ -11,19 +11,19 @@ A plugin for [b]iWant Status Bars[/b] that adds adult-mod status widgets — aro
 [*][b]Broad mod support[/b] — SexLab Aroused, Apropos2, Fill Her Up, MME / SGO4 / MAL, the major pregnancy frameworks, and more. [url=https://crajjjj.github.io/slwidgets/supported-mods/]Full list →[/url]
 [*][b]Meters[/b]: SLO VE willpower, arousal, the Fill Her Up pools and Apropos2 wear & tear as one stack of bars at the right edge of the screen, each with its icon beside it, always shown or fading in when a value changes. [url=https://crajjjj.github.io/slwidgets/supported-mods/#meter-stack]How they work →[/url]
 [*][b]Survival and body status[/b] (3.0) — SunHelm food, thirst, cold and fatigue; Bathing in Skyrim Renewed dirtiness and Wet Function Redux wetness; SPH pubic and armpit hair; BeeingFemale baby health; Stress and Fear; Blade and Blunt injuries; diseases (SunHelm Diseases stages). [url=https://crajjjj.github.io/slwidgets/supported-mods/#survival-hygiene-and-health-300]Details →[/url]
-[*][b]Two icon styles[/b] (3.0) — the new ring set, every icon in one drawn style that goes white to red as a value worsens, or the classic art; pick one in the installer. [url=https://crajjjj.github.io/slwidgets/customization/#icon-styles]See the set →[/url]
+[*][b]One drawn icon set[/b] (3.0) — every icon in the same style, white to red as a value worsens. Prefer the old icons? The [b]Classic Icons[/b] optional file puts them back. [url=https://crajjjj.github.io/slwidgets/customization/#icon-styles]See the set →[/url]
 [*][b]Custom icon packs[/b] — restyle any icon set; grab one from the download section. [url=https://crajjjj.github.io/slwidgets/custom-packs/]Preview packs →[/url]
 [*][b]Settings presets[/b] — save and load your toggle setup, handy for new saves
 [/list]
 
 [size=5][b]⚙️ Installation[/b][/size]
 [list]
-[*]Install with any mod manager and choose an icon style in the installer (Ring, new in 3.0, or Classic). The SE build is ESPFE (ESL-flagged); the LE build's ESP also works on SE.
+[*]Install with any mod manager. The SE build is ESPFE (ESL-flagged); the LE build's ESP also works on SE.
 [*][b]Load order:[/b] iWant Widgets → iWant Status Bars → SLWidgets
 [*](Optional) Choose which widgets are shown in the SLWidgets MCM
 [*](Optional) Save / load your SLWidgets settings in the MCM — useful for new saves
 [*](Optional) Set icon placement, colour and size in the iWant Status Bars MCM (multiple bars supported)
-[*](Optional) Install custom icon packs from the download section (DDS textures only)
+[*](Optional) Install the Classic Icons file (the icons from before 3.0) or a custom icon pack from the download section (DDS textures only)
 [/list]
 [i]Step-by-step guide: [url=https://crajjjj.github.io/slwidgets/getting-started/]Getting Started →[/url][/i]
 

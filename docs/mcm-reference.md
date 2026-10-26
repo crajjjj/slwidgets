@@ -26,8 +26,8 @@ Enable or disable individual icon groups. Settings are organised by mod.
 
 | Setting | Requires | Description |
 |---------|----------|-------------|
-| **Arousal Icon Enabled** | `SexLabAroused.esm` | Face icon tracking arousal (9 stages) |
-| **Exposure Icon Enabled** | `SexLabAroused.esm` | Heart icon tracking exposure/nudity (9 stages) |
+| **Arousal Icon Enabled** | `SexLabAroused.esm` | Heart icon tracking arousal (9 stages) |
+| **Exposure Icon Enabled** | `SexLabAroused.esm` | Eye icon tracking exposure/nudity (9 stages) |
 | **W&T Icon Enabled** | `Apropos2.esp` | Three icons for vaginal, anal, and oral wear & tear (9 stages each) |
 | **FHU Total Icon Enabled** | `sr_FillHerUp.esp` | Combined cum pool (9 stages) |
 | **FHU Vaginal Pool Icon Enabled** | `sr_FillHerUp.esp` | Vaginal cum pool (9 stages) |

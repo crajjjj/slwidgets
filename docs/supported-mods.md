@@ -14,8 +14,8 @@ Stage icons display a continuously-updating 9-state bar (empty → full). They a
 
 | Icon | Description |
 |------|-------------|
-| **Arousal** | Face icon, 9 stages tracking the actor's arousal value |
-| **Exposure** | Heart icon, 9 stages tracking the actor's exposure/nudity level |
+| **Arousal** | Heart icon, 9 stages tracking the actor's arousal value |
+| **Exposure** | Eye icon, 9 stages tracking the actor's exposure/nudity level |
 
 NPC support: **Yes** — both icons work per-actor.
 
@@ -71,7 +71,7 @@ At least one of the three milk mods must be installed for milk icons to appear.
 
 | Icon | Description |
 |------|-------------|
-| **Milk** | Breast icon, 9 stages tracking current milk level |
+| **Milk** | Milk carton icon, 9 stages tracking current milk level |
 | **Lactacid** | Bottle icon, 9 stages tracking lactacid (MME only) |
 
 NPC support: **Milk icon** — Yes (via MME or SGO4 APIs, not MAL). **Lactacid icon** — Yes (MME only).

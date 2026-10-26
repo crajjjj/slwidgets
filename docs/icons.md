@@ -1,7 +1,7 @@
 # Icon Gallery
 
 
-The icons SL Widgets can display, grouped by source mod. **Stage icons** fill through 9 steps (0 = empty, 8 = full) as a value rises — only a few representative steps are shown here. **Toggle icons** simply appear when their condition is active and vanish when it clears.
+The icons SL Widgets can display, grouped by source mod. **Stage icons** fill through 9 steps (0 = empty, 8 = full) as a value rises — only a few representative steps are shown here. **Toggle icons** simply appear when their condition is active and vanish when it clears. Since 3.0.0 the whole set is drawn in one ring style; the classic icons are an optional download.
 
 
 !!! note
@@ -33,7 +33,7 @@ Heart icon that fills as arousal rises.
 
 #### Exposure
 
-Face icon that fills as exposure / nudity rises.
+Eye icon that fills as exposure / nudity rises.
 
 <div class="icon-grid" markdown>
 
@@ -201,7 +201,7 @@ MME only.
 
 ### Survival, hygiene and health (3.0.0)
 
-*Drawn in the ring style only, so they look the same with either icon style. Player only unless noted.*
+*New in 3.0.0. Player only unless noted.*
 
 
 #### Food (SunHelm)
@@ -441,8 +441,8 @@ Progression as soul gems mature.
 </div>
 
 
-## Ring icon style
+## The whole set
 
-Since 3.0.0 the installer offers the whole set in one drawn style: a progress ring around a glyph, tinted white to red as the value worsens (milk and lactacid keep one colour). The classic art above is the other choice. See [Icon styles](customization.md#icon-styles).
+Since 3.0.0 every icon is drawn in one style: a progress ring around a glyph, tinted white to red as the value worsens (milk and lactacid keep one colour). The icons from before 3.0.0 are an optional download. See [Icon styles](customization.md#icon-styles).
 
 ![The ring icon set](../assets/ring-style.png)

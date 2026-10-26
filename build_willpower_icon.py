@@ -17,7 +17,8 @@ from pathlib import Path
 
 from PIL import Image, ImageChops, ImageDraw
 
-OUT = Path(__file__).parent / "Interface/exported/widgets/iwant/widgets/library/slove/willpower.dds"
+# the classic brain; the shipped one is drawn by build_icons.py (ring style)
+OUT = Path(__file__).parent / "art/classic/library/slove/willpower.dds"
 
 S = 800        # work size; the result is this scaled down to 100
 STROKE = 44    # line width at work size (5.5 px in the icon)

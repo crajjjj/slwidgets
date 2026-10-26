@@ -28,25 +28,27 @@ produces a `.pex` that mismatches at runtime with no compile-time warning:
   Mode source folder must be imported BEFORE `fmPlus`, or `hasFMSperm()` throws
   "Mismatched types" on every widget update for FM3 users.
 
-### Release archive (3.0.0+)
+### Release archives (3.0.0+)
 
-`python build_release.py` assembles `Build/SLWidgets <version>.zip` as a FOMOD
-(core + an "Icon style" group: Ring icons or Classic icons, exactly one). Run it
-after the Papyrus build and `build_icons.py`. Pyro's own flat `Build/SLWidgets.zip`
-still gets written by the ppj and is not the release artifact any more.
+The mod archive is still Pyro's `Build/SLWidgets.zip` (the ppj zips the repo
+tree, so the ring icons under `Interface/` ship as the mod). `python
+build_release.py` renames it to `Build/SLWidgets <version>.zip` and packs the
+optional `Build/SLWidgets Classic Icons <version>.zip` from `art/classic`
+(the pre-3.0.0 art + its Default / HideEmpty presets; installs over the mod
+like a custom icon pack). No FOMOD: the user turned one down.
 
 ### Icons (3.0.0+)
 
-Two icon styles ship: the classic art under `Interface/.../library/` and the
-ring set, drawn by `python build_icons.py` (Pillow 11.2+ and resvg-py). The
-ring versions of the pre-3.0.0 sets live in `art/ring/library/` and are laid
-over the classic library by the FOMOD's ring option; the sets new in 3.0.0 only
-exist in the ring style and are written straight into `Interface/.../library/`,
-so both options ship them. Icons stay white-on-transparent: every colour is an
-iWant per-stage tint, so a style is art plus a `Default.json` colour preset
-(`art/ring/presets/Default.json` for the ring ramp, white -> gold -> orange ->
-red; milk and lactacid keep one colour). `fillStageColors` in `slw_util` is the
-same ramp as the code default of every 3.0.0 icon.
+`python build_icons.py` (Pillow 11.2+ and resvg-py) draws every set under
+`Interface/.../library/` from `art/ring/glyphs/*.svg` and writes the shipped
+`Default.json` / `HideEmpty.json` colour presets from its ramp (white -> gold
+-> orange -> red; milk and lactacid keep one colour). Icons stay
+white-on-transparent: every colour is an iWant per-stage tint, so a style is
+art plus a colour preset. The classic art lives in `art/classic/library` with
+its presets in `art/classic/presets`; the sets new in 3.0.0 have no classic
+art. `fillStageColors` in `slw_util` is the same ramp as the code default of
+every 3.0.0 icon. `build_willpower_icon.py` now writes the classic brain into
+`art/classic`.
 
 ### Registering a module script (3.0.0+)
 
@@ -130,11 +132,11 @@ Script properties filled via the Creation Kit (CK) in the ESP/ESM must NOT be re
 | `Source/Scripts/slw_module_stress.psc` | 3.0.0: Stress and Fear stress global + phobia count, player only; its toggles are `module_saf_stress` / `module_saf_fear` because `module_stress` is the module object property |
 | `Source/Scripts/slw_module_health.psc` | 3.0.0: Blade and Blunt injury spells (4 stages) + worst disease stage over vanilla and SunHelm Diseases spells (4 stages), player only; `isInterfaceActive()` is always true (vanilla diseases) |
 | `Source/ApiHeaders/*.psc` | Compile stubs for foreign script types that are cast at runtime (SGO4, SunHelm): only the members SL Widgets reads, `extends Quest`; the cast resolves by script name in game |
-| `build_icons.py` | 3.0.0: draws the ring icon set from `art/ring/glyphs/*.svg` (needs `pip install pillow resvg-py`): restyled classic sets to `art/ring/library/`, the 3.0.0 sets to `Interface/.../library/`, the ring colour preset to `art/ring/presets/Default.json`, the new keys into the four classic presets; `--sheet` renders `docs/assets/ring-style.png` |
+| `build_icons.py` | 3.0.0: draws the whole icon set into `Interface/.../library/` from `art/ring/glyphs/*.svg` (needs `pip install pillow resvg-py`) and the shipped Default / HideEmpty presets from its ramp; adds the new keys to the white presets and to the classic pack's presets; `--sheet` renders `docs/assets/ring-style.png` |
 | `art/ring/draw_custom_glyphs.py` | Writes the hand-drawn glyphs (vulva, anus, ovum, belly, sperm, sun, snowflake) into `art/ring/glyphs/`; the rest are game-icons.net files (CC BY 3.0, credits in `art/ring/glyphs/CREDITS.md`) |
-| `build_release.py` | 3.0.0: assembles the FOMOD release zip (`Build/SLWidgets <version>.zip`): core + "Classic Icons" / "Ring Icons" as one pick; run after the Papyrus build and `build_icons.py` |
+| `build_release.py` | 3.0.0: renames Pyro's zip to `Build/SLWidgets <version>.zip` and packs the optional `SLWidgets Classic Icons <version>.zip` from `art/classic`; run after the Papyrus build |
 | `tools/esp/SlwEsp/` | Mutagen (dotnet 9) tool that registers module scripts in `SLWidgets.esp` (script on the modules quest + object property on `slw_config`); idempotent, keeps a `.bak` |
-| `build_willpower_icon.py` | Draws the classic brain icon of the willpower bar (`library/slove/willpower.dds`); the ring version comes from `build_icons.py` |
+| `build_willpower_icon.py` | Draws the classic brain icon of the willpower bar into `art/classic/library/slove/`; the shipped one comes from `build_icons.py` |
 | `Interface/Translations/SLWidgets_*.txt` | MCM translation strings (10 languages) |
 
 ## Module Pattern

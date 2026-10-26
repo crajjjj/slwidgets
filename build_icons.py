@@ -1,25 +1,26 @@
-"""Draw the SL Widgets "ring" icon set and the presets that go with it.
+"""Draw the SL Widgets icon set (the "ring" style) and the presets that go with it.
 
-    python build_icons.py            # writes every .dds below, plus the presets
+    python build_icons.py            # writes every .dds, plus the colour presets
     python build_icons.py --sheet    # also docs/assets/ring-style.png (the overview)
 
 One icon = a progress ring around a glyph. The ring sweeps clockwise from
 12 o'clock as the stage rises and ends in an arrowhead; the glyph is an
 outline whose body fills from the bottom; toggle icons (pregnancy states,
 parasites, defeat) keep a full ring and a full glyph. Everything is white on
-transparent, 100x100 DXT5, like the stock icons, so iWant's per-stage tint
-(the colour presets) does the colouring. The ramp the set is drawn for,
-white -> gold -> orange -> red, is written as art/ring/presets/Default.json.
+transparent, 100x100 DXT5, like the classic icons were, so iWant's per-stage
+tint (the colour presets) does the colouring. The ramp the set is drawn for,
+white -> gold -> orange -> red, becomes the shipped Default colour preset.
 
 Where things go:
-  art/ring/glyphs/*.svg      the glyphs (game-icons.net + hand-drawn, see CREDITS.md)
-  art/ring/library/...       ring versions of the icon sets that already ship
-                             classic art under Interface/... (the FOMOD's ring option
-                             lays this folder over the classic library)
-  Interface/.../library/...  the sets new in 3.0.0 (food, thirst, ...): there is no
-                             classic art for them, so both FOMOD options ship these
-  SKSE/.../IconPresets/*.json  the four classic presets gain the new icons' keys
+  art/ring/glyphs/*.svg        the glyphs (game-icons.net + hand-drawn, see CREDITS.md)
+  Interface/.../library/...    the icons the mod ships, every set
+  SKSE/.../IconPresets/        Default.json and HideEmpty.json are rewritten from the
+                               ramp; AllWhite*.json only gain the 3.0.0 icons' keys
+  art/classic/presets/         the classic Default / HideEmpty presets (packed by
+                               build_release.py with art/classic/library) gain the
+                               3.0.0 icons' keys with the classic alphas
 
+The classic art under art/classic/library is not touched by this script.
 Needs Pillow 11.2+ (DXT5 writer) and resvg-py:  pip install pillow resvg-py
 """
 import argparse
@@ -34,10 +35,9 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 GLYPHS = os.path.join(ROOT, "art", "ring", "glyphs")
-RING_LIB = os.path.join(ROOT, "art", "ring", "library")
-RING_PRESETS = os.path.join(ROOT, "art", "ring", "presets")
 LIB = os.path.join(ROOT, "Interface", "exported", "widgets", "iwant", "widgets", "library")
-CLASSIC_PRESETS = os.path.join(ROOT, "SKSE", "Plugins", "SlWidgets", "IconPresets")
+PRESETS = os.path.join(ROOT, "SKSE", "Plugins", "SlWidgets", "IconPresets")
+CLASSIC_PRESETS = os.path.join(ROOT, "art", "classic", "presets")
 SHEET = os.path.join(ROOT, "docs", "assets", "ring-style.png")
 
 # ---- drawing -----------------------------------------------------------------
@@ -165,11 +165,12 @@ def fracs(n):
 
 COLD = ["sun-simple"] * 3 + ["snowflake-simple"] * 6
 
-# (destination, folder, file stems, glyph or one glyph per file, badge, fills or None)
-# fills None = a stage set: progress ring, fill i/(n-1). A list = toggle icons: full
-# ring, that fill per file.
+# (classic, folder, file stems, glyph or one glyph per file, badge, fills or None)
+# classic: whether the set also has classic art (art/classic/library), which is what
+# the Classic Icons pack replaces. fills None = a stage set: progress ring, fill
+# i/(n-1). A list = toggle icons: full ring, that fill per file.
 SETS = [
-    # restyled sets (classic art stays under Interface/, these go to art/ring/library)
+    # the sets that pre-date 3.0.0
     ("ring", "sla/arousal", stages("aroused", 9), "hearts", None, None),
     ("ring", "sla/exposure", stages("exp", 9), "tired-eye", None, None),
     ("ring", "apropos2/vaginal", stages("vag", 9), "vulva", "bandage-roll", None),
@@ -192,7 +193,7 @@ SETS = [
     ("ring", "pregnancymod", ["gems", "gems2", "gems3", "gems4", "gems5", "gems6"], "crystal-growth", None, [i / 5 for i in range(6)]),
     ("ring", "defeatmod", ["raped"], "kneeling", None, [1]),
     ("ring", "slove", ["willpower"], "brain", None, [1]),
-    # sets new in 3.0.0: the only art there is, so they live in the classic library
+    # the sets new in 3.0.0 (ring style only)
     ("lib", "sunhelm/food", stages("food", 9), "meal", None, None),
     ("lib", "sunhelm/thirst", stages("thirst", 9), "waterskin", None, None),
     ("lib", "sunhelm/cold", stages("cold", 9), COLD, None, None),
@@ -282,19 +283,23 @@ def dump_preset(d):
 
 
 def write_presets():
-    os.makedirs(RING_PRESETS, exist_ok=True)
+    # the shipped Default and HideEmpty are the ring ramp, in full
+    ramp_a = [c[3] for c in RAMP]
+    hide_a = [0] + ramp_a[1:]
     ring = {k: colours(v) for k, v in RING_PRESET.items()}
-    open(os.path.join(RING_PRESETS, "Default.json"), "w", encoding="utf-8").write(dump_preset(ring))
-    # the classic presets keep their own colours and only gain the new icons
-    hide = [0] + CLASSIC_A[1:]
+    open(os.path.join(PRESETS, "Default.json"), "w", encoding="utf-8").write(dump_preset(ring))
+    ring_hide = {k: colours(v, alphas=hide_a) for k, v in RING_PRESET.items()}
+    open(os.path.join(PRESETS, "HideEmpty.json"), "w", encoding="utf-8").write(dump_preset(ring_hide))
+    # the white presets and the classic pack's presets keep their colours and
+    # only gain the icons new in 3.0.0, with the classic alphas
+    classic_hide = [0] + CLASSIC_A[1:]
     variants = {
-        "Default.json": dict(alphas=CLASSIC_A, white=False),
-        "HideEmpty.json": dict(alphas=hide, white=False),
-        "AllWhite.json": dict(alphas=CLASSIC_A, white=True),
-        "AllWhite_HideEmpty.json": dict(alphas=hide, white=True),
+        os.path.join(PRESETS, "AllWhite.json"): dict(alphas=CLASSIC_A, white=True),
+        os.path.join(PRESETS, "AllWhite_HideEmpty.json"): dict(alphas=classic_hide, white=True),
+        os.path.join(CLASSIC_PRESETS, "Default.json"): dict(alphas=CLASSIC_A, white=False),
+        os.path.join(CLASSIC_PRESETS, "HideEmpty.json"): dict(alphas=classic_hide, white=False),
     }
-    for fn, kw in variants.items():
-        path = os.path.join(CLASSIC_PRESETS, fn)
+    for path, kw in variants.items():
         d = json.load(open(path, encoding="utf-8"))
         for k, spec in NEW_KEYS.items():
             d[k] = colours(spec, **kw)
@@ -369,7 +374,7 @@ def write_sheet(icons):
     W = MARGIN * 2 + COL_W * 2 + 40
     sheet = Image.new("RGBA", (W, H), (6, 6, 8, 255))
     d = ImageDraw.Draw(sheet)
-    title = "SL Widgets 3.0  -  ring icons, fine to worst"
+    title = "SL Widgets 3.0  -  the icon set, fine to worst"
     d.text(((W - d.textlength(title, font=f_title)) / 2, 26), title, font=f_title, fill=(240, 240, 240, 255))
 
     def draw_rows(rws, x0):
@@ -396,7 +401,7 @@ def write_sheet(icons):
     draw_rows(left, MARGIN)
     draw_rows(right, MARGIN + COL_W + 40)
     foot = ("Stage counts are the mod's real ones. The ring sweeps with the stage, the glyph fills from the bottom, "
-            "the colour is the per-stage tint of the ring colour preset; milk and lactacid keep one colour. "
+            "the colour is the per-stage tint of the Default colour preset; milk and lactacid keep one colour. "
             "Glyphs: game-icons.net (CC BY 3.0) and hand-drawn, see art/ring/glyphs/CREDITS.md.")
     d.text(((W - d.textlength(foot, font=f_foot)) / 2, H - 34), foot, font=f_foot, fill=(150, 150, 150, 255))
     os.makedirs(os.path.dirname(SHEET), exist_ok=True)
@@ -413,7 +418,7 @@ def main():
     count = 0
     for where, folder, stems, glyph, badge, fills in SETS:
         n = len(stems)
-        dest = os.path.join(RING_LIB if where == "ring" else LIB, folder.replace("/", os.sep))
+        dest = os.path.join(LIB, folder.replace("/", os.sep))
         os.makedirs(dest, exist_ok=True)
         for i, stem in enumerate(stems):
             g = glyph[i] if isinstance(glyph, list) else glyph

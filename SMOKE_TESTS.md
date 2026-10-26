@@ -139,7 +139,7 @@ Pre-release checklist. Each scenario should be verified in-game or by code inspe
 | 11a.10 | P1 | Blade and Blunt | Injury icon steps Unhurt / Minor / Major / Critical with the spells the DLL applies | slw_module_health |
 | 11a.11 | P1 | Diseases | Vanilla disease = stage 1; with SunHelm Diseases the chain's stage 2 / 3 spells raise it; cure resets to Healthy | slw_module_health |
 | 11a.12 | P2 | Settings preset round trip | The 13 new keys and `npc.N.dirt/wet/baby` save and load | slw_config |
-| 11a.13 | P1 | FOMOD, both options | Ring option: every icon in the ring style and the ramp preset; Classic option: old art for old sets, ring art for the new ones, old preset. The MCM colour preset list shows the same four names either way | build_release.py |
+| 11a.13 | P1 | Archives | The mod zip shows every icon in the ring style with the ramp Default preset; the Classic Icons zip installed on top puts the old art and the old Default / HideEmpty presets back for the pre-3.0.0 sets only. The MCM colour preset list shows the same four names either way | build_release.py |
 
 ## 12. Widget Controller Update Loop
 

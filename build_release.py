@@ -1,32 +1,32 @@
-"""Assemble the SL Widgets release archive, a FOMOD with two icon styles.
+"""Package the optional "Classic Icons" download and name the release zip.
 
-    python build_release.py            # -> Build/SLWidgets <version>.zip
+    python build_release.py
 
-Run it after the Papyrus build (Scripts/*.pex must be current) and after
-build_icons.py. The version comes from slw_util.GetVersionString().
+Run it after the Papyrus build (Pyro also writes Build/SLWidgets.zip, the
+mod itself) and after build_icons.py. The version comes from
+slw_util.GetVersionString(). It writes:
 
-Archive layout (what the installer sees):
-  fomod/info.xml, fomod/ModuleConfig.xml
-  00 Core/            plugin, scripts and sources, translations, SEQ, the
-                      settings and colour presets except Default.json, the
-                      new 3.0.0 icon sets (both styles share them)
-  10 Classic Icons/   the classic art of the sets that pre-date 3.0.0, and
-                      the classic Default.json colour preset
-  20 Ring Icons/      the same sets drawn in the ring style (art/ring/library)
-                      and the ring Default.json (the fine-to-worst ramp)
-The two icon folders are one "pick exactly one" group. Pyro's own zip step
-cannot nest option folders, which is why this exists; Pyro's flat
-Build/SLWidgets.zip is left alone.
+  Build/SLWidgets <version>.zip                 Pyro's Build/SLWidgets.zip, renamed
+                                                (the mod, with the ring icons)
+  Build/SLWidgets Classic Icons <version>.zip   an optional download: the art the
+                                                sets that pre-date 3.0.0 shipped
+                                                before, plus the matching Default
+                                                and HideEmpty colour presets; it
+                                                installs over the mod like the
+                                                custom icon packs do
+
+The classic pack is built from art/classic. The sets new in 3.0.0 only exist
+in the ring style, so the pack leaves them alone.
 """
 import os
 import re
+import shutil
 import zipfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 LIB_REL = "Interface/exported/widgets/iwant/widgets/library"
-RING_LIB = os.path.join(ROOT, "art", "ring", "library")
-RING_PRESET = os.path.join(ROOT, "art", "ring", "presets", "Default.json")
-PRESET_REL = "SKSE/Plugins/SlWidgets/IconPresets/Default.json"
+PRESETS_REL = "SKSE/Plugins/SlWidgets/IconPresets"
+CLASSIC = os.path.join(ROOT, "art", "classic")
 
 
 def version():
@@ -43,106 +43,36 @@ def walk(folder):
             yield os.path.join(dp, fn)
 
 
-def rel(path, base=ROOT):
-    return os.path.relpath(path, base).replace(os.sep, "/")
-
-
-def ring_set_folders():
-    """The library folders art/ring/library restyles (relative to the library root)."""
-    return {rel(os.path.dirname(p), RING_LIB) for p in walk(RING_LIB)}
-
-
-def module_config(ver):
-    return f"""<?xml version="1.0" encoding="UTF-16"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://qconsulting.ca/fo3/ModConfig5.0.xsd">
-  <moduleName>SL Widgets {ver}</moduleName>
-  <requiredInstallFiles>
-    <folder source="00 Core" destination="" priority="0" />
-  </requiredInstallFiles>
-  <installSteps order="Explicit">
-    <installStep name="Icon style">
-      <optionalFileGroups order="Explicit">
-        <group name="Icon style" type="SelectExactlyOne">
-          <plugins order="Explicit">
-            <plugin name="Ring icons (new in 3.0)">
-              <description>Every icon drawn in one style: a progress ring around a glyph, coloured white to gold to orange to red as the value worsens (milk and lactacid keep one colour). The default colour preset is the ring ramp. Pick this for a uniform HUD.</description>
-              <files>
-                <folder source="20 Ring Icons" destination="" priority="1" />
-              </files>
-              <typeDescriptor><type name="Recommended" /></typeDescriptor>
-            </plugin>
-            <plugin name="Classic icons">
-              <description>The icons SL Widgets shipped before 3.0 (hearts, bottles, drawings) with their colour preset. The sets new in 3.0 (food, thirst, cold, fatigue, dirtiness, wetness, hair, baby health, stress, fear, injuries, diseases) only exist in the ring style and are installed either way.</description>
-              <files>
-                <folder source="10 Classic Icons" destination="" priority="1" />
-              </files>
-              <typeDescriptor><type name="Optional" /></typeDescriptor>
-            </plugin>
-          </plugins>
-        </group>
-      </optionalFileGroups>
-    </installStep>
-  </installSteps>
-</config>
-"""
-
-
-def info_xml(ver):
-    return f"""<?xml version="1.0" encoding="UTF-16"?>
-<fomod>
-  <Name>SL Widgets</Name>
-  <Author>crajjjj</Author>
-  <Version>{ver}</Version>
-  <Website>https://www.nexusmods.com/skyrimspecialedition/mods/164162</Website>
-  <Description>iWant Status Bars plugin: SexLab, survival and body status icons for the player and up to three NPCs.</Description>
-  <Groups><element>User Interface</element></Groups>
-</fomod>
-"""
-
-
 def main():
     ver = version()
     out_dir = os.path.join(ROOT, "Build")
     os.makedirs(out_dir, exist_ok=True)
-    out = os.path.join(out_dir, f"SLWidgets {ver}.zip")
-    pex = [p for p in walk(os.path.join(ROOT, "Scripts")) if p.endswith(".pex")]
-    if not pex:
-        raise SystemExit("no Scripts/*.pex: run the Papyrus build first")
-    restyled = ring_set_folders()
-    lib_abs = os.path.join(ROOT, *LIB_REL.split("/"))
 
-    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
-        z.writestr("fomod/info.xml", info_xml(ver).encode("utf-16"))
-        z.writestr("fomod/ModuleConfig.xml", module_config(ver).encode("utf-16"))
-        # core
-        for p in [os.path.join(ROOT, "SLWidgets.esp"), os.path.join(ROOT, "LICENSE"), os.path.join(ROOT, "README.md")]:
-            z.write(p, "00 Core/" + os.path.basename(p))
-        for p in pex:
-            z.write(p, "00 Core/" + rel(p))
-        for p in walk(os.path.join(ROOT, "Source", "Scripts")):
-            if p.endswith(".psc"):
-                z.write(p, "00 Core/" + rel(p))
-        for p in walk(os.path.join(ROOT, "Seq")):
-            z.write(p, "00 Core/" + rel(p))
-        for p in walk(os.path.join(ROOT, "Interface", "Translations")):
-            if p.endswith(".txt"):
-                z.write(p, "00 Core/" + rel(p))
-        for p in walk(os.path.join(ROOT, "SKSE")):
-            if rel(p) != PRESET_REL:
-                z.write(p, "00 Core/" + rel(p))
-        # the library: sets with a ring counterpart go to the two options,
-        # the rest (the 3.0.0 sets, the placeholder) to core
-        for p in walk(lib_abs):
-            folder = rel(os.path.dirname(p), lib_abs)
-            if folder in restyled:
-                z.write(p, "10 Classic Icons/" + rel(p))
-            else:
-                z.write(p, "00 Core/" + rel(p))
-        z.write(os.path.join(ROOT, *PRESET_REL.split("/")), "10 Classic Icons/" + PRESET_REL)
-        for p in walk(RING_LIB):
-            z.write(p, "20 Ring Icons/" + LIB_REL + "/" + rel(p, RING_LIB))
-        z.write(RING_PRESET, "20 Ring Icons/" + PRESET_REL)
-    print("wrote", out, os.path.getsize(out) // 1024, "KB")
+    pyro_zip = os.path.join(out_dir, "SLWidgets.zip")
+    if os.path.exists(pyro_zip):
+        named = os.path.join(out_dir, f"SLWidgets {ver}.zip")
+        shutil.copyfile(pyro_zip, named)
+        print("wrote", named, os.path.getsize(named) // 1024, "KB")
+    else:
+        print("no Build/SLWidgets.zip: run the Papyrus build (Pyro) for the mod archive")
+
+    pack = os.path.join(out_dir, f"SLWidgets Classic Icons {ver}.zip")
+    lib = os.path.join(CLASSIC, "library")
+    presets = os.path.join(CLASSIC, "presets")
+    with zipfile.ZipFile(pack, "w", zipfile.ZIP_DEFLATED) as z:
+        for p in walk(lib):
+            z.write(p, LIB_REL + "/" + os.path.relpath(p, lib).replace(os.sep, "/"))
+        for p in walk(presets):
+            z.write(p, PRESETS_REL + "/" + os.path.basename(p))
+        z.writestr("SLWidgets Classic Icons - readme.txt",
+                   f"SL Widgets {ver} - Classic Icons\n\n"
+                   "The icons SL Widgets shipped before 3.0.0, for people who prefer them to the ring set.\n"
+                   "Install after SL Widgets and let it overwrite: it replaces the textures of the sets that\n"
+                   "existed before 3.0.0 and the Default and HideEmpty colour presets. The sets new in 3.0.0\n"
+                   "(food, thirst, cold, fatigue, dirtiness, wetness, hair, baby health, stress, fear,\n"
+                   "injuries, diseases) keep the ring style; there is no other art for them.\n"
+                   "To go back to the ring icons, reinstall SL Widgets.\n")
+    print("wrote", pack, os.path.getsize(pack) // 1024, "KB")
 
 
 if __name__ == "__main__":
