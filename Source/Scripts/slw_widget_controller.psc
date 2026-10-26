@@ -789,7 +789,7 @@ EndFunction
 ; if future updates add icon types (a cached array from a previous version
 ; would silently miss new entries).
 String[] Function _getOwnedIconBaseNames()
-	String[] names = new String[26]
+	String[] names = new String[29]
 	names[0] = "Arousal"
 	names[1] = "Exposure"
 	names[2] = "AP2Oral"
@@ -816,6 +816,10 @@ String[] Function _getOwnedIconBaseNames()
 	names[23] = "Pregnancy_Chaurus_Eggs"
 	names[24] = "Pregnancy_Dwemer_Spheres"
 	names[25] = "Pregnancy_Gems"
+	; 3.0.0: the icons that also track NPCs
+	names[26] = "Dirtiness"
+	names[27] = "Wetness"
+	names[28] = "BF_BabyHealth"
 	Return names
 EndFunction
 

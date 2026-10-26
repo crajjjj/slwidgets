@@ -37,6 +37,14 @@ Enable or disable individual icon groups. Settings are organised by mod.
 | **MME Lactacid Icon Enabled** | `MilkModNEW.esp` | Lactacid level (9 stages) |
 | **Pee Icon Enabled** | PAF, MiniNeeds, AlivePeeing, or Private Needs | Bladder fill (9 stages) |
 | **Poop Icon Enabled** | PAF, MiniNeeds, or Private Needs | Bowel fill (9 stages) |
+| **Food / Thirst / Cold / Fatigue Icon Enabled** | `SunHelmSurvival.esp` | SunHelm needs (9 stages each, player only) |
+| **Dirtiness Icon Enabled** | `Bathing in Skyrim.esp` (Renewed) | Dirt percentage (9 stages), also per NPC slot |
+| **Wetness Icon Enabled** | `WetFunction.esp` | Wetness (9 stages), also per NPC slot |
+| **Pubic / Armpit Hair Icon Enabled** | `SPH - Skyrim Pubic Hair.esp` | Hair length (6 / 7 stages, player only) |
+| **Baby Health Icon Enabled** | `BeeingFemale.esm` | Unborn health while pregnant (9 stages), also per NPC slot |
+| **Stress / Fear Icon Enabled** | `Stress and Fear.esp` | Stress (9 stages) and phobia count (player only) |
+| **Injuries Icon Enabled** | `BladeAndBlunt.esp` | Injury severity (4 stages, player only) |
+| **Diseases Icon Enabled** | none (`SunHelmDiseases.esp` for stages 2 and 3) | Worst disease stage (4 stages, player only) |
 
 ### Toggle icon groups
 

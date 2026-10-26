@@ -98,6 +98,88 @@ NPC support: **No** — all needs mods use player-only APIs. These icons show on
 
 ---
 
+## Survival, hygiene and health (3.0.0)
+
+Stage icons, all of them. They are drawn in the ring style only (the classic set has no art for them), so they look the same with either [icon style](customization.md#icon-styles).
+
+### SunHelm
+
+*Requires:* `SunHelmSurvival.esp`
+
+| Icon | Description |
+|------|-------------|
+| **Food** | 9 stages from Full to Starved: SunHelm's hunger level over its last stage threshold |
+| **Thirst** | 9 stages from Quenched to Dying of Thirst |
+| **Cold** | 9 stages from Warm to Hypothermic: a sun for the first three, a snowflake from Chilly on |
+| **Fatigue** | 9 stages from Rested to Collapsing |
+
+NPC support: **No** - SunHelm tracks the player only.
+
+### Bathing in Skyrim Renewed and Wet Function Redux
+
+*Requires:* `Bathing in Skyrim.esp` (the Renewed version, 2.7 or newer; the 2018 original is not supported) and/or `WetFunction.esp`
+
+| Icon | Description |
+|------|-------------|
+| **Dirtiness** | 9 stages from Clean to Reeking: Renewed's dirt percentage |
+| **Wetness** | 9 stages from Dry to Dripping: Wet Function's wetness |
+
+NPC support: **Yes** for both, off by default per slot. Renewed only writes a value for the actors it tracks; everyone else reads as clean.
+
+### SPH - Skyrim Pubic Hair
+
+*Requires:* `SPH - Skyrim Pubic Hair.esp` (2.0 or newer)
+
+| Icon | Description |
+|------|-------------|
+| **Pubic hair** | SPH's six stages, Shaved to Untamed (a shaving style counts as its own length) |
+| **Armpit hair** | SPH's seven stages, Shaved to Very Long |
+
+NPC support: **No** - SPH grows hair on the player only.
+
+### BeeingFemale baby health
+
+*Requires:* `BeeingFemale.esm`
+
+| Icon | Description |
+|------|-------------|
+| **Baby health** | 9 stages from Healthy to Miscarrying while pregnant, hidden otherwise. The scale runs the other way from the rest: full health is the calm end |
+
+NPC support: **Yes**, off by default per slot.
+
+### Stress and Fear
+
+*Requires:* `Stress and Fear.esp`
+
+| Icon | Description |
+|------|-------------|
+| **Stress** | 9 stages from Calm to Breaking: the mod's stress total |
+| **Fear** | The phobias held, one stage each up to 8+. The mod has no fear number: a phobia is a spell it adds when a creature type hurts you badly and removes when you conquer it |
+
+NPC support: **No**.
+
+### Blade and Blunt injuries
+
+*Requires:* `BladeAndBlunt.esp` (4.0 or newer)
+
+| Icon | Description |
+|------|-------------|
+| **Injuries** | Unhurt, Minor, Major or Critical Injury: the spell Blade and Blunt's DLL applies |
+
+NPC support: **No**.
+
+### Diseases
+
+*Requires:* nothing for vanilla diseases; `SunHelmDiseases.esp` for stages 2 and 3
+
+| Icon | Description |
+|------|-------------|
+| **Diseases** | Healthy, Infected, Worsening, Severe: the worst stage of any disease held. Vanilla diseases are stage 1; SunHelm Diseases turns each into a three-stage chain and adds seven diseases of its own |
+
+NPC support: **No**.
+
+---
+
 ## Toggle icons
 
 Toggle icons appear when a condition is met and disappear when it clears. They do not show a gradual state — they are either visible or hidden.

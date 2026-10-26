@@ -123,6 +123,24 @@ Pre-release checklist. Each scenario should be verified in-game or by code inspe
 | 11.2 | P0 | Raped icon shows when effect active | `PlayerRef.HasMagicEffect(_defeatWeakened)` triggers icon | slw_module_sldefeat |
 | 11.3 | P1 | Icon released when effect removed | Effect wears off, next update tick releases icon | slw_module_sldefeat |
 
+## 11a. 3.0.0 modules (SunHelm, hygiene, SPH, baby health, stress, health)
+
+| # | P | Scenario | Expected | Scripts |
+|---|---|----------|----------|---------|
+| 11a.1 | P0 | Fresh game, all six modules | `moduleSetup()` runs 14 modules, each logs its plugin detection; no "property not found" errors (ESP carries the six script entries and `slw_config` properties) | slw_config, SLWidgets.esp |
+| 11a.2 | P0 | Existing 2.3.0 save | MCM traces "Updating script to version 30000", the 13 new toggles default on, the new icons register on the next widget reload, old icons unchanged | slw_menu, slw_config |
+| 11a.3 | P1 | SunHelm installed | Food/Thirst/Cold/Fatigue toggles enabled; food icon follows `GetHungerPercent()` (eat: stage drops), cold shows the sun at stages 0-2 and the snowflake from 3 | slw_module_sunhelm |
+| 11a.4 | P1 | SunHelm absent | The four toggles greyed, no errors (the casts are never made) | slw_module_sunhelm |
+| 11a.5 | P1 | Bathing in Skyrim Renewed | Dirtiness icon follows the global; bathing drops it; an NPC in a tracked slot with the NPC toggle on shows its own value (`BiS_Dirtiness`) | slw_module_hygiene |
+| 11a.6 | P1 | Wet Function Redux | Wetness rises in rain / water, falls when dry; off for NPC slots by default | slw_module_hygiene |
+| 11a.7 | P1 | SPH 2.0 | Pubic icon has 6 stages, armpit 7; shaving drops them, growth cream raises one step | slw_module_sph |
+| 11a.8 | P1 | BeeingFemale pregnancy | Baby health icon appears only while pregnant and disappears after birth / abortion; 100 health = stage 0 ("Healthy") | slw_module_baby |
+| 11a.9 | P1 | Stress and Fear | Stress follows `Stress_Total`; fear counts held phobia spells (0..8+) | slw_module_stress |
+| 11a.10 | P1 | Blade and Blunt | Injury icon steps Unhurt / Minor / Major / Critical with the spells the DLL applies | slw_module_health |
+| 11a.11 | P1 | Diseases | Vanilla disease = stage 1; with SunHelm Diseases the chain's stage 2 / 3 spells raise it; cure resets to Healthy | slw_module_health |
+| 11a.12 | P2 | Settings preset round trip | The 13 new keys and `npc.N.dirt/wet/baby` save and load | slw_config |
+| 11a.13 | P1 | FOMOD, both options | Ring option: every icon in the ring style and the ramp preset; Classic option: old art for old sets, ring art for the new ones, old preset. The MCM colour preset list shows the same four names either way | build_release.py |
+
 ## 12. Widget Controller Update Loop
 
 | # | P | Scenario | Expected | Scripts |

@@ -8,7 +8,7 @@ EndFunction
 
 ;SemVer support
 Int Function GetVersion() Global
-    Return 20300
+    Return 30000
     ; 1.0.0   -> 10000
     ; 1.1.0   -> 10100
     ; 1.1.1  -> 10101
@@ -17,7 +17,7 @@ Int Function GetVersion() Global
 EndFunction
 
 String Function GetVersionString() Global
-    Return "2.3.0"
+    Return "3.0.0"
 EndFunction
 
 String Function StringIfElse(Bool isTrue, String returnTrue, String returnFalse = "") Global
@@ -157,6 +157,124 @@ EndFunction
 
 Bool Function isSloveReady() Global
 	Return isDependencyReady("SLOVE.esp")
+EndFunction
+
+; --- 3.0.0 sources ---
+
+Bool Function isSunHelmReady() Global
+	Return isDependencyReady("SunHelmSurvival.esp")
+EndFunction
+
+Bool Function isSunHelmDiseasesReady() Global
+	Return isDependencyReady("SunHelmDiseases.esp")
+EndFunction
+
+; Bathing in Skyrim Renewed keeps the original plugin name. The percentage
+; global (0xDA8) exists only in Renewed; the 2018 original tracked dirt as
+; spell tiers and is not supported.
+Bool Function isBathingReady() Global
+	If !isDependencyReady("Bathing in Skyrim.esp")
+		Return false
+	EndIf
+	Return (Game.GetFormFromFile(0x000DA8, "Bathing in Skyrim.esp") as GlobalVariable) != None
+EndFunction
+
+Bool Function isWetFunctionReady() Global
+	Return isDependencyReady("WetFunction.esp")
+EndFunction
+
+Bool Function isSPHReady() Global
+	Return isDependencyReady("SPH - Skyrim Pubic Hair.esp")
+EndFunction
+
+Bool Function isStressFearReady() Global
+	Return isDependencyReady("Stress and Fear.esp")
+EndFunction
+
+Bool Function isBladeBluntReady() Global
+	Return isDependencyReady("BladeAndBlunt.esp")
+EndFunction
+
+; The colours a stage icon starts with: the fine-to-worst ramp the ring icon
+; set is drawn for, white -> gold -> orange -> red, with the stock alphas
+; (stage 0 faint, stage 1 half). Any length of arrays: the ramp's nine stops
+; are sampled across them. A colour preset overrides it per icon afterwards.
+Function fillStageColors(Int[] r, Int[] g, Int[] b, Int[] a) Global
+	Int n = r.Length
+	Int i = 0
+	While i < n
+		Int stop = 8
+		If n > 1
+			stop = ((i * 8 * 2 + (n - 1)) / (2 * (n - 1)))
+		EndIf
+		r[i] = 255
+		If stop == 0
+			g[i] = 255
+			b[i] = 255
+		ElseIf stop == 1
+			g[i] = 240
+			b[i] = 200
+		ElseIf stop == 2
+			g[i] = 226
+			b[i] = 150
+		ElseIf stop == 3
+			g[i] = 206
+			b[i] = 100
+		ElseIf stop == 4
+			g[i] = 180
+			b[i] = 66
+		ElseIf stop == 5
+			g[i] = 140
+			b[i] = 44
+		ElseIf stop == 6
+			g[i] = 100
+			b[i] = 36
+		ElseIf stop == 7
+			g[i] = 66
+			b[i] = 40
+		Else
+			g[i] = 36
+			b[i] = 36
+		EndIf
+		If i == 0
+			a[i] = 33
+		ElseIf i == 1
+			a[i] = 75
+		Else
+			a[i] = 100
+		EndIf
+		i += 1
+	EndWhile
+EndFunction
+
+; Registers a stage icon with iWant: one file per stage, basepath + stage +
+; ".dds" (basepath is the widgets/... path up to the stage number), the
+; captions as the stage names, the default colours above, then the active
+; colour preset. Loads silently do nothing when the icon is already loaded.
+Function loadStageIcon(slw_config cfg, iWant_Status_Bars iBars, String iconName, String basepath, String[] captions) Global
+	Int n = captions.Length
+	String[] s = Utility.CreateStringArray(n)
+	Int[] r = Utility.CreateIntArray(n)
+	Int[] g = Utility.CreateIntArray(n)
+	Int[] b = Utility.CreateIntArray(n)
+	Int[] a = Utility.CreateIntArray(n)
+	Int i = 0
+	While i < n
+		s[i] = basepath + i + ".dds"
+		i += 1
+	EndWhile
+	fillStageColors(r, g, b, a)
+	cfg.ApplyIconColors(iconName, r, g, b, a)
+	iBars.loadIcon(slwGetModName(), iconName, captions, s, r, g, b, a)
+EndFunction
+
+Int Function clampInt(Int value, Int low, Int high) Global
+	If value < low
+		Return low
+	ElseIf value > high
+		Return high
+	EndIf
+	Return value
 EndFunction
 
 Bool Function isDependencyReady(String modname) Global

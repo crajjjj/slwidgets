@@ -141,7 +141,7 @@ Face icon that fills as exposure / nudity rises.
 
 ### Milk — MME / SGO4 / MAL
 
-*Requires MilkModNEW.esp, SGO4IF.esp, or Mammaries And Lactation.esp.*
+*Requires MilkModNEW.esp, dse-soulgem-oven.esp, or Mammaries And Lactation.esp.*
 
 
 #### Milk
@@ -195,6 +195,185 @@ MME only.
 <figure class="icon-cell"><img src="../assets/icons/paf_poop_1.png" alt="paf_poop stage 1"><figcaption>1</figcaption></figure>
 <figure class="icon-cell"><img src="../assets/icons/paf_poop_3.png" alt="paf_poop stage 3"><figcaption>3</figcaption></figure>
 <figure class="icon-cell"><img src="../assets/icons/paf_poop_4.png" alt="paf_poop stage 4"><figcaption>4</figcaption></figure>
+
+</div>
+
+
+### Survival, hygiene and health (3.0.0)
+
+*Drawn in the ring style only, so they look the same with either icon style. Player only unless noted.*
+
+
+#### Food (SunHelm)
+
+<div class="icon-grid" markdown>
+
+<figure class="icon-cell"><img src="../assets/icons/sh_food_0.png" alt="sh_food stage 0"><figcaption>0</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/sh_food_3.png" alt="sh_food stage 3"><figcaption>3</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/sh_food_5.png" alt="sh_food stage 5"><figcaption>5</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/sh_food_8.png" alt="sh_food stage 8"><figcaption>8</figcaption></figure>
+
+</div>
+
+
+#### Thirst (SunHelm)
+
+<div class="icon-grid" markdown>
+
+<figure class="icon-cell"><img src="../assets/icons/sh_thirst_0.png" alt="sh_thirst stage 0"><figcaption>0</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/sh_thirst_3.png" alt="sh_thirst stage 3"><figcaption>3</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/sh_thirst_5.png" alt="sh_thirst stage 5"><figcaption>5</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/sh_thirst_8.png" alt="sh_thirst stage 8"><figcaption>8</figcaption></figure>
+
+</div>
+
+
+#### Cold (SunHelm)
+
+A sun while warm, a snowflake from Chilly on.
+
+<div class="icon-grid" markdown>
+
+<figure class="icon-cell"><img src="../assets/icons/sh_cold_0.png" alt="sh_cold stage 0"><figcaption>0</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/sh_cold_3.png" alt="sh_cold stage 3"><figcaption>3</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/sh_cold_5.png" alt="sh_cold stage 5"><figcaption>5</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/sh_cold_8.png" alt="sh_cold stage 8"><figcaption>8</figcaption></figure>
+
+</div>
+
+
+#### Fatigue (SunHelm)
+
+<div class="icon-grid" markdown>
+
+<figure class="icon-cell"><img src="../assets/icons/sh_fatigue_0.png" alt="sh_fatigue stage 0"><figcaption>0</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/sh_fatigue_3.png" alt="sh_fatigue stage 3"><figcaption>3</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/sh_fatigue_5.png" alt="sh_fatigue stage 5"><figcaption>5</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/sh_fatigue_8.png" alt="sh_fatigue stage 8"><figcaption>8</figcaption></figure>
+
+</div>
+
+
+#### Dirtiness (Bathing in Skyrim Renewed)
+
+Also per NPC slot.
+
+<div class="icon-grid" markdown>
+
+<figure class="icon-cell"><img src="../assets/icons/dirt_0.png" alt="dirt stage 0"><figcaption>0</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/dirt_3.png" alt="dirt stage 3"><figcaption>3</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/dirt_5.png" alt="dirt stage 5"><figcaption>5</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/dirt_8.png" alt="dirt stage 8"><figcaption>8</figcaption></figure>
+
+</div>
+
+
+#### Wetness (Wet Function Redux)
+
+Also per NPC slot.
+
+<div class="icon-grid" markdown>
+
+<figure class="icon-cell"><img src="../assets/icons/wet_0.png" alt="wet stage 0"><figcaption>0</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/wet_3.png" alt="wet stage 3"><figcaption>3</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/wet_5.png" alt="wet stage 5"><figcaption>5</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/wet_8.png" alt="wet stage 8"><figcaption>8</figcaption></figure>
+
+</div>
+
+
+#### Pubic hair (SPH)
+
+SPH's six stages.
+
+<div class="icon-grid" markdown>
+
+<figure class="icon-cell"><img src="../assets/icons/sph_pubic_0.png" alt="sph_pubic stage 0"><figcaption>0</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/sph_pubic_2.png" alt="sph_pubic stage 2"><figcaption>2</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/sph_pubic_3.png" alt="sph_pubic stage 3"><figcaption>3</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/sph_pubic_5.png" alt="sph_pubic stage 5"><figcaption>5</figcaption></figure>
+
+</div>
+
+
+#### Armpit hair (SPH)
+
+SPH's seven stages.
+
+<div class="icon-grid" markdown>
+
+<figure class="icon-cell"><img src="../assets/icons/sph_armpit_0.png" alt="sph_armpit stage 0"><figcaption>0</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/sph_armpit_2.png" alt="sph_armpit stage 2"><figcaption>2</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/sph_armpit_4.png" alt="sph_armpit stage 4"><figcaption>4</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/sph_armpit_6.png" alt="sph_armpit stage 6"><figcaption>6</figcaption></figure>
+
+</div>
+
+
+#### Baby health (BeeingFemale)
+
+Only while pregnant; also per NPC slot. Full health is stage 0.
+
+<div class="icon-grid" markdown>
+
+<figure class="icon-cell"><img src="../assets/icons/baby_0.png" alt="baby stage 0"><figcaption>0</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/baby_3.png" alt="baby stage 3"><figcaption>3</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/baby_5.png" alt="baby stage 5"><figcaption>5</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/baby_8.png" alt="baby stage 8"><figcaption>8</figcaption></figure>
+
+</div>
+
+
+#### Stress (Stress and Fear)
+
+<div class="icon-grid" markdown>
+
+<figure class="icon-cell"><img src="../assets/icons/stress_0.png" alt="stress stage 0"><figcaption>0</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/stress_3.png" alt="stress stage 3"><figcaption>3</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/stress_5.png" alt="stress stage 5"><figcaption>5</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/stress_8.png" alt="stress stage 8"><figcaption>8</figcaption></figure>
+
+</div>
+
+
+#### Fear (Stress and Fear)
+
+One stage per phobia held.
+
+<div class="icon-grid" markdown>
+
+<figure class="icon-cell"><img src="../assets/icons/fear_0.png" alt="fear stage 0"><figcaption>0</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/fear_3.png" alt="fear stage 3"><figcaption>3</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/fear_5.png" alt="fear stage 5"><figcaption>5</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/fear_8.png" alt="fear stage 8"><figcaption>8</figcaption></figure>
+
+</div>
+
+
+#### Injuries (Blade and Blunt)
+
+Unhurt, Minor, Major, Critical.
+
+<div class="icon-grid" markdown>
+
+<figure class="icon-cell"><img src="../assets/icons/injury_0.png" alt="injury stage 0"><figcaption>0</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/injury_1.png" alt="injury stage 1"><figcaption>1</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/injury_2.png" alt="injury stage 2"><figcaption>2</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/injury_3.png" alt="injury stage 3"><figcaption>3</figcaption></figure>
+
+</div>
+
+
+#### Diseases
+
+Healthy, Infected, Worsening, Severe (stages 2 and 3 need SunHelm Diseases).
+
+<div class="icon-grid" markdown>
+
+<figure class="icon-cell"><img src="../assets/icons/disease_0.png" alt="disease stage 0"><figcaption>0</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/disease_1.png" alt="disease stage 1"><figcaption>1</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/disease_2.png" alt="disease stage 2"><figcaption>2</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/disease_3.png" alt="disease stage 3"><figcaption>3</figcaption></figure>
 
 </div>
 
@@ -260,3 +439,10 @@ Progression as soul gems mature.
 <figure class="icon-cell icon-cell--wide"><img src="../assets/icons/defeat_raped.png" alt="Weakened / raped"><figcaption>Weakened / raped</figcaption></figure>
 
 </div>
+
+
+## Ring icon style
+
+Since 3.0.0 the installer offers the whole set in one drawn style: a progress ring around a glyph, tinted white to red as the value worsens (milk and lactacid keep one colour). The classic art above is the other choice. See [Icon styles](customization.md#icon-styles).
+
+![The ring icon set](../assets/ring-style.png)

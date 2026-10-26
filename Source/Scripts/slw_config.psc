@@ -12,6 +12,13 @@ slw_module_slp property module_slp auto
 slw_module_pregnancy property module_pregnancy auto
 slw_module_paf property module_paf auto
 slw_module_sldefeat property module_defeat auto
+; 3.0.0: survival, hygiene, hair, baby health, stress, injuries and diseases
+slw_module_sunhelm property module_sunhelm auto
+slw_module_hygiene property module_hygiene auto
+slw_module_sph property module_sph auto
+slw_module_baby property module_baby auto
+slw_module_stress property module_stress auto
+slw_module_health property module_health auto
 
 
 Int property updateInterval = 5 auto hidden
@@ -35,6 +42,21 @@ Bool property module_pregnancy_enabled = True auto hidden
 Bool property module_paf_pee = True auto hidden
 Bool property module_paf_poo = True auto hidden
 Bool property module_defeat_enabled = True auto hidden
+; 3.0.0 icons, player switches. Dirtiness, wetness and baby health are also
+; per NPC slot (MOD_DIRT, MOD_WET, MOD_BABY); the rest are player only.
+Bool property module_sh_food = True auto hidden
+Bool property module_sh_thirst = True auto hidden
+Bool property module_sh_cold = True auto hidden
+Bool property module_sh_fatigue = True auto hidden
+Bool property module_dirtiness = True auto hidden
+Bool property module_wetness = True auto hidden
+Bool property module_sph_pubic = True auto hidden
+Bool property module_sph_armpit = True auto hidden
+Bool property module_baby_health = True auto hidden
+Bool property module_saf_stress = True auto hidden
+Bool property module_saf_fear = True auto hidden
+Bool property module_injuries = True auto hidden
+Bool property module_diseases = True auto hidden
 ; SLO VE willpower: a bar (iWant Widgets meter), not a status icon. Meter 0 of
 ; the meter stack, and its switch (isMeterOn(0)), player only.
 Bool property module_slove_willpower = True auto hidden
@@ -76,6 +98,9 @@ Bool[] _slot_use_mme_milk
 Bool[] _slot_use_mme_lactacid
 Bool[] _slot_use_slp
 Bool[] _slot_use_preg
+Bool[] _slot_use_dirt
+Bool[] _slot_use_wet
+Bool[] _slot_use_baby
 
 ; Sub-toggle codes for isOnForSlot lookup
 Int Property MOD_SLA_AROUSAL = 1 AutoReadOnly
@@ -89,6 +114,9 @@ Int Property MOD_MME_MILK = 8 AutoReadOnly
 Int Property MOD_MME_LACTACID = 9 AutoReadOnly
 Int Property MOD_SLP = 10 AutoReadOnly
 Int Property MOD_PREG = 11 AutoReadOnly
+Int Property MOD_DIRT = 12 AutoReadOnly
+Int Property MOD_WET = 13 AutoReadOnly
+Int Property MOD_BABY = 14 AutoReadOnly
 
 Event OnInit()
 	_ensureSlotToggles()
@@ -143,6 +171,19 @@ Function _ensureSlotToggles()
 	If !_slot_use_preg
 		_slot_use_preg = Utility.CreateBoolArray(4, True)
 	EndIf
+	; 3.0.0: off for NPCs by default, same bar-cap reasoning as above
+	If !_slot_use_dirt
+		_slot_use_dirt = new Bool[4]
+		_slot_use_dirt[0] = True
+	EndIf
+	If !_slot_use_wet
+		_slot_use_wet = new Bool[4]
+		_slot_use_wet[0] = True
+	EndIf
+	If !_slot_use_baby
+		_slot_use_baby = new Bool[4]
+		_slot_use_baby[0] = True
+	EndIf
 EndFunction
 
 ; Per-slot sub-toggles are independent of each other. The only global gate is
@@ -184,6 +225,12 @@ Bool Function getSlotModuleEnable(Int slot, Int subCode)
 		Return _slot_use_slp[slot]
 	ElseIf subCode == MOD_PREG
 		Return _slot_use_preg[slot]
+	ElseIf subCode == MOD_DIRT
+		Return _slot_use_dirt[slot]
+	ElseIf subCode == MOD_WET
+		Return _slot_use_wet[slot]
+	ElseIf subCode == MOD_BABY
+		Return _slot_use_baby[slot]
 	EndIf
 	Return True
 EndFunction
@@ -212,6 +259,12 @@ Function setSlotModuleEnable(Int slot, Int subCode, Bool enabled)
 		_slot_use_slp[slot] = enabled
 	ElseIf subCode == MOD_PREG
 		_slot_use_preg[slot] = enabled
+	ElseIf subCode == MOD_DIRT
+		_slot_use_dirt[slot] = enabled
+	ElseIf subCode == MOD_WET
+		_slot_use_wet[slot] = enabled
+	ElseIf subCode == MOD_BABY
+		_slot_use_baby[slot] = enabled
 	EndIf
 EndFunction
 
@@ -478,6 +531,12 @@ Function moduleSetup()
 	module_pregnancy.moduleSetup()
 	module_paf.moduleSetup()
 	module_defeat.moduleSetup()
+	module_sunhelm.moduleSetup()
+	module_hygiene.moduleSetup()
+	module_sph.moduleSetup()
+	module_baby.moduleSetup()
+	module_stress.moduleSetup()
+	module_health.moduleSetup()
 EndFunction
 
 ;force modules to reinit after restart
@@ -490,8 +549,17 @@ Function moduleReset()
 	module_pregnancy.moduleReset()
 	module_paf.moduleReset()
 	module_defeat.moduleReset()
+	module_sunhelm.moduleReset()
+	module_hygiene.moduleReset()
+	module_sph.moduleReset()
+	module_baby.moduleReset()
+	module_stress.moduleReset()
+	module_health.moduleReset()
 EndFunction
 
+; The modules that track NPCs get every slot; the player-only ones (PAF,
+; Defeat, and of the 3.0.0 set SunHelm, SPH, Stress and Fear, injuries and
+; diseases) only slot 0.
 Function moduleWidgetToggleUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	module_sla.onWidgetToggleUpdate(iBars, target, slot)
 	module_apropos_two.onWidgetToggleUpdate(iBars, target, slot)
@@ -499,9 +567,15 @@ Function moduleWidgetToggleUpdate(iWant_Status_Bars iBars, Actor target, Int slo
 	module_mme.onWidgetToggleUpdate(iBars, target, slot)
 	module_slp.onWidgetToggleUpdate(iBars, target, slot)
 	module_pregnancy.onWidgetToggleUpdate(iBars, target, slot)
+	module_hygiene.onWidgetToggleUpdate(iBars, target, slot)
+	module_baby.onWidgetToggleUpdate(iBars, target, slot)
 	If slot == 0
 		module_paf.onWidgetToggleUpdate(iBars, target, slot)
 		module_defeat.onWidgetToggleUpdate(iBars, target, slot)
+		module_sunhelm.onWidgetToggleUpdate(iBars, target, slot)
+		module_sph.onWidgetToggleUpdate(iBars, target, slot)
+		module_stress.onWidgetToggleUpdate(iBars, target, slot)
+		module_health.onWidgetToggleUpdate(iBars, target, slot)
 	EndIf
 EndFunction
 
@@ -513,9 +587,15 @@ Function moduleWidgetReload(iWant_Status_Bars iBars, Actor target, Int slot)
 	module_mme.onWidgetReload(iBars, target, slot)
 	module_slp.onWidgetReload(iBars, target, slot)
 	module_pregnancy.onWidgetReload(iBars, target, slot)
+	module_hygiene.onWidgetReload(iBars, target, slot)
+	module_baby.onWidgetReload(iBars, target, slot)
 	If slot == 0
 		module_paf.onWidgetReload(iBars, target, slot)
 		module_defeat.onWidgetReload(iBars, target, slot)
+		module_sunhelm.onWidgetReload(iBars, target, slot)
+		module_sph.onWidgetReload(iBars, target, slot)
+		module_stress.onWidgetReload(iBars, target, slot)
+		module_health.onWidgetReload(iBars, target, slot)
 	EndIf
 EndFunction
 
@@ -527,9 +607,15 @@ Function moduleWidgetStateUpdate(iWant_Status_Bars iBars, Actor target, Int slot
 	module_mme.onWidgetStatusUpdate(iBars, target, slot)
 	module_slp.onWidgetStatusUpdate(iBars, target, slot)
 	module_pregnancy.onWidgetStatusUpdate(iBars, target, slot)
+	module_hygiene.onWidgetStatusUpdate(iBars, target, slot)
+	module_baby.onWidgetStatusUpdate(iBars, target, slot)
 	If slot == 0
 		module_paf.onWidgetStatusUpdate(iBars, target, slot)
 		module_defeat.onWidgetStatusUpdate(iBars, target, slot)
+		module_sunhelm.onWidgetStatusUpdate(iBars, target, slot)
+		module_sph.onWidgetStatusUpdate(iBars, target, slot)
+		module_stress.onWidgetStatusUpdate(iBars, target, slot)
+		module_health.onWidgetStatusUpdate(iBars, target, slot)
 	EndIf
 EndFunction
 
@@ -597,6 +683,19 @@ Function SetDefaults()
 	module_paf_pee = True
 	module_paf_poo = True
 	module_defeat_enabled = True
+	module_sh_food = True
+	module_sh_thirst = True
+	module_sh_cold = True
+	module_sh_fatigue = True
+	module_dirtiness = True
+	module_wetness = True
+	module_sph_pubic = True
+	module_sph_armpit = True
+	module_baby_health = True
+	module_saf_stress = True
+	module_saf_fear = True
+	module_injuries = True
+	module_diseases = True
 EndFunction
 
 Function DisableWidgets()
@@ -618,6 +717,19 @@ Function DisableWidgets()
 	module_paf_pee = false
 	module_paf_poo = false
 	module_defeat_enabled = false
+	module_sh_food = false
+	module_sh_thirst = false
+	module_sh_cold = false
+	module_sh_fatigue = false
+	module_dirtiness = false
+	module_wetness = false
+	module_sph_pubic = false
+	module_sph_armpit = false
+	module_baby_health = false
+	module_saf_stress = false
+	module_saf_fear = false
+	module_injuries = false
+	module_diseases = false
 EndFunction
 
 Bool function isOn(bool prop)
@@ -752,6 +864,19 @@ Bool Function loadSettingsPreset(String presetName)
 	module_paf_poo = jsonutil.GetPathBoolValue(path, "module_paf_poo", module_paf_poo)
 	module_defeat_enabled = jsonutil.GetPathBoolValue(path, "module_defeat_enabled", module_defeat_enabled)
 	module_slove_willpower = jsonutil.GetPathBoolValue(path, "module_slove_willpower", module_slove_willpower)
+	module_sh_food = jsonutil.GetPathBoolValue(path, "module_sh_food", module_sh_food)
+	module_sh_thirst = jsonutil.GetPathBoolValue(path, "module_sh_thirst", module_sh_thirst)
+	module_sh_cold = jsonutil.GetPathBoolValue(path, "module_sh_cold", module_sh_cold)
+	module_sh_fatigue = jsonutil.GetPathBoolValue(path, "module_sh_fatigue", module_sh_fatigue)
+	module_dirtiness = jsonutil.GetPathBoolValue(path, "module_dirtiness", module_dirtiness)
+	module_wetness = jsonutil.GetPathBoolValue(path, "module_wetness", module_wetness)
+	module_sph_pubic = jsonutil.GetPathBoolValue(path, "module_sph_pubic", module_sph_pubic)
+	module_sph_armpit = jsonutil.GetPathBoolValue(path, "module_sph_armpit", module_sph_armpit)
+	module_baby_health = jsonutil.GetPathBoolValue(path, "module_baby_health", module_baby_health)
+	module_saf_stress = jsonutil.GetPathBoolValue(path, "module_saf_stress", module_saf_stress)
+	module_saf_fear = jsonutil.GetPathBoolValue(path, "module_saf_fear", module_saf_fear)
+	module_injuries = jsonutil.GetPathBoolValue(path, "module_injuries", module_injuries)
+	module_diseases = jsonutil.GetPathBoolValue(path, "module_diseases", module_diseases)
 	_loadMeterSettings(path)
 	_loadNpcSlotToggles(path)
 	Return true
@@ -829,6 +954,9 @@ Function _loadNpcSlotToggles(String path)
 		_slot_use_mme_lactacid[slot] = jsonutil.GetPathBoolValue(path, base + "mme_lactacid", _slot_use_mme_lactacid[slot])
 		_slot_use_slp[slot] = jsonutil.GetPathBoolValue(path, base + "slp", _slot_use_slp[slot])
 		_slot_use_preg[slot] = jsonutil.GetPathBoolValue(path, base + "preg", _slot_use_preg[slot])
+		_slot_use_dirt[slot] = jsonutil.GetPathBoolValue(path, base + "dirt", _slot_use_dirt[slot])
+		_slot_use_wet[slot] = jsonutil.GetPathBoolValue(path, base + "wet", _slot_use_wet[slot])
+		_slot_use_baby[slot] = jsonutil.GetPathBoolValue(path, base + "baby", _slot_use_baby[slot])
 		slot += 1
 	EndWhile
 EndFunction
@@ -852,6 +980,19 @@ Bool Function saveSettingsPreset(String presetName)
 	jsonutil.SetPathIntValue(path, "module_paf_poo", module_paf_poo as Int)
 	jsonutil.SetPathIntValue(path, "module_defeat_enabled", module_defeat_enabled as Int)
 	jsonutil.SetPathIntValue(path, "module_slove_willpower", module_slove_willpower as Int)
+	jsonutil.SetPathIntValue(path, "module_sh_food", module_sh_food as Int)
+	jsonutil.SetPathIntValue(path, "module_sh_thirst", module_sh_thirst as Int)
+	jsonutil.SetPathIntValue(path, "module_sh_cold", module_sh_cold as Int)
+	jsonutil.SetPathIntValue(path, "module_sh_fatigue", module_sh_fatigue as Int)
+	jsonutil.SetPathIntValue(path, "module_dirtiness", module_dirtiness as Int)
+	jsonutil.SetPathIntValue(path, "module_wetness", module_wetness as Int)
+	jsonutil.SetPathIntValue(path, "module_sph_pubic", module_sph_pubic as Int)
+	jsonutil.SetPathIntValue(path, "module_sph_armpit", module_sph_armpit as Int)
+	jsonutil.SetPathIntValue(path, "module_baby_health", module_baby_health as Int)
+	jsonutil.SetPathIntValue(path, "module_saf_stress", module_saf_stress as Int)
+	jsonutil.SetPathIntValue(path, "module_saf_fear", module_saf_fear as Int)
+	jsonutil.SetPathIntValue(path, "module_injuries", module_injuries as Int)
+	jsonutil.SetPathIntValue(path, "module_diseases", module_diseases as Int)
 	_saveMeterSettings(path)
 	_saveNpcSlotToggles(path)
 	If !jsonutil.Save(path, false)
@@ -877,6 +1018,9 @@ Function _saveNpcSlotToggles(String path)
 		jsonutil.SetPathIntValue(path, base + "mme_lactacid", _slot_use_mme_lactacid[slot] as Int)
 		jsonutil.SetPathIntValue(path, base + "slp", _slot_use_slp[slot] as Int)
 		jsonutil.SetPathIntValue(path, base + "preg", _slot_use_preg[slot] as Int)
+		jsonutil.SetPathIntValue(path, base + "dirt", _slot_use_dirt[slot] as Int)
+		jsonutil.SetPathIntValue(path, base + "wet", _slot_use_wet[slot] as Int)
+		jsonutil.SetPathIntValue(path, base + "baby", _slot_use_baby[slot] as Int)
 		slot += 1
 	EndWhile
 EndFunction

@@ -120,6 +120,22 @@ para("*Player only. These icons use 5 stages, not 9.*")
 stage_row("paf_pee", "paf/pee", "pee", 5, "Pee (bladder)")
 stage_row("paf_poop", "paf/poop", "poop", 5, "Poop (bowel)")
 
+h(3, "Survival, hygiene and health (3.0.0)")
+para("*Drawn in the ring style only, so they look the same with either icon style. Player only unless noted.*")
+stage_row("sh_food", "sunhelm/food", "food", 9, "Food (SunHelm)")
+stage_row("sh_thirst", "sunhelm/thirst", "thirst", 9, "Thirst (SunHelm)")
+stage_row("sh_cold", "sunhelm/cold", "cold", 9, "Cold (SunHelm)", "A sun while warm, a snowflake from Chilly on.")
+stage_row("sh_fatigue", "sunhelm/fatigue", "fatigue", 9, "Fatigue (SunHelm)")
+stage_row("dirt", "hygiene/dirt", "dirt", 9, "Dirtiness (Bathing in Skyrim Renewed)", "Also per NPC slot.")
+stage_row("wet", "hygiene/wet", "wet", 9, "Wetness (Wet Function Redux)", "Also per NPC slot.")
+stage_row("sph_pubic", "sph/pubic", "pubic", 6, "Pubic hair (SPH)", "SPH's six stages.")
+stage_row("sph_armpit", "sph/armpit", "armpit", 7, "Armpit hair (SPH)", "SPH's seven stages.")
+stage_row("baby", "bf/babyhealth", "baby", 9, "Baby health (BeeingFemale)", "Only while pregnant; also per NPC slot. Full health is stage 0.")
+stage_row("stress", "stress/stress", "stress", 9, "Stress (Stress and Fear)")
+stage_row("fear", "stress/fear", "fear", 9, "Fear (Stress and Fear)", "One stage per phobia held.")
+stage_row("injury", "health/injury", "injury", 4, "Injuries (Blade and Blunt)", "Unhurt, Minor, Major, Critical.")
+stage_row("disease", "health/disease", "disease", 4, "Diseases", "Healthy, Infected, Worsening, Severe (stages 2 and 3 need SunHelm Diseases).")
+
 # ---- Toggle icons ----
 h(2, "Toggle icons")
 
@@ -174,6 +190,14 @@ md.append("\n</div>\n")
 h(3, "SLDefeat")
 para("*Requires SexLabDefeat.esp. Player only.*")
 toggle_grid([("defeatmod/raped.dds", "Weakened / raped")], "defeat")
+
+h(2, "Ring icon style")
+para(
+    "Since 3.0.0 the installer offers the whole set in one drawn style: a progress ring around a glyph, "
+    "tinted white to red as the value worsens (milk and lactacid keep one colour). The classic art above "
+    "is the other choice. See [Icon styles](customization.md#icon-styles)."
+)
+md.append("![The ring icon set](../assets/ring-style.png)\n")
 
 with open(OUT_MD, "w", encoding="utf-8") as f:
     f.write("\n".join(md))

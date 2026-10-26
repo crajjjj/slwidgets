@@ -78,6 +78,19 @@ A saved preset includes:
 
 ---
 
+## Icon styles
+
+Since 3.0.0 the installer offers two icon styles and installs exactly one:
+
+- **Ring icons**: every icon drawn in one style, a progress ring around a glyph that fills from the bottom, tinted from white through gold and orange to red as the value worsens. Milk and lactacid keep one colour. The `Default` colour preset is that ramp.
+- **Classic icons**: the art SL Widgets shipped before 3.0.0, with its `Default` colour preset.
+
+The icon sets new in 3.0.0 (food, thirst, cold, fatigue, dirtiness, wetness, hair, baby health, stress, fear, injuries, diseases) exist only in the ring style and are installed with either choice. To switch styles later, reinstall and pick the other option. Custom icon packs lay over either style.
+
+![The ring icon set](assets/ring-style.png)
+
+---
+
 ## Custom icon packs
 
 Prefer ready-made alternatives? See the [Custom Icon Packs](custom-packs.md) page for community packs that restyle the arousal, Fill Her Up, and pregnancy icons — install one and let it overwrite the stock textures.

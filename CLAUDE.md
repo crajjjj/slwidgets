@@ -28,6 +28,36 @@ produces a `.pex` that mismatches at runtime with no compile-time warning:
   Mode source folder must be imported BEFORE `fmPlus`, or `hasFMSperm()` throws
   "Mismatched types" on every widget update for FM3 users.
 
+### Release archive (3.0.0+)
+
+`python build_release.py` assembles `Build/SLWidgets <version>.zip` as a FOMOD
+(core + an "Icon style" group: Ring icons or Classic icons, exactly one). Run it
+after the Papyrus build and `build_icons.py`. Pyro's own flat `Build/SLWidgets.zip`
+still gets written by the ppj and is not the release artifact any more.
+
+### Icons (3.0.0+)
+
+Two icon styles ship: the classic art under `Interface/.../library/` and the
+ring set, drawn by `python build_icons.py` (Pillow 11.2+ and resvg-py). The
+ring versions of the pre-3.0.0 sets live in `art/ring/library/` and are laid
+over the classic library by the FOMOD's ring option; the sets new in 3.0.0 only
+exist in the ring style and are written straight into `Interface/.../library/`,
+so both options ship them. Icons stay white-on-transparent: every colour is an
+iWant per-stage tint, so a style is art plus a `Default.json` colour preset
+(`art/ring/presets/Default.json` for the ring ramp, white -> gold -> orange ->
+red; milk and lactacid keep one colour). `fillStageColors` in `slw_util` is the
+same ramp as the code default of every 3.0.0 icon.
+
+### Registering a module script (3.0.0+)
+
+New module scripts need an ESP edit: a script entry on the `SLWidgetsModules`
+quest (0x801) with `config` -> 0x800 and `PlayerRef` -> player, and an object
+property on `slw_config` (quest 0x800) pointing at 0x801. `dotnet run --project
+tools/esp/SlwEsp -- SLWidgets.esp` does both for the names listed in its
+`Program.cs` (add a pair there for a new module). Mutagen rewrites the file
+(not byte-faithful: it recomputes the header's next FormID), which is fine for
+this two-record plugin; check it afterwards (houseCARL / xEdit).
+
 ## Important: CK-Filled Properties
 
 Script properties filled via the Creation Kit (CK) in the ESP/ESM must NOT be removed from `.psc` files even if unused in code. Removing them breaks the form binding. To clean up, you must also clear the property in the ESP. When in doubt, leave them as dead weight.
@@ -93,7 +123,18 @@ Script properties filled via the Creation Kit (CK) in the ESP/ESM must NOT be re
 | `Source/Scripts/slw_menu.psc` | MCM menu (extends SKI_ConfigBase), 5 pages including Meters and NPC Tracking |
 | `Source/Scripts/slw_interface_sgo4.psc` | Thin wrapper for SGO4 script API |
 | `Source/Scripts/slw_interface_slove.psc` | SLO VE willpower, read from StorageUtil (no compile-time dependency on SLO VE) |
-| `build_willpower_icon.py` | Draws the brain icon of the willpower bar (`library/slove/willpower.dds`); rerun it to change the art |
+| `Source/Scripts/slw_module_sunhelm.psc` | 3.0.0: SunHelm food, thirst, cold, fatigue (player only); casts the four need quests through the stubs in `Source/ApiHeaders/_SH*.psc` |
+| `Source/Scripts/slw_module_hygiene.psc` | 3.0.0: Bathing in Skyrim Renewed dirtiness + Wet Function Redux wetness, player and NPC slots (`MOD_DIRT`, `MOD_WET`), read from a global / StorageUtil |
+| `Source/Scripts/slw_module_sph.psc` | 3.0.0: SPH pubic (6 stages) and armpit (7 stages) hair from SPH's own globals, player only |
+| `Source/Scripts/slw_module_baby.psc` | 3.0.0: BeeingFemale unborn health (`FW.UnbornHealth`), shown only while pregnant, player and NPC slots (`MOD_BABY`), scale inverted (100 = stage 0) |
+| `Source/Scripts/slw_module_stress.psc` | 3.0.0: Stress and Fear stress global + phobia count, player only; its toggles are `module_saf_stress` / `module_saf_fear` because `module_stress` is the module object property |
+| `Source/Scripts/slw_module_health.psc` | 3.0.0: Blade and Blunt injury spells (4 stages) + worst disease stage over vanilla and SunHelm Diseases spells (4 stages), player only; `isInterfaceActive()` is always true (vanilla diseases) |
+| `Source/ApiHeaders/*.psc` | Compile stubs for foreign script types that are cast at runtime (SGO4, SunHelm): only the members SL Widgets reads, `extends Quest`; the cast resolves by script name in game |
+| `build_icons.py` | 3.0.0: draws the ring icon set from `art/ring/glyphs/*.svg` (needs `pip install pillow resvg-py`): restyled classic sets to `art/ring/library/`, the 3.0.0 sets to `Interface/.../library/`, the ring colour preset to `art/ring/presets/Default.json`, the new keys into the four classic presets; `--sheet` renders `docs/assets/ring-style.png` |
+| `art/ring/draw_custom_glyphs.py` | Writes the hand-drawn glyphs (vulva, anus, ovum, belly, sperm, sun, snowflake) into `art/ring/glyphs/`; the rest are game-icons.net files (CC BY 3.0, credits in `art/ring/glyphs/CREDITS.md`) |
+| `build_release.py` | 3.0.0: assembles the FOMOD release zip (`Build/SLWidgets <version>.zip`): core + "Classic Icons" / "Ring Icons" as one pick; run after the Papyrus build and `build_icons.py` |
+| `tools/esp/SlwEsp/` | Mutagen (dotnet 9) tool that registers module scripts in `SLWidgets.esp` (script on the modules quest + object property on `slw_config`); idempotent, keeps a `.bak` |
+| `build_willpower_icon.py` | Draws the classic brain icon of the willpower bar (`library/slove/willpower.dds`); the ring version comes from `build_icons.py` |
 | `Interface/Translations/SLWidgets_*.txt` | MCM translation strings (10 languages) |
 
 ## Module Pattern
@@ -112,6 +153,7 @@ Icon names are slot-aware via `getIconNameForSlot(BASE, slot)` from `slw_util` â
 API calls use the `target` parameter, not the module's `PlayerRef` property. The dispatcher in `slw_config.moduleWidgetStateUpdate` passes `PlayerRef` for slot 0 and the assigned NPC actor for slots 1-3. Modules that don't support NPCs (PAF, SLDefeat) get called only with `slot == 0` from the dispatcher.
 
 ## Adding Support for a New Mod
+0. A new module script also needs registering in the ESP (see "Registering a module script" above) and its `slw_module_x Property module_x auto` on `slw_config`. Mind the names: the module object property and the Bool toggles share one namespace on `slw_config` (`module_stress` is the object, so the toggles are `module_saf_stress` / `module_saf_fear`). A stage icon of any length registers with `loadStageIcon(config, iBars, name, basepath, captions)` from `slw_util`, which applies the ramp defaults and the colour preset; captions come from `StringUtil.Split`.
 1. Add `isXxxReady()` to `slw_util.psc` using `isDependencyReady("Mod.esp")`
 2. Add `Plugin_Xxx` flag to the relevant module
 3. `initInterface()`: detect + init; `resetInterface()`: clear

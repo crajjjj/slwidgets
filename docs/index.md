@@ -1,13 +1,13 @@
 # SL Widgets SSE
 
-A plugin for **iWant Status Bars** that adds SexLab-related status icons to your HUD. 113+ icons across 9 mod ecosystems, with full support for tracking the player and up to three NPCs simultaneously.
+A plugin for **iWant Status Bars** that adds SexLab-related status icons to your HUD. 210+ icons across 16 mod ecosystems, in two icon styles, with full support for tracking the player and up to three NPCs simultaneously.
 
 !!! warning "Adult mod — reference documentation"
     SL Widgets is a mature (18+) HUD add-on that displays status from SexLab-ecosystem mods. **These pages are reference documentation:** they describe the widgets, icons, and MCM options so players can configure it and authors can integrate with it. They contain no pornographic media and exist to document software behaviour. Install and use the mod only where appropriate for your age and local laws.
 
 Two display mechanics:
 
-- **Stage icons** — 9-state fills that update dynamically (arousal, milk level, cum pool, wear & tear, needs)
+- **Stage icons** — 9-state fills that update dynamically (arousal, milk level, cum pool, wear & tear, needs, and since 3.0.0 survival, hygiene, hair, baby health, stress, injuries and diseases)
 - **Toggle icons** — appear and disappear on a condition (pregnancy states, parasites, defeat)
 
 ---
@@ -31,9 +31,10 @@ Two display mechanics:
 | Feature | Detail |
 |---------|--------|
 | Tracked targets | Player + up to 3 NPCs |
-| Supported mods | 20+ soft dependencies |
-| Icon count | 113+ |
+| Supported mods | 27+ soft dependencies |
+| Icon count | 210+ |
 | Icon types | 9-stage fills + conditional toggles |
+| Icon styles | Ring (drawn, uniform) or Classic, chosen in the installer |
 | Configuration | Full SkyUI MCM with save/load presets |
 | HUD framework | iWant Status Bars (Flash, or the optional [Prisma renderer](prisma.md)) |
 

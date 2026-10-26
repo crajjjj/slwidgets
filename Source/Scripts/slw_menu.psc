@@ -26,6 +26,20 @@ int _pregnancy_mod_Toggle
 int _paf_pee_Toggle
 int _paf_poo_Toggle
 int _defeat_mod_Toggle
+; 3.0.0 icons
+int _sh_food_Toggle
+int _sh_thirst_Toggle
+int _sh_cold_Toggle
+int _sh_fatigue_Toggle
+int _dirtiness_Toggle
+int _wetness_Toggle
+int _sph_pubic_Toggle
+int _sph_armpit_Toggle
+int _baby_health_Toggle
+int _stress_Toggle
+int _fear_Toggle
+int _injuries_Toggle
+int _diseases_Toggle
 ; The willpower bar's own options from 2.2.6, now meter 0 of the stack.
 ; Unused; kept so the saves that hold them load clean.
 int _slove_willpower_Toggle
@@ -60,6 +74,9 @@ int[] _npc_mme_milk_toggle
 int[] _npc_mme_lactacid_toggle
 int[] _npc_slp_toggle
 int[] _npc_preg_toggle
+int[] _npc_dirt_toggle
+int[] _npc_wet_toggle
+int[] _npc_baby_toggle
 int[] _npc_label_x_slider
 int[] _npc_label_y_slider
 int[] _npc_custom_label_option
@@ -113,6 +130,12 @@ EndEvent
 
 event OnVersionUpdate(int a_version)
 	; a_version is the new version, CurrentVersion is the old version
+	If a_version >= 30000 && CurrentVersion < 30000
+		Debug.Trace(self + ": Updating script to version 30000")
+		; 3.0.0: thirteen new icons. Their switches are properties with
+		; defaults and the modules register their icons on the next widget
+		; reload, so there is nothing to migrate; the block marks the step.
+	EndIf
 endEvent
 
 Function General()
@@ -156,7 +179,35 @@ Function Toggles()
 	Int pafFlag = _getFlag(config.module_paf.isInterfaceActive()) 
 	_paf_pee_Toggle = addToggleOption("$SLW_Needs_Pee", config.module_paf_pee, pafFlag)
 	_paf_poo_Toggle = addToggleOption("$SLW_Needs_Poop", config.module_paf_poo, pafFlag)
-	
+
+	AddHeaderOption("$SLW_SunHelm")
+	Int shFlag = _getFlag(config.module_sunhelm.isInterfaceActive())
+	_sh_food_Toggle = addToggleOption("$SLW_SH_Food", config.module_sh_food, shFlag)
+	_sh_thirst_Toggle = addToggleOption("$SLW_SH_Thirst", config.module_sh_thirst, shFlag)
+	_sh_cold_Toggle = addToggleOption("$SLW_SH_Cold", config.module_sh_cold, shFlag)
+	_sh_fatigue_Toggle = addToggleOption("$SLW_SH_Fatigue", config.module_sh_fatigue, shFlag)
+
+	AddHeaderOption("$SLW_Hygiene")
+	_dirtiness_Toggle = addToggleOption("$SLW_Dirtiness_Icon", config.module_dirtiness, _getFlag(config.module_hygiene.Plugin_Bathing))
+	_wetness_Toggle = addToggleOption("$SLW_Wetness_Icon", config.module_wetness, _getFlag(config.module_hygiene.Plugin_WetFunction))
+
+	AddHeaderOption("$SLW_SPH")
+	Int sphFlag = _getFlag(config.module_sph.isInterfaceActive())
+	_sph_pubic_Toggle = addToggleOption("$SLW_SPH_Pubic", config.module_sph_pubic, sphFlag)
+	_sph_armpit_Toggle = addToggleOption("$SLW_SPH_Armpit", config.module_sph_armpit, sphFlag)
+
+	AddHeaderOption("$SLW_BabyHealth")
+	_baby_health_Toggle = addToggleOption("$SLW_BabyHealth_Icon", config.module_baby_health, _getFlag(config.module_baby.isInterfaceActive()))
+
+	AddHeaderOption("$SLW_StressFear")
+	Int safFlag = _getFlag(config.module_stress.isInterfaceActive())
+	_stress_Toggle = addToggleOption("$SLW_Stress_Icon", config.module_saf_stress, safFlag)
+	_fear_Toggle = addToggleOption("$SLW_Fear_Icon", config.module_saf_fear, safFlag)
+
+	AddHeaderOption("$SLW_Health")
+	_injuries_Toggle = addToggleOption("$SLW_Injuries_Icon", config.module_injuries, _getFlag(config.module_health.Plugin_BladeBlunt))
+	_diseases_Toggle = addToggleOption("$SLW_Diseases_Icon", config.module_diseases, _getFlag(config.module_health.isInterfaceActive()))
+
 	AddHeaderOption("$SLW_Conditional")
 	AddHeaderOption("$SLW_SLP")
 	Int slpFlag = _getFlag(config.module_slp.isInterfaceActive()) 
@@ -297,6 +348,15 @@ Function _initNpcOptionArrays()
 	If !_npc_preg_toggle
 		_npc_preg_toggle = Utility.CreateIntArray(4, -1)
 	EndIf
+	If !_npc_dirt_toggle
+		_npc_dirt_toggle = Utility.CreateIntArray(4, -1)
+	EndIf
+	If !_npc_wet_toggle
+		_npc_wet_toggle = Utility.CreateIntArray(4, -1)
+	EndIf
+	If !_npc_baby_toggle
+		_npc_baby_toggle = Utility.CreateIntArray(4, -1)
+	EndIf
 	If !_npc_label_x_slider
 		_npc_label_x_slider = Utility.CreateIntArray(4, -1)
 	EndIf
@@ -354,6 +414,9 @@ Function NpcTracking()
 		_npc_mme_lactacid_toggle[slot] = AddToggleOption("$SLW_MME_LI", config.getSlotModuleEnable(slot, config.MOD_MME_LACTACID), slotFlag)
 		_npc_slp_toggle[slot] = AddToggleOption("$SLW_SLP_Icon", config.getSlotModuleEnable(slot, config.MOD_SLP), slotFlag)
 		_npc_preg_toggle[slot] = AddToggleOption("$SLW_Pregnancy_Icons", config.getSlotModuleEnable(slot, config.MOD_PREG), slotFlag)
+		_npc_dirt_toggle[slot] = AddToggleOption("$SLW_Dirtiness_Icon", config.getSlotModuleEnable(slot, config.MOD_DIRT), slotFlag)
+		_npc_wet_toggle[slot] = AddToggleOption("$SLW_Wetness_Icon", config.getSlotModuleEnable(slot, config.MOD_WET), slotFlag)
+		_npc_baby_toggle[slot] = AddToggleOption("$SLW_BabyHealth_Icon", config.getSlotModuleEnable(slot, config.MOD_BABY), slotFlag)
 		_npc_label_x_slider[slot] = AddSliderOption("$SLW_NPC_Label_OffsetX", widget_controller.getNpcLabelOffsetX(slot), "{0}", slotFlag)
 		_npc_label_y_slider[slot] = AddSliderOption("$SLW_NPC_Label_OffsetY", widget_controller.getNpcLabelOffsetY(slot), "{0}", slotFlag)
 		_npc_custom_label_option[slot] = AddInputOption("$SLW_NPC_Custom_Label", _customLabelDisplay(slot), slotFlag)
@@ -408,6 +471,14 @@ Function Debug()
 	AddHeaderOption("$SLW_Dependency_check_defeat")
 	AddTextOption("$SLW_SLD_Check", StringIfElse( isSLDefeatReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddTextOption("$SLW_SLOVE_Check", StringIfElse( isSloveReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddHeaderOption("$SLW_Dependency_check_survival")
+	AddTextOption("$SLW_SH_Check", StringIfElse( isSunHelmReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_SHD_Check", StringIfElse( isSunHelmDiseasesReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_BIS_Check", StringIfElse( isBathingReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_WFR_Check", StringIfElse( isWetFunctionReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_SPH_Check", StringIfElse( isSPHReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_SAF_Check", StringIfElse( isStressFearReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_BNB_Check", StringIfElse( isBladeBluntReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 
 	AddTextOptionST("ADD_EMPTY_ICON_STATE","$SLW_Empty_Icon_Add","$SLW_Add", OPTION_FLAG_NONE)
 EndFunction
@@ -445,6 +516,32 @@ Event onOptionHighlight(int mcm_option)
 		SetInfoText("$SLW_Pregnancy_Toggle_Info")
 	ElseIf (mcm_option == _defeat_mod_Toggle)
 		SetInfoText("$SLW_Defeat_Toggle_Info")
+	ElseIf (mcm_option == _sh_food_Toggle)
+		SetInfoText("$SLW_SH_Food_Info")
+	ElseIf (mcm_option == _sh_thirst_Toggle)
+		SetInfoText("$SLW_SH_Thirst_Info")
+	ElseIf (mcm_option == _sh_cold_Toggle)
+		SetInfoText("$SLW_SH_Cold_Info")
+	ElseIf (mcm_option == _sh_fatigue_Toggle)
+		SetInfoText("$SLW_SH_Fatigue_Info")
+	ElseIf (mcm_option == _dirtiness_Toggle)
+		SetInfoText("$SLW_Dirtiness_Info")
+	ElseIf (mcm_option == _wetness_Toggle)
+		SetInfoText("$SLW_Wetness_Info")
+	ElseIf (mcm_option == _sph_pubic_Toggle)
+		SetInfoText("$SLW_SPH_Pubic_Info")
+	ElseIf (mcm_option == _sph_armpit_Toggle)
+		SetInfoText("$SLW_SPH_Armpit_Info")
+	ElseIf (mcm_option == _baby_health_Toggle)
+		SetInfoText("$SLW_BabyHealth_Info")
+	ElseIf (mcm_option == _stress_Toggle)
+		SetInfoText("$SLW_Stress_Info")
+	ElseIf (mcm_option == _fear_Toggle)
+		SetInfoText("$SLW_Fear_Info")
+	ElseIf (mcm_option == _injuries_Toggle)
+		SetInfoText("$SLW_Injuries_Info")
+	ElseIf (mcm_option == _diseases_Toggle)
+		SetInfoText("$SLW_Diseases_Info")
 	ElseIf (mcm_option == _meters_always_toggle)
 		SetInfoText("$SLW_Meters_Always_Info")
 	ElseIf (mcm_option == _meters_hold_slider)
@@ -528,6 +625,58 @@ Event onOptionSelect(int mcm_option)
 		_v = !config.module_defeat_enabled
 		config.module_defeat_enabled = _v
 		setToggleOptionValue(mcm_option, _v)
+	elseIf(mcm_option == _sh_food_Toggle)
+		_v = !config.module_sh_food
+		config.module_sh_food = _v
+		setToggleOptionValue(mcm_option, _v)
+	elseIf(mcm_option == _sh_thirst_Toggle)
+		_v = !config.module_sh_thirst
+		config.module_sh_thirst = _v
+		setToggleOptionValue(mcm_option, _v)
+	elseIf(mcm_option == _sh_cold_Toggle)
+		_v = !config.module_sh_cold
+		config.module_sh_cold = _v
+		setToggleOptionValue(mcm_option, _v)
+	elseIf(mcm_option == _sh_fatigue_Toggle)
+		_v = !config.module_sh_fatigue
+		config.module_sh_fatigue = _v
+		setToggleOptionValue(mcm_option, _v)
+	elseIf(mcm_option == _dirtiness_Toggle)
+		_v = !config.module_dirtiness
+		config.module_dirtiness = _v
+		setToggleOptionValue(mcm_option, _v)
+	elseIf(mcm_option == _wetness_Toggle)
+		_v = !config.module_wetness
+		config.module_wetness = _v
+		setToggleOptionValue(mcm_option, _v)
+	elseIf(mcm_option == _sph_pubic_Toggle)
+		_v = !config.module_sph_pubic
+		config.module_sph_pubic = _v
+		setToggleOptionValue(mcm_option, _v)
+	elseIf(mcm_option == _sph_armpit_Toggle)
+		_v = !config.module_sph_armpit
+		config.module_sph_armpit = _v
+		setToggleOptionValue(mcm_option, _v)
+	elseIf(mcm_option == _baby_health_Toggle)
+		_v = !config.module_baby_health
+		config.module_baby_health = _v
+		setToggleOptionValue(mcm_option, _v)
+	elseIf(mcm_option == _stress_Toggle)
+		_v = !config.module_saf_stress
+		config.module_saf_stress = _v
+		setToggleOptionValue(mcm_option, _v)
+	elseIf(mcm_option == _fear_Toggle)
+		_v = !config.module_saf_fear
+		config.module_saf_fear = _v
+		setToggleOptionValue(mcm_option, _v)
+	elseIf(mcm_option == _injuries_Toggle)
+		_v = !config.module_injuries
+		config.module_injuries = _v
+		setToggleOptionValue(mcm_option, _v)
+	elseIf(mcm_option == _diseases_Toggle)
+		_v = !config.module_diseases
+		config.module_diseases = _v
+		setToggleOptionValue(mcm_option, _v)
 	elseIf(mcm_option == _meters_always_toggle)
 		_v = !widget_controller.metersAlwaysShow
 		widget_controller.metersAlwaysShow = _v
@@ -591,6 +740,15 @@ Function _handleNpcPageSelect(Int mcm_option)
 		Return
 	EndIf
 	If _tryToggleSubCode(mcm_option, _npc_preg_toggle, config.MOD_PREG)
+		Return
+	EndIf
+	If _tryToggleSubCode(mcm_option, _npc_dirt_toggle, config.MOD_DIRT)
+		Return
+	EndIf
+	If _tryToggleSubCode(mcm_option, _npc_wet_toggle, config.MOD_WET)
+		Return
+	EndIf
+	If _tryToggleSubCode(mcm_option, _npc_baby_toggle, config.MOD_BABY)
 		Return
 	EndIf
 EndFunction
