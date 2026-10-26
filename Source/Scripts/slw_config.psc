@@ -59,11 +59,12 @@ Bool property module_injuries = True auto hidden
 Bool property module_diseases = True auto hidden
 ; SLO VE willpower: a bar (iWant Widgets meter), not a status icon. Meter 0 of
 ; the meter stack, and its switch (isMeterOn(0)), player only.
-Bool property module_slove_willpower = True auto hidden
+; Off by default since 3.0.0, like every meter. A save keeps the value it has.
+Bool property module_slove_willpower = False auto hidden
 
 ; The meter stack (slw_widget_controller): one switch per meter, player only.
 ; Indexed by meter number, see getMeterPresetKey; slot 0 is unused, willpower keeps
-; module_slove_willpower. Lazily created, all on.
+; module_slove_willpower. Lazily created, all off.
 Bool[] _meter_use
 
 ; NPC tracking — slot 0 is player (handled by widget_controller.PlayerRef), slots 1..N_NPC are NPCs
@@ -305,7 +306,8 @@ EndFunction
 
 Function _ensureMeterToggles()
 	If !_meter_use
-		_meter_use = Utility.CreateBoolArray(9, True)
+		; off until switched on (3.0.0); saves that already hold the array keep it
+		_meter_use = Utility.CreateBoolArray(9, False)
 	EndIf
 EndFunction
 

@@ -274,7 +274,7 @@ How they show is one switch on the MCM's **Meters** page (willpower keeps its ow
 | Fade after a change (default) | A meter fades in when its value moves by 5 points or more, or its icon changes stage, and fades out again after the hold time (10 seconds by default). Slow drifts, such as FHU absorbing or arousal wearing off, show again every 5 points instead of keeping the meter up |
 | Always show | Every meter stays on screen |
 
-Values are read on the normal update interval (5 seconds by default), and sooner when SLA, FHU or Apropos2 SE 1.0020+ report a change (see each mod above), so a meter appears within a second or two of such a change. Fading out is decided on the next check, so it can come up to an interval late. Only meters that are switched on and whose mod is installed get a row, and a row keeps its place while its meter is faded out. Each meter has its own switch; position, size, the display mode and the hold time are on the same page, and a settings preset saves all of them.
+Values are read on the normal update interval (5 seconds by default), and sooner when SLA, FHU or Apropos2 SE 1.0020+ report a change (see each mod above), so a meter appears within a second or two of such a change. Fading out is decided on the next check, so it can come up to an interval late. Only meters that are switched on and whose mod is installed get a row, and a row keeps its place while its meter is faded out. Each meter has its own switch, and all of them start **off**: switch on the ones you want on the MCM's **Meters** page; position, size, the display mode and the hold time are on the same page, and a settings preset saves all of them.
 
 NPC support: **No** - the meters are for the player. NPCs keep their status icons.
 
