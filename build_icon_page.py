@@ -198,7 +198,7 @@ para(
     "as the value worsens (milk and lactacid keep one colour). The icons from before 3.0.0 are an optional "
     "download. See [Icon styles](customization.md#icon-styles)."
 )
-md.append("![The ring icon set](../assets/ring-style.png)\n")
+md.append("![The ring icon set](assets/ring-style.png)\n")
 
 with open(OUT_MD, "w", encoding="utf-8") as f:
     f.write("\n".join(md))

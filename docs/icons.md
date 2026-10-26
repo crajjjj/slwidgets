@@ -445,4 +445,4 @@ Progression as soul gems mature.
 
 Since 3.0.0 every icon is drawn in one style: a progress ring around a glyph, tinted white to red as the value worsens (milk and lactacid keep one colour). The icons from before 3.0.0 are an optional download. See [Icon styles](customization.md#icon-styles).
 
-![The ring icon set](../assets/ring-style.png)
+![The ring icon set](assets/ring-style.png)
