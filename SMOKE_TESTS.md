@@ -128,7 +128,7 @@ Pre-release checklist. Each scenario should be verified in-game or by code inspe
 | # | P | Scenario | Expected | Scripts |
 |---|---|----------|----------|---------|
 | 11a.1 | P0 | Fresh game, all six modules | `moduleSetup()` runs 14 modules, each logs its plugin detection; no "property not found" errors (ESP carries the six script entries and `slw_config` properties) | slw_config, SLWidgets.esp |
-| 11a.2 | P0 | Existing 2.3.0 save | MCM traces "Updating script to version 30000", the 13 new toggles default on, the new icons register on the next widget reload, old icons unchanged | slw_menu, slw_config |
+| 11a.2 | P0 | Existing 2.3.0 save | MCM traces "Updating script to version 30000", the 13 new toggles default on, the log shows "icons registered by an older build, reloading them once" on the first load: the new icons appear and the old ones take the Default preset's full alpha without opening the MCM; the next load does not reload again | slw_menu, slw_config |
 | 11a.3 | P1 | SunHelm installed | Food/Thirst/Cold/Fatigue toggles enabled; food icon follows `GetHungerPercent()` (eat: stage drops), cold shows the sun at stages 0-2 and the snowflake from 3 | slw_module_sunhelm |
 | 11a.4 | P1 | SunHelm absent | The four toggles greyed, no errors (the casts are never made) | slw_module_sunhelm |
 | 11a.5 | P1 | Bathing in Skyrim Renewed | Dirtiness icon follows the global; bathing drops it; an NPC in a tracked slot with the NPC toggle on shows its own value (`BiS_Dirtiness`) | slw_module_hygiene |

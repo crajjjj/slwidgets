@@ -43,6 +43,17 @@ Color presets replace the default icon RGB values with custom ones without chang
 
 Load a preset in MCM → **General** → **Color Preset**.
 
+### Shipped presets
+
+| Preset | Colours | Empty stage | Other stages |
+|--------|---------|-------------|--------------|
+| `Default` | white to gold to red as a value worsens | fully visible | fully visible |
+| `HideEmpty` | as `Default` | hidden | the first step faint, then fully visible |
+| `AllWhite` | all white | faint | the first step faint, then fully visible |
+| `AllWhite_HideEmpty` | all white | hidden | the first step faint, then fully visible |
+
+A hidden empty stage is an icon at alpha 0. With iWant's **Skip Hidden Icons** on for the bar (iWant's default), the bar closes up around it; with it off, the icon keeps an empty slot. The optional Classic Icons download brings its own `Default` and `HideEmpty`, the colours SL Widgets used before 3.0.0.
+
 ### File format
 
 ```json
@@ -80,7 +91,7 @@ A saved preset includes:
 
 ## Icon styles
 
-Since 3.0.0 the mod ships one icon set: every icon drawn in the same style, a progress ring around a glyph that fills from the bottom, tinted from white through gold and orange to red as the value worsens. Milk and lactacid keep one colour. The `Default` colour preset is that ramp (and `HideEmpty` is the same ramp with the empty stage hidden).
+Since 3.0.0 the mod ships one icon set: every icon drawn in the same style, a progress ring around a glyph that fills from the bottom, tinted from white through gold and orange to red as the value worsens. Milk and lactacid keep one colour. The `Default` colour preset is that ramp, fully visible at every stage; `HideEmpty` is the same ramp with the empty stage hidden (see [Shipped presets](#shipped-presets)).
 
 The icons SL Widgets shipped before 3.0.0 are an optional download, **SLWidgets Classic Icons**, in the Nexus files section. Install it after SL Widgets and let it overwrite: it puts the old textures back for the sets that existed before 3.0.0, together with their `Default` and `HideEmpty` colour presets. The sets new in 3.0.0 (food, thirst, cold, fatigue, dirtiness, wetness, hair, baby health, stress, fear, injuries, diseases) have no classic art and keep the ring style. To return to the ring icons, reinstall SL Widgets. Custom icon packs lay over either.
 

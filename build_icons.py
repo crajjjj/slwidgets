@@ -282,11 +282,17 @@ def dump_preset(d):
     return "\n".join(lines) + "\n"
 
 
+# The shipped Default is fully visible at every stage (the user's call, 3.0.0).
+# HideEmpty keeps the ramp's alphas with stage 0 hidden; the white and classic
+# presets keep theirs.
+DEFAULT_A = [100] * 9
+
+
 def write_presets():
     # the shipped Default and HideEmpty are the ring ramp, in full
     ramp_a = [c[3] for c in RAMP]
     hide_a = [0] + ramp_a[1:]
-    ring = {k: colours(v) for k, v in RING_PRESET.items()}
+    ring = {k: colours(v, alphas=DEFAULT_A) for k, v in RING_PRESET.items()}
     open(os.path.join(PRESETS, "Default.json"), "w", encoding="utf-8").write(dump_preset(ring))
     ring_hide = {k: colours(v, alphas=hide_a) for k, v in RING_PRESET.items()}
     open(os.path.join(PRESETS, "HideEmpty.json"), "w", encoding="utf-8").write(dump_preset(ring_hide))
@@ -385,11 +391,11 @@ def write_sheet(icons):
             n = len(stems)
             for i, stem in enumerate(stems[:9]):
                 ri = ramp_index(i, n) if n > 1 else 8
-                col = RAMP[ri]
+                col = RAMP[ri][:3] + (100,)  # the Default preset: fully visible
                 if folder in CONST_ROWS:
-                    col = CONST_ROWS[folder] + (RAMP[ri][3],)
+                    col = CONST_ROWS[folder] + (100,)
                 if folder in ("pregnancymod", "slp", "defeatmod", "slove"):
-                    col = RAMP[[1, 2, 3, 2, 4, 6, 8, 3, 5, 6, 7, 5][i % 12]]
+                    col = RAMP[[1, 2, 3, 2, 4, 6, 8, 3, 5, 6, 7, 5][i % 12]][:3] + (100,)
                 t = tinted(icons[(folder, stem)], col).resize((ICON, ICON), Image.LANCZOS)
                 x = x0 + LABEL_W + i * CELL
                 sheet.alpha_composite(t, (int(x + (CELL - ICON) / 2), int(y)))

@@ -173,6 +173,36 @@ Event OnInit()
 	config.loadPreset(config.activePreset)
 EndEvent
 
+; iWant keeps an icon's per-stage colours from the call that registered it,
+; and nothing re-registers the player's icons on a game load. A save that
+; registered its icons with an older build therefore keeps the old colours
+; (and lacks icons that build did not have) until a widget reload. This does
+; that reload once per ICONS_VERSION: bump it when the registered icons or
+; their default colours change. 30000 = 3.0.0 (the 13 new icons, the Default
+; preset at full alpha). A read-only property, not a variable: a variable added
+; to a script an existing save holds could come up 0 there.
+Int Property ICONS_VERSION = 30000 AutoReadOnly Hidden
+Int _iconsVersion = 0
+
+Function _reloadIconsOnce()
+	If _iconsVersion >= ICONS_VERSION
+		Return
+	EndIf
+	If !iBars || !iBars.isReady()
+		; not claimed: the next iWant-ready event tries again
+		Return
+	EndIf
+	; claimed first: a second iWant-ready event during the reload must not
+	; start another
+	_iconsVersion = ICONS_VERSION
+	If config.slw_stopped
+		; nothing registered; enabling the mod loads every icon fresh
+		Return
+	EndIf
+	WriteLog("WidgetController: icons registered by an older build, reloading them once")
+	reloadWidgets()
+EndFunction
+
 ;init ibars
 Event OniWantStatusBarsReady(String eventName, String strArg, Float numArg, Form sender)
 	If eventName == STATUS_BARS_EVENT_NAME
@@ -186,6 +216,7 @@ Event OniWantStatusBarsReady(String eventName, String strArg, Float numArg, Form
 			WriteLog("WidgetController: iBars ready")
 			config.loadPreset(config.activePreset)
 			_restoreNpcLabelsAndIcons()
+			_reloadIconsOnce()
 		else
 			WriteLog("WidgetController: iBars cast failed from sender", 2)
 		endif
