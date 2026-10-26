@@ -7,8 +7,8 @@ A plugin for **iWant Status Bars** that adds SexLab-related status icons to your
 
 Two display mechanics:
 
-- **Stage icons** — 9-state fills that update dynamically (arousal, milk level, cum pool, wear & tear, needs, and since 3.0.0 survival, hygiene, hair, baby health, stress, injuries and diseases)
-- **Toggle icons** — appear and disappear on a condition (pregnancy states, parasites, defeat)
+- **Stage icons**: 9-state fills that update dynamically (arousal, milk level, cum pool, wear & tear, needs, and since 3.0.0 survival, hygiene, hair, baby health, stress, injuries and diseases)
+- **Toggle icons**: appear and disappear on a condition (pregnancy states, parasites, defeat)
 
 ---
 

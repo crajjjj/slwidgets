@@ -35,8 +35,8 @@ Enable or disable individual icon groups. Settings are organised by mod.
 | **FHU Oral Pool Icon Enabled** | `sr_FillHerUp.esp` | Oral cum pool (9 stages) |
 | **MME/SGO Milk Icon Enabled** | MME, SGO4, or MAL | Milk level (9 stages) |
 | **MME Lactacid Icon Enabled** | `MilkModNEW.esp` | Lactacid level (9 stages) |
-| **Pee Icon Enabled** | PAF, MiniNeeds, AlivePeeing, or Private Needs | Bladder fill (9 stages) |
-| **Poop Icon Enabled** | PAF, MiniNeeds, or Private Needs | Bowel fill (9 stages) |
+| **Pee Icon Enabled** | PAF, MiniNeeds, AlivePeeing, or Private Needs | Bladder fill (5 stages) |
+| **Poop Icon Enabled** | PAF, MiniNeeds, or Private Needs | Bowel fill (5 stages) |
 | **Food / Thirst / Cold / Fatigue Icon Enabled** | `SunHelmSurvival.esp` | SunHelm needs (9 stages each, player only) |
 | **Dirtiness Icon Enabled** | `Bathing in Skyrim.esp` (Renewed) | Dirt percentage (9 stages), also per NPC slot |
 | **Wetness Icon Enabled** | `WetFunctionNG.esp` or `WetFunction.esp` | Wetness (9 stages), also per NPC slot |
@@ -82,7 +82,7 @@ Right column, grouped by mod, in the order the meters stack from the top. A swit
 | **FHU Total / Vaginal Pool / Anal Pool / Oral Pool Meter Enabled** | `sr_FillHerUp.esp` | Fill Her Up pools |
 | **Vaginal / Anal / Oral W&T Meter Enabled** | `Apropos2.esp` | Apropos2 wear and tear |
 
-All on by default. A change to the switches, the position or the size takes effect when the menu closes, and then the whole stack, willpower included, is shown for half a minute so you can see where it sits.
+All off by default: switch on the meters you want. A change to the switches, the position or the size takes effect when the menu closes, and then the whole stack, willpower included, is shown for half a minute so you can see where it sits.
 
 ---
 

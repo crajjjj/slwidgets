@@ -71,6 +71,12 @@ None of these are required. SL Widgets detects them at runtime and silently skip
 - PAF / MiniNeeds / AlivePeeing SE / Private Needs - Orgasm
 - SLDefeat
 - SLO VE (a willpower bar)
+- SunHelm Survival and SunHelm Diseases
+- Bathing in Skyrim Renewed 2.7+
+- Wet Function Redux or WetFunction NG
+- SPH - Skyrim Pubic Hair 2.0+
+- Stress and Fear
+- Blade and Blunt 4.0+
 
 See [Supported Mods](supported-mods.md) for exactly what each one contributes.
 

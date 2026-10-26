@@ -78,7 +78,7 @@ def toggle_grid(items, keyprefix):
 para("# Icon Gallery\n")
 para(
     "The icons SL Widgets can display, grouped by source mod. "
-    "**Stage icons** fill through 9 steps (0 = empty, 8 = full) as a value rises — "
+    "**Stage icons** fill through their steps (most have 9: 0 = empty, 8 = full) as a value rises; "
     "only a few representative steps are shown here. "
     "**Toggle icons** simply appear when their condition is active and vanish when it clears. "
     "Since 3.0.0 the whole set is drawn in one ring style; the classic icons are an optional download.\n"

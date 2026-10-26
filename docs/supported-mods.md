@@ -72,7 +72,7 @@ At least one of the three milk mods must be installed for milk icons to appear.
 | Icon | Description |
 |------|-------------|
 | **Milk** | Milk carton icon, 9 stages tracking current milk level |
-| **Lactacid** | Bottle icon, 9 stages tracking lactacid (MME only) |
+| **Lactacid** | Potion icon, 9 stages tracking lactacid (MME only) |
 
 NPC support: **Milk icon** — Yes (via MME or SGO4 APIs, not MAL). **Lactacid icon** — Yes (MME only).
 
@@ -91,8 +91,8 @@ Any combination of the supported needs mods can be installed; SL Widgets checks 
 
 | Icon | Description |
 |------|-------------|
-| **Pee** | Bladder icon, 9 stages |
-| **Poop** | Bowel icon, 9 stages |
+| **Pee** | Droplet icon, 5 stages |
+| **Poop** | Pile icon, 5 stages |
 
 NPC support: **No** — all needs mods use player-only APIs. These icons show only on the player bar.
 

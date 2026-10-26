@@ -6,14 +6,14 @@ A plugin for [b]iWant Status Bars[/b] that adds adult-mod status widgets — aro
 
 [size=5][b]✨ Features[/b][/size]
 [list]
-[*][b]Two icon mechanics[/b] — 9-stage gauges that fill with a mod's value (arousal, milk, cum, wear & tear, needs) and condition toggles that pop in/out (pregnancy, parasites, defeat). [url=https://crajjjj.github.io/slwidgets/icons/]See every icon →[/url]
-[*][b]NPC tracking[/b] — watch up to 3 NPCs alongside the player: aim at an NPC, press a hotkey, and they get their own icon set and a floating name label. [url=https://crajjjj.github.io/slwidgets/npc-tracking/]How it works →[/url]
-[*][b]Broad mod support[/b] — SexLab Aroused, Apropos2, Fill Her Up, MME / SGO4 / MAL, the major pregnancy frameworks, and more. [url=https://crajjjj.github.io/slwidgets/supported-mods/]Full list →[/url]
-[*][b]Meters[/b]: SLO VE willpower, arousal, the Fill Her Up pools and Apropos2 wear & tear as one stack of bars at the right edge of the screen, each with its icon beside it, always shown or fading in when a value changes. [url=https://crajjjj.github.io/slwidgets/supported-mods/#meter-stack]How they work →[/url]
-[*][b]Survival and body status[/b] (3.0) — SunHelm food, thirst, cold and fatigue; Bathing in Skyrim Renewed dirtiness and Wet Function Redux wetness; SPH pubic and armpit hair; BeeingFemale baby health; Stress and Fear; Blade and Blunt injuries; diseases (SunHelm Diseases stages). [url=https://crajjjj.github.io/slwidgets/supported-mods/#survival-hygiene-and-health-300]Details →[/url]
-[*][b]One drawn icon set[/b] (3.0) — every icon in the same style, white to red as a value worsens. Prefer the old icons? The [b]Classic Icons[/b] optional file puts them back. [url=https://crajjjj.github.io/slwidgets/customization/#icon-styles]See the set →[/url]
-[*][b]Custom icon packs[/b] — restyle any icon set; grab one from the download section. [url=https://crajjjj.github.io/slwidgets/custom-packs/]Preview packs →[/url]
-[*][b]Settings presets[/b] — save and load your toggle setup, handy for new saves
+[*][b]Two icon mechanics[/b]: 9-stage gauges that fill with a mod's value (arousal, milk, cum, wear & tear, needs) and condition toggles that pop in/out (pregnancy, parasites, defeat). [url=https://crajjjj.github.io/slwidgets/icons/]See every icon →[/url]
+[*][b]NPC tracking[/b]: watch up to 3 NPCs alongside the player: aim at an NPC, press a hotkey, and they get their own icon set and a floating name label. [url=https://crajjjj.github.io/slwidgets/npc-tracking/]How it works →[/url]
+[*][b]Broad mod support[/b]: SexLab Aroused, Apropos2, Fill Her Up, MME / SGO4 / MAL, the major pregnancy frameworks, and more. [url=https://crajjjj.github.io/slwidgets/supported-mods/]Full list →[/url]
+[*][b]Meters[/b]: SLO VE willpower, arousal, the Fill Her Up pools and Apropos2 wear & tear as one stack of bars at the right edge of the screen, each with its icon beside it, always shown or fading in when a value changes; each meter is switched on in the MCM. [url=https://crajjjj.github.io/slwidgets/supported-mods/#meter-stack]How they work →[/url]
+[*][b]Survival and body status[/b] (3.0): SunHelm food, thirst, cold and fatigue; Bathing in Skyrim Renewed dirtiness and Wet Function (Redux or NG) wetness; SPH pubic and armpit hair; BeeingFemale baby health; Stress and Fear; Blade and Blunt injuries; diseases (SunHelm Diseases stages). [url=https://crajjjj.github.io/slwidgets/supported-mods/#survival-hygiene-and-health-300]Details →[/url]
+[*][b]One drawn icon set[/b] (3.0): every icon in the same style, white to red as a value worsens. Prefer the old icons? The [b]Classic Icons[/b] optional file puts them back. [url=https://crajjjj.github.io/slwidgets/customization/#icon-styles]See the set →[/url]
+[*][b]Custom icon packs[/b]: restyle any icon set; grab one from the download section. [url=https://crajjjj.github.io/slwidgets/custom-packs/]Preview packs →[/url]
+[*][b]Settings presets[/b]: save and load your toggle setup, handy for new saves
 [/list]
 
 [size=5][b]⚙️ Installation[/b][/size]
@@ -79,6 +79,12 @@ Open the iWant Status Bars MCM → Bars page → assign a hotkey under [b]Press 
 [*]SLDefeat
 [*]Curse of Life (1.13.2+)
 [*]SLO VE 0.7.2+ (willpower shown as a bar with a brain icon, player only)
+[*]SunHelm Survival and SunHelm Diseases
+[*]Bathing in Skyrim Renewed 2.7+
+[*]Wet Function Redux or WetFunction NG
+[*]SPH - Skyrim Pubic Hair 2.0+
+[*]Stress and Fear
+[*]Blade and Blunt 4.0+
 [/list]
 [i]Which icons each mod adds: [url=https://crajjjj.github.io/slwidgets/supported-mods/]Supported Mods →[/url][/i]
 

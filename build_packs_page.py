@@ -57,6 +57,21 @@ def stock_img(rel):
     return Image.open(os.path.join(LIB, rel.replace("/", os.sep)))
 
 
+CLASSIC_LIB = os.path.join(ROOT, "art", "classic", "library")
+
+
+def classic_img(rel):
+    return Image.open(os.path.join(CLASSIC_LIB, rel.replace("/", os.sep)))
+
+
+def variant_img(v, rel, suffix_rel):
+    if v["src"] == "stock":
+        return stock_img(rel)
+    if v["src"] == "classic":
+        return classic_img(rel)
+    return pack_img(v["zip"], suffix_rel)
+
+
 def pack_img(zip_path, suffix):
     return Image.open(io.BytesIO(zip_bytes(zip_path, suffix)))
 
@@ -82,9 +97,9 @@ def fig(fn, alt, caption):
 
 def variant_heading(v):
     if v.get("file"):
-        w(f"### {v['label']} — `{v['file']}`\n")
+        w(f"### {v['label']}: `{v['file']}`\n")
     else:
-        w(f"### {v['label']} — built in (default)\n")
+        w(f"### {v['label']}: built in (default)\n")
     bits = []
     if v.get("by"):
         bits.append(f"By {v['by']}.")
@@ -105,8 +120,7 @@ def stage_group(gkey, heading, intro, lib_prefix, n, variants):
         variant_heading(v)
         cells = []
         for i in cols:
-            img = stock_img(f"{lib_prefix}{i}.dds") if v["src"] == "stock" \
-                else pack_img(v["zip"], f"{v['suffix']}{i}.dds")
+            img = variant_img(v, f"{lib_prefix}{i}.dds", f"{v.get('suffix', '')}{i}.dds")
             fn = save_png(img, f"{gkey}_{v['key']}_{i}")
             cells.append(fig(fn, f"{v['label']} stage {i}", i))
         icon_row(cells)
@@ -121,8 +135,7 @@ def toggle_group(gkey, heading, intro, columns, variants):
         variant_heading(v)
         cells = []
         for name, cap in columns:
-            img = stock_img(f"pregnancymod/{name}.dds") if v["src"] == "stock" \
-                else pack_img(v["zip"], f"pregnancymod/{name}.dds")
+            img = variant_img(v, f"pregnancymod/{name}.dds", f"pregnancymod/{name}.dds")
             fn = save_png(img, f"{gkey}_{v['key']}_{name}")
             cells.append(fig(fn, f"{v['label']} {cap}", cap))
         icon_row(cells)
@@ -142,6 +155,13 @@ w(
     "Download the file named in each heading below.\n"
 )
 w(
+    "!!! note \"Built-in and classic icons\"\n"
+    "    Since 3.0.0 the built-in icons are one drawn ring set (see "
+    "[Icon styles](customization.md#icon-styles)). The icons from before 3.0.0 are the "
+    "**SLWidgets Classic Icons** download, shown below as the classic option of each set. "
+    "A pack replaces the same files either way, so it lays over both.\n"
+)
+w(
     "!!! note \"Installing a pack\"\n"
     "    Install the downloaded archive with your mod manager and let it **overwrite SL "
     "    Widgets'** files (or drop its `Interface/...` folder into `Data/`). Packs only "
@@ -157,10 +177,12 @@ stage_group(
     "sla/arousal/aroused",
     9,
     [
-        {"key": "stock", "label": "Stock heart", "src": "stock",
-         "desc": "The default arousal icon. The same heart is also offered as a standalone "
-                 "download (file SLW_Custom_Pack_Alternative_arousalHeart) so you can restore "
-                 "it after trying another pack."},
+        {"key": "stock", "label": "Ring heart", "src": "stock",
+         "desc": "The arousal icon SL Widgets ships since 3.0.0."},
+        {"key": "classic", "label": "Classic heart", "src": "classic",
+         "file": "SLWidgets Classic Icons",
+         "desc": "The icon from before 3.0.0. The heart alone is also the file "
+                 "SLW_Custom_Pack_Alternative_arousalHeart."},
         {"key": "face", "label": "Face", "src": "zip",
          "file": "SLW_Custom_Pack_Arousal_face",
          "zip": find_zip("SLW_Custom_Pack_Arousal_face*.zip"), "suffix": "sla/arousal/aroused"},
@@ -178,7 +200,8 @@ stage_group(
     "fhu/total/cum",
     9,
     [
-        {"key": "stock", "label": "Stock", "src": "stock"},
+        {"key": "stock", "label": "Ring", "src": "stock"},
+        {"key": "classic", "label": "Classic", "src": "classic", "file": "SLWidgets Classic Icons"},
         {"key": "alt", "label": "Alternative", "src": "zip",
          "file": "SLW_Custom_Pack_Alternative_FHU_total",
          "desc": "Also bundles an alternative cum-inflation (pregnancy) icon.",
@@ -202,7 +225,8 @@ toggle_group(
         ("spiderEggs", "Spider eggs"),
     ],
     [
-        {"key": "stock", "label": "Stock", "src": "stock"},
+        {"key": "stock", "label": "Ring", "src": "stock"},
+        {"key": "classic", "label": "Classic", "src": "classic", "file": "SLWidgets Classic Icons"},
         {"key": "alt", "label": "Alternative", "src": "zip",
          "file": "SLWidgets_Alternative_Pregnancy_Widgets",
          "zip": find_zip("SLWidgets_Alternative_Pregnancy_Widgets*.zip")},

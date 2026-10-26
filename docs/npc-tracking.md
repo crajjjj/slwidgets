@@ -83,7 +83,7 @@ Each slot has individual **Label X Offset** and **Label Y Offset** sliders (±20
 
 ## Per-NPC icon configuration
 
-Each NPC slot has 11 independent sub-toggles matching the player's options:
+Each NPC slot has 14 independent sub-toggles matching the player's options:
 
 | Toggle | Default (NPC) |
 |--------|:-------------:|
@@ -98,6 +98,9 @@ Each NPC slot has 11 independent sub-toggles matching the player's options:
 | MME Lactacid | Off |
 | SLP Parasites | Off |
 | Pregnancy | On |
+| Dirtiness (Bathing in Skyrim Renewed) | Off |
+| Wetness (Wet Function) | Off |
+| Baby health (BeeingFemale) | Off |
 
 The defaults are tuned so that a typical NPC stays within the primary bar (~10 icons at steady state). Enable more if the secondary bar gives you room.
 
