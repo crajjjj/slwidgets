@@ -902,25 +902,17 @@ Function _loadMeterSettings(String path)
 	wc.metersAlwaysShow = jsonutil.GetPathBoolValue(path, "meters.alwaysshow", wc.metersAlwaysShow)
 	; A preset is a file anyone can edit: held to the MCM's slider ranges, so a
 	; 0 cannot make every meter invisible (no hold time, zero size).
-	wc.metersHoldSeconds = _clampInt(jsonutil.GetPathIntValue(path, "meters.holdseconds", wc.metersHoldSeconds), 2, 120)
+	wc.metersHoldSeconds = clampInt(jsonutil.GetPathIntValue(path, "meters.holdseconds", wc.metersHoldSeconds), 2, 120)
 	; Only a real move goes through the layout setter: it rebuilds the stack
 	; and shows it for half a minute at the new place.
-	Int x = _clampInt(jsonutil.GetPathIntValue(path, "meters.x", wc.metersX), -1280, 2560)
-	Int y = _clampInt(jsonutil.GetPathIntValue(path, "meters.y", wc.metersY), -720, 719)
-	Int scale = _clampInt(jsonutil.GetPathIntValue(path, "meters.scale", wc.metersScale), 20, 200)
+	Int x = clampInt(jsonutil.GetPathIntValue(path, "meters.x", wc.metersX), -1280, 2560)
+	Int y = clampInt(jsonutil.GetPathIntValue(path, "meters.y", wc.metersY), -720, 719)
+	Int scale = clampInt(jsonutil.GetPathIntValue(path, "meters.scale", wc.metersScale), 20, 200)
 	If x != wc.metersX || y != wc.metersY || scale != wc.metersScale
 		wc.setMetersLayout(x, y, scale)
 	EndIf
 EndFunction
 
-Int Function _clampInt(Int value, Int low, Int high)
-	If value < low
-		Return low
-	ElseIf value > high
-		Return high
-	EndIf
-	Return value
-EndFunction
 
 Function _saveMeterSettings(String path)
 	_ensureMeterToggles()
@@ -940,6 +932,34 @@ Function _saveMeterSettings(String path)
 	jsonutil.SetPathIntValue(path, "meters.scale", wc.metersScale)
 EndFunction
 
+; The preset key of a 3.0.0 NPC toggle, as one whole literal per slot: the
+; parts "dirt" / "wet" / "baby" are common words, and a string built from
+; parts can take another script's casing from Papyrus' string pool and then
+; miss the file's key (JsonUtil path functions are case-sensitive).
+String Function _npcPresetKey(Int slot, Int subCode)
+	If subCode == MOD_DIRT
+		If slot == 1
+			Return "npc.1.dirt"
+		ElseIf slot == 2
+			Return "npc.2.dirt"
+		EndIf
+		Return "npc.3.dirt"
+	ElseIf subCode == MOD_WET
+		If slot == 1
+			Return "npc.1.wet"
+		ElseIf slot == 2
+			Return "npc.2.wet"
+		EndIf
+		Return "npc.3.wet"
+	EndIf
+	If slot == 1
+		Return "npc.1.baby"
+	ElseIf slot == 2
+		Return "npc.2.baby"
+	EndIf
+	Return "npc.3.baby"
+EndFunction
+
 Function _loadNpcSlotToggles(String path)
 	_ensureSlotToggles()
 	Int slot = 1
@@ -956,9 +976,9 @@ Function _loadNpcSlotToggles(String path)
 		_slot_use_mme_lactacid[slot] = jsonutil.GetPathBoolValue(path, base + "mme_lactacid", _slot_use_mme_lactacid[slot])
 		_slot_use_slp[slot] = jsonutil.GetPathBoolValue(path, base + "slp", _slot_use_slp[slot])
 		_slot_use_preg[slot] = jsonutil.GetPathBoolValue(path, base + "preg", _slot_use_preg[slot])
-		_slot_use_dirt[slot] = jsonutil.GetPathBoolValue(path, base + "dirt", _slot_use_dirt[slot])
-		_slot_use_wet[slot] = jsonutil.GetPathBoolValue(path, base + "wet", _slot_use_wet[slot])
-		_slot_use_baby[slot] = jsonutil.GetPathBoolValue(path, base + "baby", _slot_use_baby[slot])
+		_slot_use_dirt[slot] = jsonutil.GetPathBoolValue(path, _npcPresetKey(slot, MOD_DIRT), _slot_use_dirt[slot])
+		_slot_use_wet[slot] = jsonutil.GetPathBoolValue(path, _npcPresetKey(slot, MOD_WET), _slot_use_wet[slot])
+		_slot_use_baby[slot] = jsonutil.GetPathBoolValue(path, _npcPresetKey(slot, MOD_BABY), _slot_use_baby[slot])
 		slot += 1
 	EndWhile
 EndFunction
@@ -1020,9 +1040,9 @@ Function _saveNpcSlotToggles(String path)
 		jsonutil.SetPathIntValue(path, base + "mme_lactacid", _slot_use_mme_lactacid[slot] as Int)
 		jsonutil.SetPathIntValue(path, base + "slp", _slot_use_slp[slot] as Int)
 		jsonutil.SetPathIntValue(path, base + "preg", _slot_use_preg[slot] as Int)
-		jsonutil.SetPathIntValue(path, base + "dirt", _slot_use_dirt[slot] as Int)
-		jsonutil.SetPathIntValue(path, base + "wet", _slot_use_wet[slot] as Int)
-		jsonutil.SetPathIntValue(path, base + "baby", _slot_use_baby[slot] as Int)
+		jsonutil.SetPathIntValue(path, _npcPresetKey(slot, MOD_DIRT), _slot_use_dirt[slot] as Int)
+		jsonutil.SetPathIntValue(path, _npcPresetKey(slot, MOD_WET), _slot_use_wet[slot] as Int)
+		jsonutil.SetPathIntValue(path, _npcPresetKey(slot, MOD_BABY), _slot_use_baby[slot] as Int)
 		slot += 1
 	EndWhile
 EndFunction

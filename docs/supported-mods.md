@@ -113,16 +113,16 @@ Stage icons, all of them. They are drawn in the ring style only (the classic set
 | **Cold** | 9 stages from Warm to Hypothermic: a sun for the first three, a snowflake from Chilly on |
 | **Fatigue** | 9 stages from Rested to Collapsing |
 
-NPC support: **No** - SunHelm tracks the player only.
+A need you switch off in SunHelm's own MCM drops its icon. NPC support: **No** - SunHelm tracks the player only.
 
-### Bathing in Skyrim Renewed and Wet Function Redux
+### Bathing in Skyrim Renewed and Wet Function
 
-*Requires:* `Bathing in Skyrim.esp` (the Renewed version, 2.7 or newer; the 2018 original is not supported) and/or `WetFunction.esp`
+*Requires:* `Bathing in Skyrim.esp` (the Renewed version, 2.7 or newer; the 2018 original is not supported) and/or Wet Function: `WetFunctionNG.esp` (WetFunction NG) or `WetFunction.esp` (Wet Function Redux)
 
 | Icon | Description |
 |------|-------------|
 | **Dirtiness** | 9 stages from Clean to Reeking: Renewed's dirt percentage |
-| **Wetness** | 9 stages from Dry to Dripping: Wet Function's wetness |
+| **Wetness** | 9 stages from Dry to Dripping: Wet Function's wetness above its dry level, as a share of the rest up to its cap (the strength the mod drives the wet look with) |
 
 NPC support: **Yes** for both, off by default per slot. Renewed only writes a value for the actors it tracks; everyone else reads as clean.
 
@@ -143,7 +143,7 @@ NPC support: **No** - SPH grows hair on the player only.
 
 | Icon | Description |
 |------|-------------|
-| **Baby health** | 9 stages from Healthy to Miscarrying while pregnant, hidden otherwise. The scale runs the other way from the rest: full health is the calm end |
+| **Baby health** | 9 stages from Healthy to Miscarrying while pregnant (BeeingFemale's trimesters and labor), hidden otherwise. The scale runs the other way from the rest: full health is the calm end |
 
 NPC support: **Yes**, off by default per slot.
 
@@ -154,7 +154,7 @@ NPC support: **Yes**, off by default per slot.
 | Icon | Description |
 |------|-------------|
 | **Stress** | 9 stages from Calm to Breaking: the mod's stress total |
-| **Fear** | The phobias held, one stage each up to 8+. The mod has no fear number: a phobia is a spell it adds when a creature type hurts you badly and removes when you conquer it |
+| **Fear** | The phobias held, one stage each up to 8+, rechecked every 15 seconds. The mod has no fear number: a phobia is a spell it adds when a creature type hurts you badly and removes when you conquer it |
 
 NPC support: **No**.
 
@@ -174,7 +174,7 @@ NPC support: **No**.
 
 | Icon | Description |
 |------|-------------|
-| **Diseases** | Healthy, Infected, Worsening, Severe: the worst stage of any disease held. Vanilla diseases are stage 1; SunHelm Diseases turns each into a three-stage chain and adds seven diseases of its own |
+| **Diseases** | Infected, Worsening, Severe: the worst stage of any disease held, shown only while one is held. Vanilla diseases (Sanguinare Vampiris included) are stage 1; SunHelm Diseases turns each into a three-stage chain and adds seven diseases of its own. Rechecked every 20 seconds |
 
 NPC support: **No**.
 

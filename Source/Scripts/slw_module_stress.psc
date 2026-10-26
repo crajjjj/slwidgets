@@ -21,6 +21,11 @@ string iconbasepath = "widgets/iwant/widgets/library/stress/"
 int EMPTY = -1
 int _stress_prv = -1
 int _fear_prv = -1
+; the phobia count is 24 spell checks; phobias come and go with fights, so
+; the count is reused for PHOBIA_RECHECK seconds
+Int _phobiaCached = 0
+Float _phobiaCheckedAt = -1.0
+Float PHOBIA_RECHECK = 15.0
 
 ;override
 Bool Function isInterfaceActive()
@@ -32,6 +37,7 @@ Function resetInterface()
 	Module_Ready = false
 	_stress_prv = EMPTY
 	_fear_prv = EMPTY
+	_phobiaCheckedAt = -1.0
 EndFunction
 
 ;override
@@ -92,6 +98,7 @@ EndFunction
 Event onWidgetReload(iWant_Status_Bars iBars, Actor target, Int slot)
 	_stress_prv = EMPTY
 	_fear_prv = EMPTY
+	_phobiaCheckedAt = -1.0
 	iBars.releaseIcon(slwGetModName(), STRESS_STATE)
 	iBars.releaseIcon(slwGetModName(), FEAR_STATE)
 	If !target || !isInterfaceActive()
@@ -135,7 +142,7 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 		EndIf
 	EndIf
 	If config.isOn(config.module_saf_fear)
-		Int fearCurr = clampInt(getPhobiaCount(target), 0, 8)
+		Int fearCurr = clampInt(_cachedPhobiaCount(target), 0, 8)
 		If _fear_prv == EMPTY || _fear_prv != fearCurr
 			iBars.setIconStatus(slwGetModName(), FEAR_STATE, fearCurr)
 			_fear_prv = fearCurr
@@ -148,6 +155,16 @@ Int Function getStressPercent()
 		Return 0
 	EndIf
 	Return clampInt(_stressTotal.GetValue() as Int, 0, 100)
+EndFunction
+
+; real time restarts at every game launch: a stamp from before a load is stale
+Int Function _cachedPhobiaCount(Actor target)
+	Float now = Utility.GetCurrentRealTime()
+	If _phobiaCheckedAt < 0.0 || now < _phobiaCheckedAt || now - _phobiaCheckedAt >= PHOBIA_RECHECK
+		_phobiaCached = getPhobiaCount(target)
+		_phobiaCheckedAt = now
+	EndIf
+	Return _phobiaCached
 EndFunction
 
 Int Function getPhobiaCount(Actor target)
@@ -164,10 +181,10 @@ EndFunction
 
 Function _loadStressIcon(iWant_Status_Bars iBars)
 	String[] d = StringUtil.Split("Calm,Relaxed,Uneasy,Tense,Stressed,Very Stressed,Anxious,Overwhelmed,Breaking", ",")
-	loadStageIcon(config, iBars, STRESS_STATE, iconbasepath + "stress/stress", d)
+	loadStageIcon(config, iBars, STRESS_STATE, 0, iconbasepath + "stress/stress", d)
 EndFunction
 
 Function _loadFearIcon(iWant_Status_Bars iBars)
 	String[] d = StringUtil.Split("No Phobia,1 Phobia,2 Phobias,3 Phobias,4 Phobias,5 Phobias,6 Phobias,7 Phobias,8+ Phobias", ",")
-	loadStageIcon(config, iBars, FEAR_STATE, iconbasepath + "fear/fear", d)
+	loadStageIcon(config, iBars, FEAR_STATE, 0, iconbasepath + "fear/fear", d)
 EndFunction

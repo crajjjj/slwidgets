@@ -43,6 +43,28 @@ def walk(folder):
             yield os.path.join(dp, fn)
 
 
+def check_fresh(pyro_zip, ver):
+    """Refuse to name an old Pyro zip with the current version.
+
+    The compiled slw_util.pex inside must carry the version string, and no
+    file Pyro packs may be newer than the zip (Pyro writes the zip last)."""
+    with zipfile.ZipFile(pyro_zip) as z:
+        try:
+            pex = z.read("Scripts/slw_util.pex")
+        except KeyError:
+            raise SystemExit(f"{pyro_zip} has no Scripts/slw_util.pex: rerun Pyro")
+    if ver.encode() not in pex:
+        raise SystemExit(f"{pyro_zip} was built for another version than {ver}: rerun Pyro")
+    zip_time = os.path.getmtime(pyro_zip)
+    sources = [os.path.join(ROOT, "SLWidgets.esp")]
+    for folder in ("Scripts", os.path.join("Source", "Scripts"), "Interface", "SKSE", "Seq"):
+        sources.extend(walk(os.path.join(ROOT, folder)))
+    newer = [p for p in sources if os.path.getmtime(p) > zip_time + 1]
+    if newer:
+        raise SystemExit(f"{len(newer)} files are newer than {pyro_zip} (e.g. "
+                         f"{os.path.relpath(newer[0], ROOT)}): rerun Pyro")
+
+
 def main():
     ver = version()
     out_dir = os.path.join(ROOT, "Build")
@@ -50,6 +72,7 @@ def main():
 
     pyro_zip = os.path.join(out_dir, "SLWidgets.zip")
     if os.path.exists(pyro_zip):
+        check_fresh(pyro_zip, ver)
         named = os.path.join(out_dir, f"SLWidgets {ver}.zip")
         shutil.copyfile(pyro_zip, named)
         print("wrote", named, os.path.getsize(named) // 1024, "KB")

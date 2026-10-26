@@ -395,6 +395,11 @@ Function NpcTracking()
 
 	Int slot = 1
 	While slot <= 3
+		; A SkyUI column holds 64 options; the globals and three slots are 68, so
+		; slots 2 and 3 go to the right column.
+		If slot == 2
+			SetCursorPosition(1)
+		EndIf
 		; Header label is built dynamically with the actor name; SkyUI only resolves
 		; $KEY when the whole label is a single key, so the prefix stays in English.
 		AddHeaderOption("NPC Slot " + slot + ":  " + _slotName(slot))
@@ -476,6 +481,7 @@ Function Debug()
 	AddTextOption("$SLW_SHD_Check", StringIfElse( isSunHelmDiseasesReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddTextOption("$SLW_BIS_Check", StringIfElse( isBathingReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddTextOption("$SLW_WFR_Check", StringIfElse( isWetFunctionReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
+	AddTextOption("$SLW_WFNG_Check", StringIfElse( isWetFunctionNGReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddTextOption("$SLW_SPH_Check", StringIfElse( isSPHReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddTextOption("$SLW_SAF_Check", StringIfElse( isStressFearReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)
 	AddTextOption("$SLW_BNB_Check", StringIfElse( isBladeBluntReady() , "$SLW_OK", "$SLW_Not_Found"), OPTION_FLAG_DISABLED)

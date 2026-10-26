@@ -268,7 +268,7 @@ Also per NPC slot.
 </div>
 
 
-#### Wetness (Wet Function Redux)
+#### Wetness (WetFunction NG / Wet Function Redux)
 
 Also per NPC slot.
 
@@ -366,7 +366,7 @@ Unhurt, Minor, Major, Critical.
 
 #### Diseases
 
-Healthy, Infected, Worsening, Severe (stages 2 and 3 need SunHelm Diseases).
+Shown only while a disease is held: Infected, Worsening, Severe (stages 2 and 3 need SunHelm Diseases).
 
 <div class="icon-grid" markdown>
 

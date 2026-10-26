@@ -106,10 +106,10 @@ EndEvent
 Function _loadPubicIcon(iWant_Status_Bars iBars)
 	; SPH's own stage names
 	String[] d = StringUtil.Split("Shaved,Shadow,Stubble,Short,Long,Untamed", ",")
-	loadStageIcon(config, iBars, PUBIC_STATE, iconbasepath + "pubic/pubic", d)
+	loadStageIcon(config, iBars, PUBIC_STATE, 0, iconbasepath + "pubic/pubic", d)
 EndFunction
 
 Function _loadArmpitIcon(iWant_Status_Bars iBars)
 	String[] d = StringUtil.Split("Shaved,Shadow,Stubble,Short,Medium,Long,Very Long", ",")
-	loadStageIcon(config, iBars, ARMPIT_STATE, iconbasepath + "armpit/armpit", d)
+	loadStageIcon(config, iBars, ARMPIT_STATE, 0, iconbasepath + "armpit/armpit", d)
 EndFunction

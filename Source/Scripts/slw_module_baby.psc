@@ -1,9 +1,12 @@
 Scriptname slw_module_baby extends slw_base_module
 {BeeingFemale: the health of an unborn child, for the player and the tracked
 NPCs. BeeingFemale keeps it as a StorageUtil float on the mother (0-100,
-100 = healthy; its own widget reads the same key) and marks a pregnancy with
-a spell. The icon is shown only while the actor is pregnant, and it runs the
-other way round from the rest: full health is the calm end of the scale.}
+100 = healthy; its own widget reads the same key). The icon is shown while
+the actor carries a child, BeeingFemale's states 4-7 (three trimesters and
+labor) in FW.CurrentState, the same test slw_module_pregnancy uses. Not the
+pregnancy spell: BeeingFemale keeps that through the Replenish state after
+birth, when the health key is already gone. The scale runs the other way
+round from the rest: full health is the calm end.}
 import slw_log
 import slw_util
 
@@ -11,8 +14,6 @@ Bool Property Module_Ready = false auto hidden
 
 slw_config Property config Auto
 Actor Property PlayerRef Auto
-
-Spell _bfPregnant
 
 String BABY_STATE = "BF_BabyHealth"
 string iconbasepath = "widgets/iwant/widgets/library/bf/"
@@ -50,13 +51,7 @@ Function initInterface()
 		Return
 	EndIf
 	WriteLog("ModuleBaby: BeeingFemale.esm found")
-	; the same pregnancy marker slw_module_pregnancy uses
-	_bfPregnant = Game.GetFormFromFile(0x28a0, "BeeingFemale.esm") as Spell
-	If _bfPregnant
-		Module_Ready = true
-	Else
-		WriteLog("ModuleBaby: BeeingFemale pregnancy spell not found", 2)
-	EndIf
+	Module_Ready = true
 EndFunction
 
 Bool Function _on(Int slot)
@@ -64,9 +59,9 @@ Bool Function _on(Int slot)
 EndFunction
 
 Function _release(iWant_Status_Bars iBars, Int slot)
-	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(BABY_STATE, slot))
 	baby_loaded[slot] = false
 	baby_state_prv[slot] = EMPTY
+	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(BABY_STATE, slot))
 EndFunction
 
 ;override
@@ -97,8 +92,11 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 		Return
 	EndIf
 	If !baby_loaded[slot]
-		_loadBabyIcon(iBars, slot)
+		; claimed before the external load call: a release that runs while the
+		; load is in flight leaves the flag false, and the next tick loads again
+		; (a no-op when the icon is there)
 		baby_loaded[slot] = true
+		_loadBabyIcon(iBars, slot)
 	EndIf
 	Int babyCurr = percentToState9NotStrict(100 - getBabyHealthFor(target))
 	If baby_state_prv[slot] == EMPTY || baby_state_prv[slot] != babyCurr
@@ -108,7 +106,11 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 EndEvent
 
 Bool Function isPregnant(Actor target)
-	Return Module_Ready && target.HasSpell(_bfPregnant)
+	If !Module_Ready
+		Return false
+	EndIf
+	Int st = StorageUtil.GetIntValue(target, "FW.CurrentState", 0)
+	Return st >= 4 && st <= 7
 EndFunction
 
 ; 0-100, 100 = healthy. BeeingFemale writes the key when the pregnancy
@@ -119,5 +121,5 @@ EndFunction
 
 Function _loadBabyIcon(iWant_Status_Bars iBars, Int slot)
 	String[] d = StringUtil.Split("Healthy,Strong,Stable,Fine,Weak,At Risk,Critical,Failing,Miscarrying", ",")
-	loadStageIcon(config, iBars, getIconNameForSlot(BABY_STATE, slot), iconbasepath + "babyhealth/baby", d)
+	loadStageIcon(config, iBars, BABY_STATE, slot, iconbasepath + "babyhealth/baby", d)
 EndFunction

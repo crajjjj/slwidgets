@@ -6,9 +6,12 @@ Critical Injury): the injury icon is a four-step check of them.
 
 Diseases: every vanilla disease is a spell the actor holds, which is stage 1.
 SunHelm Diseases makes each one a three-stage chain by adding stage 2 and 3
-spells, and brings seven diseases of its own with the same three stages. The
-disease icon shows the worst stage across all of them, so without SunHelm
-Diseases it steps between healthy and infected.}
+spells (a stage spell replaces the one before), and brings seven diseases of
+its own with the same three stages. The disease icon shows the worst stage
+across all of them, and only while one is held: it needs no other mod, so it
+must not take a bar position on every install. The scan is up to 50 spell
+checks, so its result is reused for DISEASE_RECHECK seconds; diseases move
+in game hours.}
 import slw_log
 import slw_util
 
@@ -29,6 +32,10 @@ string iconbasepath = "widgets/iwant/widgets/library/health/"
 int EMPTY = -1
 int _injury_prv = -1
 int _disease_prv = -1
+Bool _diseaseLoaded = false
+Int _diseaseCached = 0
+Float _diseaseCheckedAt = -1.0
+Float DISEASE_RECHECK = 20.0
 
 ;override
 Bool Function isInterfaceActive()
@@ -42,6 +49,8 @@ Function resetInterface()
 	Plugin_SunHelmDiseases = false
 	_injury_prv = EMPTY
 	_disease_prv = EMPTY
+	_diseaseLoaded = false
+	_diseaseCheckedAt = -1.0
 	_disease1 = None
 EndFunction
 
@@ -63,10 +72,11 @@ Function initInterface()
 	EndIf
 EndFunction
 
-; The disease lists, built once: 13 vanilla spells (6 diseases, their 6 trap
-; variants, Dragonborn's Droops), then SunHelm Diseases when it is loaded.
+; The disease lists, built once: 15 vanilla spells (7 diseases incl.
+; Sanguinare Vampiris, their trap variants, Dragonborn's Droops), then
+; SunHelm Diseases when it is loaded.
 Function _resolveDiseases()
-	Spell[] s1 = new Spell[20]
+	Spell[] s1 = new Spell[24]
 	Spell[] s2 = new Spell[14]
 	Spell[] s3 = new Spell[14]
 	Int n1 = 0
@@ -76,12 +86,14 @@ Function _resolveDiseases()
 	n1 = _add(s1, n1, 0x0B8781, "Skyrim.esm")   ; Rattles
 	n1 = _add(s1, n1, 0x0B8782, "Skyrim.esm")   ; Rockjoint
 	n1 = _add(s1, n1, 0x0B8783, "Skyrim.esm")   ; Witbane
+	n1 = _add(s1, n1, 0x0B8780, "Skyrim.esm")   ; Sanguinare Vampiris
 	n1 = _add(s1, n1, 0x10A24A, "Skyrim.esm")   ; trap variants
 	n1 = _add(s1, n1, 0x10A24C, "Skyrim.esm")
 	n1 = _add(s1, n1, 0x10A24D, "Skyrim.esm")
 	n1 = _add(s1, n1, 0x10A24E, "Skyrim.esm")
 	n1 = _add(s1, n1, 0x10A24F, "Skyrim.esm")
 	n1 = _add(s1, n1, 0x10A250, "Skyrim.esm")
+	n1 = _add(s1, n1, 0x0037E9, "Dawnguard.esm")    ; trap Sanguinare Vampiris
 	n1 = _add(s1, n1, 0x0285C1, "Dragonborn.esm")   ; Droops
 	Plugin_SunHelmDiseases = isSunHelmDiseasesReady()
 	If Plugin_SunHelmDiseases
@@ -154,18 +166,16 @@ EndFunction
 ;override
 Event onWidgetReload(iWant_Status_Bars iBars, Actor target, Int slot)
 	_injury_prv = EMPTY
-	_disease_prv = EMPTY
 	iBars.releaseIcon(slwGetModName(), INJURY_STATE)
-	iBars.releaseIcon(slwGetModName(), DISEASE_STATE)
+	_releaseDisease(iBars)
+	_diseaseCheckedAt = -1.0
 	If !target
 		Return
 	EndIf
 	If _injuryOn()
 		_loadInjuryIcon(iBars)
 	EndIf
-	If _diseaseOn()
-		_loadDiseaseIcon(iBars)
-	EndIf
+	; the disease icon is loaded by the status update that finds a disease
 EndEvent
 
 ;override
@@ -176,13 +186,16 @@ Event onWidgetToggleUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 		iBars.releaseIcon(slwGetModName(), INJURY_STATE)
 		_injury_prv = EMPTY
 	EndIf
-	If target && _diseaseOn()
-		_loadDiseaseIcon(iBars)
-	Else
-		iBars.releaseIcon(slwGetModName(), DISEASE_STATE)
-		_disease_prv = EMPTY
+	If (!target || !_diseaseOn()) && _diseaseLoaded
+		_releaseDisease(iBars)
 	EndIf
 EndEvent
+
+Function _releaseDisease(iWant_Status_Bars iBars)
+	_diseaseLoaded = false
+	_disease_prv = EMPTY
+	iBars.releaseIcon(slwGetModName(), DISEASE_STATE)
+EndFunction
 
 ;override
 Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
@@ -197,13 +210,36 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 		EndIf
 	EndIf
 	If _diseaseOn()
-		Int diseaseCurr = getDiseaseStage(target)
-		If _disease_prv == EMPTY || _disease_prv != diseaseCurr
-			iBars.setIconStatus(slwGetModName(), DISEASE_STATE, diseaseCurr)
-			_disease_prv = diseaseCurr
+		Int diseaseCurr = _cachedDiseaseStage(target)
+		If diseaseCurr == 0
+			If _diseaseLoaded
+				_releaseDisease(iBars)
+			EndIf
+		Else
+			If !_diseaseLoaded
+				; claimed before the external load call, as in slw_module_baby
+				_diseaseLoaded = true
+				_loadDiseaseIcon(iBars)
+			EndIf
+			If _disease_prv == EMPTY || _disease_prv != diseaseCurr
+				iBars.setIconStatus(slwGetModName(), DISEASE_STATE, diseaseCurr)
+				_disease_prv = diseaseCurr
+			EndIf
 		EndIf
 	EndIf
 EndEvent
+
+; getDiseaseStage, reused for DISEASE_RECHECK seconds. Real time restarts at
+; every game launch, so a stamp from before a load (now < stamp) counts as
+; stale too.
+Int Function _cachedDiseaseStage(Actor target)
+	Float now = Utility.GetCurrentRealTime()
+	If _diseaseCheckedAt < 0.0 || now < _diseaseCheckedAt || now - _diseaseCheckedAt >= DISEASE_RECHECK
+		_diseaseCached = getDiseaseStage(target)
+		_diseaseCheckedAt = now
+	EndIf
+	Return _diseaseCached
+EndFunction
 
 ; 0 unhurt, 1 minor, 2 major, 3 critical: the worst injury spell held
 Int Function getInjuryStage(Actor target)
@@ -221,7 +257,8 @@ Int Function getInjuryStage(Actor target)
 EndFunction
 
 ; 0 healthy, 1 infected, 2 worsening, 3 severe: the worst stage of any
-; disease held. Worst first, so a sick actor costs fewer checks.
+; disease held. A stage spell replaces the one before it, so no list can be
+; skipped; callers go through _cachedDiseaseStage.
 Int Function getDiseaseStage(Actor target)
 	If !_disease1
 		_resolveDiseases()
@@ -258,10 +295,10 @@ EndFunction
 Function _loadInjuryIcon(iWant_Status_Bars iBars)
 	; Blade and Blunt's own spell names
 	String[] d = StringUtil.Split("Unhurt,Minor Injury,Major Injury,Critical Injury", ",")
-	loadStageIcon(config, iBars, INJURY_STATE, iconbasepath + "injury/injury", d)
+	loadStageIcon(config, iBars, INJURY_STATE, 0, iconbasepath + "injury/injury", d)
 EndFunction
 
 Function _loadDiseaseIcon(iWant_Status_Bars iBars)
 	String[] d = StringUtil.Split("Healthy,Infected,Worsening,Severe", ",")
-	loadStageIcon(config, iBars, DISEASE_STATE, iconbasepath + "disease/disease", d)
+	loadStageIcon(config, iBars, DISEASE_STATE, 0, iconbasepath + "disease/disease", d)
 EndFunction

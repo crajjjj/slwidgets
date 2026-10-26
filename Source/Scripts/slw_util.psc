@@ -179,8 +179,14 @@ Bool Function isBathingReady() Global
 	Return (Game.GetFormFromFile(0x000DA8, "Bathing in Skyrim.esp") as GlobalVariable) != None
 EndFunction
 
+; Wet Function Redux (Papyrus, keeps wetness in StorageUtil)
 Bool Function isWetFunctionReady() Global
 	Return isDependencyReady("WetFunction.esp")
+EndFunction
+
+; WetFunction NG (SKSE port, keeps wetness in its DLL behind WetFunctionNG.*)
+Bool Function isWetFunctionNGReady() Global
+	Return isDependencyReady("WetFunctionNG.esp")
 EndFunction
 
 Bool Function isSPHReady() Global
@@ -247,11 +253,13 @@ Function fillStageColors(Int[] r, Int[] g, Int[] b, Int[] a) Global
 	EndWhile
 EndFunction
 
-; Registers a stage icon with iWant: one file per stage, basepath + stage +
-; ".dds" (basepath is the widgets/... path up to the stage number), the
-; captions as the stage names, the default colours above, then the active
-; colour preset. Loads silently do nothing when the icon is already loaded.
-Function loadStageIcon(slw_config cfg, iWant_Status_Bars iBars, String iconName, String basepath, String[] captions) Global
+; Registers a stage icon with iWant for a slot: one file per stage, basepath
+; + stage + ".dds" (basepath is the widgets/... path up to the stage number),
+; the captions as the stage names, the default colours above, then the active
+; colour preset. Presets are keyed by the base name (no _NPCn suffix), like the
+; older modules do it; config.loadIconForSlot puts an NPC slot's icon straight
+; into that slot's bar. Loading an icon that is already loaded does nothing.
+Function loadStageIcon(slw_config cfg, iWant_Status_Bars iBars, String baseName, Int slot, String basepath, String[] captions) Global
 	Int n = captions.Length
 	String[] s = Utility.CreateStringArray(n)
 	Int[] r = Utility.CreateIntArray(n)
@@ -264,8 +272,8 @@ Function loadStageIcon(slw_config cfg, iWant_Status_Bars iBars, String iconName,
 		i += 1
 	EndWhile
 	fillStageColors(r, g, b, a)
-	cfg.ApplyIconColors(iconName, r, g, b, a)
-	iBars.loadIcon(slwGetModName(), iconName, captions, s, r, g, b, a)
+	cfg.ApplyIconColors(baseName, r, g, b, a)
+	cfg.loadIconForSlot(iBars, getIconNameForSlot(baseName, slot), captions, s, r, g, b, a, slot)
 EndFunction
 
 Int Function clampInt(Int value, Int low, Int high) Global

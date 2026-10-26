@@ -132,12 +132,16 @@ Pre-release checklist. Each scenario should be verified in-game or by code inspe
 | 11a.3 | P1 | SunHelm installed | Food/Thirst/Cold/Fatigue toggles enabled; food icon follows `GetHungerPercent()` (eat: stage drops), cold shows the sun at stages 0-2 and the snowflake from 3 | slw_module_sunhelm |
 | 11a.4 | P1 | SunHelm absent | The four toggles greyed, no errors (the casts are never made) | slw_module_sunhelm |
 | 11a.5 | P1 | Bathing in Skyrim Renewed | Dirtiness icon follows the global; bathing drops it; an NPC in a tracked slot with the NPC toggle on shows its own value (`BiS_Dirtiness`) | slw_module_hygiene |
-| 11a.6 | P1 | Wet Function Redux | Wetness rises in rain / water, falls when dry; off for NPC slots by default | slw_module_hygiene |
+| 11a.6 | P1 | WetFunction NG or Redux | Wetness rises in rain / water and reaches Dripping only near the cap; a dry actor (wetness at or below 1) shows Dry; off for NPC slots by default | slw_module_hygiene |
 | 11a.7 | P1 | SPH 2.0 | Pubic icon has 6 stages, armpit 7; shaving drops them, growth cream raises one step | slw_module_sph |
-| 11a.8 | P1 | BeeingFemale pregnancy | Baby health icon appears only while pregnant and disappears after birth / abortion; 100 health = stage 0 ("Healthy") | slw_module_baby |
+| 11a.8 | P1 | BeeingFemale pregnancy | Baby health icon appears in the trimesters and labor and is gone in Replenish after birth / miscarriage; 100 health = stage 0 ("Healthy") | slw_module_baby |
 | 11a.9 | P1 | Stress and Fear | Stress follows `Stress_Total`; fear counts held phobia spells (0..8+) | slw_module_stress |
 | 11a.10 | P1 | Blade and Blunt | Injury icon steps Unhurt / Minor / Major / Critical with the spells the DLL applies | slw_module_health |
-| 11a.11 | P1 | Diseases | Vanilla disease = stage 1; with SunHelm Diseases the chain's stage 2 / 3 spells raise it; cure resets to Healthy | slw_module_health |
+| 11a.11 | P1 | Diseases | No icon while healthy; a vanilla disease (also Sanguinare) shows stage 1 within 20 s; SunHelm Diseases stages 2 / 3 raise it; a cure removes the icon | slw_module_health |
+| 11a.14 | P1 | SunHelm need switched off in SunHelm's MCM | That need's icon disappears; switched back on, it returns | slw_module_sunhelm |
+| 11a.15 | P0 | No SunHelm installed | No link errors for slw_module_sunhelm in the Papyrus log; the four toggles greyed | slw_module_sunhelm, slw_interface_sunhelm |
+| 11a.16 | P1 | NPC page | All three slots show every option (slots 2 and 3 in the right column) | slw_menu |
+| 11a.17 | P1 | NPC slot with Dirtiness on, NPC not loaded | The NPC's icon goes to that slot's bar, not the player's, and takes preset colours | slw_util.loadStageIcon |
 | 11a.12 | P2 | Settings preset round trip | The 13 new keys and `npc.N.dirt/wet/baby` save and load | slw_config |
 | 11a.13 | P1 | Archives | The mod zip shows every icon in the ring style with the ramp Default preset; the Classic Icons zip installed on top puts the old art and the old Default / HideEmpty presets back for the pre-3.0.0 sets only. The MCM colour preset list shows the same four names either way | build_release.py |
 
