@@ -31,7 +31,7 @@
 
 ## Icons draw as diagonal lines or streaks
 
-SL Widgets 3.0.0 and 3.0.1 shipped their icon textures with two DDS header fields the Flash-based iWant Widgets does not accept, so every icon drew as a short diagonal stroke (the [Prisma renderer](prisma.md) was not affected). Update to 3.0.2 or newer. A custom icon pack installed on top is unaffected; if you make your own icons with Pillow, see the note under [Customization](customization.md#dds-headers).
+SL Widgets 3.0.0 and 3.0.1 shipped their icon textures with two DDS header fields the Flash-based iWant Widgets does not accept, so every icon drew as a short diagonal stroke (the [Prisma renderer](prisma.md) was not affected). Update to 3.1.0 or newer. A custom icon pack installed on top is unaffected; if you make your own icons with Pillow, see the note under [Customization](customization.md#dds-headers).
 
 ---
 
