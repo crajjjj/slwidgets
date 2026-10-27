@@ -211,6 +211,7 @@ SL Widgets detects all installed pregnancy mods and shows the relevant icon set 
 | `EstrusChaurus.esp` | Chaurus egg states |
 | `EstrusSpider.esp` | Spider egg states |
 | `EstrusDwemer.esp` | Dwemer sphere states |
+| `EstrusUnified.esp` | The same three (chaurus eggs, spider eggs, dwemer spheres), read through Estrus Unified's API |
 | `Fertility Mode.esm` | Cycle and pregnancy states |
 | `CurseOfLife.esp` | Curse of Life pregnancy states |
 | `SGO4IF.esp` | SGO4 soul gem pregnancy states |
@@ -295,7 +296,7 @@ NPC support: **No** - the meters are for the player. NPCs keep their status icon
 | HentaiPregnancy | — | Up to 5 | Yes |
 | BeeingFemale | — | Varies | Yes |
 | EggFactory | — | Varies | Yes |
-| EstrusChaurus / EstrusSpider / EstrusDwemer | — | Varies | Yes |
+| EstrusChaurus / EstrusSpider / EstrusDwemer / Estrus Unified | - | Varies | Yes |
 | Fertility Mode 3 | — | Varies | Yes |
 | Curse of Life | — | Varies | Yes |
 | SGO4 (pregnancy) | — | Varies | Yes |

@@ -68,7 +68,7 @@ The [b]Positions[/b] page moves and resizes iWant's bars, reorders their icons a
 [*]HentaiPregnancy
 [*]BeeingFemale
 [*]Egg Factory 3.0+
-[*]EstrusChaurus / EstrusSpider / EstrusDwemer
+[*]EstrusChaurus / EstrusSpider / EstrusDwemer / Estrus Unified
 [*]PAF
 [*]MiniNeeds
 [*]Alive Peeing SSE

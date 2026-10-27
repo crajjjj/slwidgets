@@ -20,6 +20,7 @@ Float[] GemPrePercent
 Bool Property Plugin_EstrusChaurus = false auto hidden
 Bool Property Plugin_EstrusSpider = false auto hidden
 Bool Property Plugin_EstrusDwemer = false auto hidden
+Bool Property Plugin_EstrusUnified = false auto hidden
 Bool Property Plugin_EggFactory = false auto hidden
 Bool Property Plugin_BeeingFemale = false auto hidden
 Bool Property Plugin_FertilityMode3 = false auto hidden
@@ -81,7 +82,27 @@ Function initInterface()
 	_ensurePrvArrays()
 	akActorName = playerRef.GetLeveledActorBase().GetName()
 	
-	If (!Plugin_EstrusChaurus && isECReady())
+	; Estrus Unified merges the three Estrus plugins into EstrusUnified.esp and
+	; answers through its DLL, so there are no form IDs to read; while it is
+	; present the three legacy blocks below stay off
+	If (!Plugin_EstrusUnified && isEUReady())
+		If EstrusUnifiedAPI.IsReady()
+			WriteLog("ModulePregnancy: EstrusUnified.esp found, API version " + EstrusUnifiedAPI.GetAPIVersion())
+			Plugin_EstrusUnified = true
+		Else
+			WriteLog("ModulePregnancy: EstrusUnified.esp found but EstrusUnified.dll is not ready", 1)
+		EndIf
+	ElseIf (Plugin_EstrusUnified && !isEUReady())
+		WriteLog("ModulePregnancy: Estrus Unified no longer installed")
+		Plugin_EstrusUnified = false
+	EndIf
+	If Plugin_EstrusUnified
+		; every load: the set is idempotent, and a save whose Estrus Unified
+		; co-save was lost would otherwise never hear a change again
+		EstrusUnifiedAPI.RegisterForPregnancyEvents(self)
+	EndIf
+
+	If (!Plugin_EstrusChaurus && !Plugin_EstrusUnified && isECReady())
 		WriteLog("ModulePregnancy: EstrusChaurus.esp found")
 		_ChaurusBreederSpell = Game.GetFormFromFile(0x19121, "EstrusChaurus.esp") as Spell
 		_zzEstrusParasiteKeyword = Game.GetFormFromFile(0x160A8, "EstrusChaurus.esp") as Keyword
@@ -92,7 +113,7 @@ Function initInterface()
 		endif
 	endif
 	
-	If (!Plugin_EstrusSpider && isESReady())
+	If (!Plugin_EstrusSpider && !Plugin_EstrusUnified && isESReady())
 		WriteLog("ModulePregnancy: EstrusSpider.esp found")
 		_SpiderBreederSpell = Game.GetFormFromFile(0x4e255, "EstrusSpider.esp") as Spell
 		_zzEstrusSpiderParasiteKWD = Game.GetFormFromFile(0x4F2A3, "EstrusSpider.esp") as Keyword
@@ -104,7 +125,7 @@ Function initInterface()
 		
 	endif
 	
-	If (!Plugin_EstrusDwemer && isEDReady())
+	If (!Plugin_EstrusDwemer && !Plugin_EstrusUnified && isEDReady())
 		WriteLog("ModulePregnancy: EstrusDwemer.esp found")
 		_DwemerBreederSpell = Game.GetFormFromFile(0x4e255, "EstrusDwemer.esp") as Spell 
 		_zzEstrusDwemerParasiteKWD = Game.GetFormFromFile(0x4F2A3, "EstrusDwemer.esp") as Keyword
@@ -238,7 +259,7 @@ Function initInterface()
 	endif
 
 	if isInterfaceActive()
-		WriteLog("ModulePregnancy: active plugins - EC:" + Plugin_EstrusChaurus + " ES:" + Plugin_EstrusSpider + " ED:" + Plugin_EstrusDwemer + " BF:" + Plugin_BeeingFemale + " HP:" + Plugin_HentaiPregnancy + " EF:" + Plugin_EggFactory + " FM3:" + Plugin_FertilityMode3 + " FM3T:" + Plugin_FM3Tweaks + " FMR:" + Plugin_FMReloaded + " SGO4:" + Plugin_SGO4 + " COL:" + Plugin_CurseOfLife)
+		WriteLog("ModulePregnancy: active plugins - EC:" + Plugin_EstrusChaurus + " ES:" + Plugin_EstrusSpider + " ED:" + Plugin_EstrusDwemer + " EU:" + Plugin_EstrusUnified + " BF:" + Plugin_BeeingFemale + " HP:" + Plugin_HentaiPregnancy + " EF:" + Plugin_EggFactory + " FM3:" + Plugin_FertilityMode3 + " FM3T:" + Plugin_FM3Tweaks + " FMR:" + Plugin_FMReloaded + " SGO4:" + Plugin_SGO4 + " COL:" + Plugin_CurseOfLife)
 	else
 		WriteLog("ModulePregnancy: no pregnancy mods detected")
 	endif
@@ -247,7 +268,7 @@ EndFunction
 
 ;override
 Bool Function isInterfaceActive()
-	Return (Plugin_EstrusSpider || 	Plugin_EstrusChaurus || Plugin_EstrusDwemer || Plugin_BeeingFemale || Plugin_HentaiPregnancy || Plugin_EggFactory || Plugin_FertilityMode3 || Plugin_FMReloaded || Plugin_SGO4 || Plugin_CurseOfLife)
+	Return (Plugin_EstrusSpider || 	Plugin_EstrusChaurus || Plugin_EstrusDwemer || Plugin_EstrusUnified || Plugin_BeeingFemale || Plugin_HentaiPregnancy || Plugin_EggFactory || Plugin_FertilityMode3 || Plugin_FMReloaded || Plugin_SGO4 || Plugin_CurseOfLife)
 EndFunction
 
 Function _ensurePrvArrays()
@@ -279,6 +300,10 @@ Function resetInterface()
 	Plugin_EstrusSpider = false
 	Plugin_EstrusChaurus = false
 	Plugin_EstrusDwemer = false
+	If Plugin_EstrusUnified && isEUReady()
+		EstrusUnifiedAPI.UnregisterForPregnancyEvents(self)
+	EndIf
+	Plugin_EstrusUnified = false
 	Plugin_BeeingFemale = false
 	Plugin_HentaiPregnancy = false
 	Plugin_EggFactory = false
@@ -323,6 +348,14 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	endIf
 EndEvent
 
+; Estrus Unified reports a pregnancy starting (1-3) or ending (0); the icons
+; follow on the next pass, pulled forward as the other mods' events are
+Event OnEstrusUnifiedPregnancyChanged(Actor target, Int pregnancyType)
+	If Plugin_EstrusUnified && config && config.widget_controller && config.widget_controller._isShown(target)
+		config.widget_controller._refreshSoon(0.2)
+	EndIf
+EndEvent
+
 Function _releasePregnancyIcons(iWant_Status_Bars iBars, Int slot)
 	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Basic, slot))
 	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_CumInflation, slot))
@@ -364,6 +397,27 @@ EndFunction
 			_loadEggsIcon(iBars, slot)
 		else
 			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Eggs, slot))
+		endif
+	endif
+
+	;Estrus Unified: one answer for the three parasite kinds (0 none, 1 chaurus,
+	;2 spider, 3 dwemer), player and NPC alike
+	if Plugin_EstrusUnified
+		Int euKind = EstrusUnifiedAPI.GetPregnancyType(target)
+		if euKind == 1
+			_loadChaurusEggsIcon(iBars, slot)
+		else
+			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Chaurus_Eggs, slot))
+		endif
+		if euKind == 2
+			_loadSpiderEggsIcon(iBars, slot)
+		else
+			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Spider_Eggs, slot))
+		endif
+		if euKind == 3
+			_loadSphereIcon(iBars, slot)
+		else
+			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Dwemer_Spheres, slot))
 		endif
 	endif
 

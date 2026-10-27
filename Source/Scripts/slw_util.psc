@@ -80,6 +80,12 @@ Bool Function isEDReady() Global
 	Return isDependencyReady("EstrusDwemer.esp")
 EndFunction
 
+; Estrus Unified merges the three Estrus plugins into one and answers through
+; its DLL (EstrusUnifiedAPI); slw_module_pregnancy reads that instead of form IDs
+Bool Function isEUReady() Global
+	Return isDependencyReady("EstrusUnified.esp")
+EndFunction
+
 Bool Function isBFReady() Global
 	Return isDependencyReady("BeeingFemale.esm") 
 EndFunction

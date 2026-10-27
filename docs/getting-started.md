@@ -65,7 +65,7 @@ None of these are required. SL Widgets detects them at runtime and silently skip
 - HentaiPregnancy
 - BeeingFemale
 - EggFactory
-- EstrusChaurus / EstrusSpider / EstrusDwemer
+- EstrusChaurus / EstrusSpider / EstrusDwemer, or Estrus Unified
 - Fertility Mode 3
 - Curse of Life
 - SexLab-Parasites

@@ -488,6 +488,7 @@ the fork is gone: the mod now compiles and runs against the stock release.
 | MME | Direct global script calls: `MME_Storage.getMilkCurrent(playerRef)` |
 | SGO4 | SGO4IF 1.12+ only. `slw_interface_sgo4.getSGO4Database()` resolves the DB via `SGO4_QuestController_Main.Get().Data`; accessors cast the `Quest` to `SGO4_QuestDatabase_Main`. The pre-1.12 `dse_sgo_*` / `dse-soulgem-oven.esp` layout is not supported |
 | MAL | Bidirectional mod events: send `MAL_GetPlayerStoredMilk` / `MAL_GetPlayerMilkLimit`, cache responses from `MAL_ReturnPlayer*` events |
+| Estrus Unified | `EstrusUnifiedAPI` natives (compile stub in `Source/ApiHeaders`, copied from the mod's source): `GetPregnancyType(actor)` 0/1/2/3 = none/chaurus/spider/dwemer, player and NPC alike; the pregnancy module registers itself for `OnEstrusUnifiedPregnancyChanged`. It replaces the three legacy Estrus plugins, whose form-ID blocks stay off while it is present. Source extract: `mods\build\Estrus Unified 1.1` |
 
 ## MAL Event Caching Pattern
 MAL values are one tick behind by design — `_requestMALUpdate()` fires on each status update tick, return events populate `_mal_milk_cur`/`_mal_milk_max`, and `getMilkLevel()` reads the cache from the previous tick. No sleep needed.

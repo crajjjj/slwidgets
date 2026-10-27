@@ -96,6 +96,7 @@ Pre-release checklist. Each scenario should be verified in-game or by code inspe
 | 8.11 | P1 | FM3 SpermCount type mismatch | Tweaks mod changes SpermCount to int — verify no crash (known issue, logged) | slw_module_pregnancy |
 | 8.12 | P2 | Pregnancy toggle off | `module_pregnancy_enabled = false` releases all pregnancy icons | slw_module_pregnancy |
 | 8.13 | P2 | Multiple pregnancy mods | FM3/HP/BF are mutually exclusive (`elseif` chain), Estrus/EggFactory/SGO4/COF are additive | slw_module_pregnancy |
+| 8.14 | P1 | Estrus Unified | `EstrusUnifiedAPI.GetPregnancyType` 1/2/3 shows chaurus eggs / spider eggs / spheres and 0 releases them, player and NPC slots; the legacy Estrus blocks stay off; `OnEstrusUnifiedPregnancyChanged` pulls the next pass forward; the Debug page lists it | slw_module_pregnancy, slw_menu |
 
 ## 9. Module: SexLab Parasites (SLP)
 

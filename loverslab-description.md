@@ -64,7 +64,7 @@ Soft dependencies — install only the ones you use
 - HentaiPregnancy
 - BeeingFemale
 - Egg Factory 3.0+
-- EstrusChaurus / EstrusSpider / EstrusDwemer
+- EstrusChaurus / EstrusSpider / EstrusDwemer / Estrus Unified
 - PAF
 - MiniNeeds
 - Alive Peeing SSE
