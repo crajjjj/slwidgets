@@ -17,6 +17,8 @@ from pathlib import Path
 
 from PIL import Image, ImageChops, ImageDraw
 
+from savedds import save_dxt5
+
 # the classic brain; the shipped one is drawn by build_icons.py (ring style)
 OUT = Path(__file__).parent / "art/classic/library/slove/willpower.dds"
 
@@ -100,7 +102,7 @@ def main():
     args = parser.parse_args()
     icon = build()
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    icon.save(OUT, pixel_format="DXT5")
+    save_dxt5(icon, OUT)
     print("wrote", OUT, OUT.stat().st_size, "bytes")
     if args.png:
         # on a dark ground, enlarged: white on transparent shows nothing in a viewer

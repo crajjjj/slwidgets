@@ -23,6 +23,8 @@ import re
 import shutil
 import zipfile
 
+import savedds
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
 LIB_REL = "Interface/exported/widgets/iwant/widgets/library"
 PRESETS_REL = "SKSE/Plugins/SlWidgets/IconPresets"
@@ -75,8 +77,20 @@ def check_fresh(pyro_zip, ver):
                          f"{os.path.relpath(newer[0], ROOT)}): rerun Pyro")
 
 
+def check_dds_headers():
+    """Every shipped texture must carry a spec header (savedds.py says which
+    fields and why): the 3.0.0 / 3.0.1 icons did not and drew as streaks in
+    the Flash iWant Widgets."""
+    bad = savedds.off_spec([os.path.join(ROOT, LIB_REL.replace("/", os.sep)),
+                            os.path.join(CLASSIC, "library")])
+    if bad:
+        raise SystemExit(f"{len(bad)} .dds files have an off-spec header (e.g. "
+                         f"{os.path.relpath(bad[0], ROOT)}): python savedds.py --fix <folder>")
+
+
 def main():
     ver = version()
+    check_dds_headers()
     out_dir = os.path.join(ROOT, "Build")
     os.makedirs(out_dir, exist_ok=True)
 

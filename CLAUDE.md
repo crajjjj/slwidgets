@@ -55,6 +55,15 @@ art. `fillStageColors` in `slw_util` is the same ramp as the code default of
 every 3.0.0 icon. `build_willpower_icon.py` now writes the classic brain into
 `art/classic`.
 
+Every `.dds` is written through `savedds.save_dxt5`, never `Image.save`:
+Pillow's DDS writer puts `(width + 3) * 4` in `dwPitchOrLinearSize` and 32 in
+the bit count of a FourCC pixel format, and the 3.0.0 / 3.0.1 icons, shipped
+that way, drew as diagonal streaks in the Flash iWant Widgets (two user
+reports). nefaram runs the Prisma renderer, which decodes DDS through WIC and
+showed them fine, so a release must also be looked at with Prisma disabled.
+`build_release.py` refuses to package a library with such a header;
+`python savedds.py --check <folder>` lists offenders, `--fix` rewrites them.
+
 ### Registering a module script (3.0.0+)
 
 New module scripts need an ESP edit: a script entry on the `SLWidgetsModules`

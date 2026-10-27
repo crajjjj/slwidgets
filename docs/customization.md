@@ -123,6 +123,10 @@ Follow the naming convention already used by SL Widgets (visible in the installe
 
 GIMP can export DDS in BC3 without mipmaps. Photoshop requires the Intel Texture Works plugin or similar.
 
+### DDS headers
+
+The Flash-based iWant Widgets is strict about two DDS header fields that GIMP, Paint.NET and texconv fill in correctly but Pillow (the Python imaging library) does not: `dwPitchOrLinearSize` must be the byte size of the image (10000 for a 100 × 100 BC3 file) and the pixel format's bit count must be 0 for a compressed format. An icon with Pillow's values draws as a diagonal streak. If you generate icons with Pillow, write them through SL Widgets' `savedds.py` (`save_dxt5`, or `python savedds.py --fix <folder>` on files you already have); it is in the mod's source repository.
+
 !!! tip "PNG and animated GIF"
     With the optional [Prisma renderer](prisma.md) (0.4.0+), an icon can instead be a `.png` or an animated `.gif` dropped beside the `.dds` — no DDS export, no conversion. The renderer picks it up automatically. See [Animated and alternate-format icons](prisma.md#animated-and-alternate-format-icons).
 

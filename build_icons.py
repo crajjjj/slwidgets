@@ -22,6 +22,8 @@ Where things go:
 
 The classic art under art/classic/library is not touched by this script.
 Needs Pillow 11.2+ (DXT5 writer) and resvg-py:  pip install pillow resvg-py
+Every .dds is written through savedds.save_dxt5, which corrects the header
+fields Pillow gets wrong (see there); never call icon.save(..., "DXT5") directly.
 """
 import argparse
 import io
@@ -32,6 +34,8 @@ import re
 
 import resvg_py
 from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
+
+from savedds import save_dxt5
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 GLYPHS = os.path.join(ROOT, "art", "ring", "glyphs")
@@ -433,7 +437,7 @@ def main():
                 icon = build(g, i / (n - 1), badge=b)
             else:
                 icon = build(g, fills[i], badge=b, full_ring=True)
-            icon.save(os.path.join(dest, stem + ".dds"), pixel_format="DXT5")
+            save_dxt5(icon, os.path.join(dest, stem + ".dds"))
             icons[(folder, stem)] = icon
             count += 1
     print("wrote", count, "icons")

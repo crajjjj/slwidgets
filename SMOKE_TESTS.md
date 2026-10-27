@@ -278,3 +278,10 @@ Added in 2.3.0, never run in game when written. Set the update interval to 60 s 
 | 20.9 | P1 | Open at the main menu (no game) | The page says SL Widgets is not running; nothing is written | slw_bridge.GetLayout |
 | 20.10 | P1 | Old slw_bridge.pex under a new DLL | The page names the mismatch; no crash | Bridge.cpp |
 | 20.11 | P2 | Load a game with the page left open | The layout is dropped and read again when the page comes up | main.cpp OnVmReset |
+
+## 21. Icon textures
+
+| # | P | Scenario | Expected | Scripts |
+|---|---|----------|----------|---------|
+| 21.1 | P0 | Icons in the stock Flash iWant Widgets (Prisma renderer disabled) | Ring icons draw as icons, not as diagonal strokes; 3.0.0 / 3.0.1 shipped DDS headers Flash did not accept, and Prisma hid it | savedds.py |
+| 21.2 | P0 | `python savedds.py --check` on both libraries before packaging | 0 files off spec (`build_release.py` refuses otherwise) | savedds.py, build_release.py |
