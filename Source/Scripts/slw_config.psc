@@ -905,10 +905,11 @@ Function _loadMeterSettings(String path)
 	; 0 cannot make every meter invisible (no hold time, zero size).
 	wc.metersHoldSeconds = clampInt(jsonutil.GetPathIntValue(path, "meters.holdseconds", wc.metersHoldSeconds), 2, 120)
 	; Only a real move goes through the layout setter: it rebuilds the stack
-	; and shows it for half a minute at the new place.
-	Int x = clampInt(jsonutil.GetPathIntValue(path, "meters.x", wc.metersX), -1280, 2560)
-	Int y = clampInt(jsonutil.GetPathIntValue(path, "meters.y", wc.metersY), -720, 719)
-	Int scale = clampInt(jsonutil.GetPathIntValue(path, "meters.scale", wc.metersScale), 20, 200)
+	; and shows it for half a minute at the new place. A key the file lacks
+	; leaves its value alone. The ranges are the Positions page's.
+	Int x = _presetInt(path, "meters.x", wc.metersX, -1280, 2559)
+	Int y = _presetInt(path, "meters.y", wc.metersY, -720, 719)
+	Int scale = _presetInt(path, "meters.scale", wc.metersScale, 20, 200)
 	If x != wc.metersX || y != wc.metersY || scale != wc.metersScale
 		wc.setMetersLayout(x, y, scale)
 	EndIf
@@ -1202,18 +1203,32 @@ EndFunction
 ; menu's Presets page
 ; ---------------------------------------------------------------------------
 
-; A settings preset loaded and put to work. The MCM's preset menu did these
-; steps inline; the SKSE menu's Presets page reaches them through the widget
-; controller, which runs them inside its update pass (requestPresetLoad).
+; A settings preset loaded and put to work: the one way to load a preset, for
+; both menus. While the mod is switched off the values are only stored: setting
+; the modules up would wake a disabled mod, and enabling it sets them up and
+; reloads the icons anyway. A load asked for earlier and not yet served is
+; superseded by this one.
 Bool Function applySettingsPreset(String presetName)
 	If !loadSettingsPreset(presetName)
 		Return False
 	EndIf
 	activeSettingsPreset = presetName
 	loadPreset(activePreset)
-	moduleReset()
-	moduleSetup()
-	widget_controller.reloadWidgets()
+	widget_controller.forgetOwedPresetLoad()
+	If !slw_stopped
+		moduleReset()
+		moduleSetup()
+		widget_controller.reloadWidgets()
+	EndIf
+	Return True
+EndFunction
+
+; Save the current settings as a preset and make it the active one
+Bool Function savePresetAs(String presetName)
+	If !saveSettingsPreset(presetName)
+		Return False
+	EndIf
+	activeSettingsPreset = presetName
 	Return True
 EndFunction
 
@@ -1299,26 +1314,30 @@ Function _saveLayoutSettings(String path)
 	EndWhile
 EndFunction
 
-; A key the file lacks reads as the current value, so a preset from before
-; 3.2.0 leaves the layout alone; only a real change is applied. Values are held
-; to the ranges of the SKSE menu's Positions page (a preset is a file anyone can
-; edit), the type to iWant's ten shapes.
+; Only a key the file holds changes anything: a missing key (a preset from
+; before 3.2.0) leaves that value alone, whatever it is, and a value read is
+; held to what iWant's own MCM allows (a preset is a file anyone can edit).
+; The bars and the NPC anchor are laid out only while iWant is up, and the
+; NPC part only with the NPC layer on (hasBarsAPI); otherwise the layout is
+; left as it is, and loading the preset again once iWant is up applies it.
 Function _loadLayoutSettings(String path)
 	slw_widget_controller wc = widget_controller
 	If !wc
 		Return
 	EndIf
-	Int gx = clampInt(jsonutil.GetPathIntValue(path, "npcgroup.x", wc.npcGroupX), -1280, 2559)
-	Int gy = clampInt(jsonutil.GetPathIntValue(path, "npcgroup.y", wc.npcGroupY), -720, 1439)
-	Int gs = clampInt(jsonutil.GetPathIntValue(path, "npcgroup.spacing", wc.npcVerticalSpacing), 50, 200)
-	If gx != wc.npcGroupX || gy != wc.npcGroupY || gs != wc.npcVerticalSpacing
-		wc.setNpcGroupPos(gx, gy)
-		; lays the NPC bars out again from the new anchor
-		wc.setNpcVerticalSpacing(gs)
-	EndIf
 	iWant_Status_Bars bars = wc.iBars
 	If !bars || !bars.isReady()
 		Return
+	EndIf
+	If wc.hasBarsAPI()
+		Int gx = _presetInt(path, "npcgroup.x", wc.npcGroupX, -1280, 2559)
+		Int gy = _presetInt(path, "npcgroup.y", wc.npcGroupY, -720, 1439)
+		Int gs = _presetInt(path, "npcgroup.spacing", wc.npcVerticalSpacing, 50, 200)
+		If gx != wc.npcGroupX || gy != wc.npcGroupY || gs != wc.npcVerticalSpacing
+			wc.setNpcGroupPos(gx, gy)
+			; lays the NPC bars out again from the new anchor
+			wc.setNpcVerticalSpacing(gs)
+		EndIf
 	EndIf
 	Int bar = 0
 	While bar < 4
@@ -1326,13 +1345,24 @@ Function _loadLayoutSettings(String path)
 		Int y = bars._getBarY(bar)
 		Int size = bars._getBarIconSize(bar)
 		Int type = bars._getBarType(bar)
-		Int nx = clampInt(jsonutil.GetPathIntValue(path, _barPresetKey(bar, 0), x), -1280, 2559)
-		Int ny = clampInt(jsonutil.GetPathIntValue(path, _barPresetKey(bar, 1), y), -720, 1439)
-		Int nsize = clampInt(jsonutil.GetPathIntValue(path, _barPresetKey(bar, 2), size), 8, 100)
-		Int ntype = clampInt(jsonutil.GetPathIntValue(path, _barPresetKey(bar, 3), type), 0, 9)
+		Int nx = _presetInt(path, _barPresetKey(bar, 0), x, -10000, 10000)
+		Int ny = _presetInt(path, _barPresetKey(bar, 1), y, -10000, 10000)
+		Int nsize = _presetInt(path, _barPresetKey(bar, 2), size, 0, 150)
+		Int ntype = _presetInt(path, _barPresetKey(bar, 3), type, 0, 9)
 		If nx != x || ny != y || nsize != size || ntype != type
 			wc.presetSetBar(bar, nx, ny, nsize, ntype)
 		EndIf
 		bar += 1
 	EndWhile
+EndFunction
+
+; A preset value: the file's, held to [low, high], or the current one untouched
+; when the file lacks the key. No real value is this far out of every range.
+Int Function _presetInt(String path, String presetKey, Int current, Int low, Int high)
+	Int missing = -2147483647
+	Int value = jsonutil.GetPathIntValue(path, presetKey, missing)
+	If value == missing
+		Return current
+	EndIf
+	Return clampInt(value, low, high)
 EndFunction

@@ -14,7 +14,7 @@ SL Widgets displays icons through iWant Status Bars. All placement, sizing, and 
 SL Widgets picks up layout changes on the next update tick — no reload required.
 
 !!! tip "See the result as you go"
-    With SKSE Menu Framework installed, the [SKSE menu's Positions page](position-editor.md#positions) moves the bars, the NPC cluster and the meter stack on the HUD as you change its sliders, with the game in view. It writes the same values the MCM sliders hold.
+    With SKSE Menu Framework installed, the [SKSE menu's Positions page](position-editor.md#positions) moves the bars, the NPC cluster and the meter stack on the HUD as you change its sliders, with the game in view. For the bars it writes the same values iWant Status Bars' own MCM sliders hold.
 
 ---
 

@@ -15,10 +15,7 @@ namespace Toggles
 		using PageCommon::Colored;
 
 		constexpr int    kVersion = 1;         // slw_config.editorToggles's "v="
-		constexpr double kReopenGap = 1.0;     // no frame drawn for this long: the page was left and came back
 		constexpr double kConfirmAfter = 1.5;  // seconds after a click before the list is read back
-		constexpr double kKeepClicked = 4.0;   // a read this soon after a click may predate it: keep the clicked value
-		constexpr float  kAnswerTimeout = 6.0f;
 
 		enum class Kind
 		{
@@ -38,20 +35,11 @@ namespace Toggles
 		};
 
 		std::mutex                              g_lock;
+		PageCommon::PageState                   g_page{ Bridge::Query::Toggles, "switches", "SL Widgets is not running: load a game, then Refresh." };
 		std::vector<Row>                        g_rows;
 		bool                                    g_have = false;
-		std::string                             g_status;
-		bool                                    g_statusIsError = false;
-		double                                  g_lastFrame = 0.0;
-		double                                  g_confirmAt = 0.0;  // read the list back at this time; 0 = nothing owed
-		std::unordered_map<std::string, double> g_clickedAt;  // key -> time of its last click
+		std::unordered_map<std::string, double> g_clickedAt;  // key -> time of its last click, until a read that saw it
 		bool                                    g_loggedFault = false;
-
-		void SetStatus(std::string a_text, bool a_error)
-		{
-			g_status = std::move(a_text);
-			g_statusIsError = a_error;
-		}
 
 		// "v=1|s=<key>|h=<key>|t=<property>,<label key>,<help key>,<on>,<installed>|..."
 		bool Parse(std::string_view a_text, std::vector<Row>& a_out, std::string& a_error)
@@ -91,39 +79,27 @@ namespace Toggles
 			return true;
 		}
 
-		void TakeAnswer(double a_now)
+		void TakeAnswer()
 		{
-			std::string text, error;
-			if (!Bridge::Take(Bridge::Query::Toggles, text, error)) {
-				if (Bridge::Pending(Bridge::Query::Toggles) && Bridge::PendingSeconds(Bridge::Query::Toggles) > kAnswerTimeout) {
-					SetStatus(std::format("SL Widgets has not answered for {:.0f} s. Is the mod enabled, with a game loaded? Refresh asks again.",
-								  Bridge::PendingSeconds(Bridge::Query::Toggles)),
-						true);
-				}
-				return;
-			}
-			if (!error.empty()) {
-				SetStatus(error, true);
-				return;
-			}
-			if (text.empty()) {
-				SetStatus("SL Widgets is not running: load a game, then Refresh.", true);
+			std::string text;
+			if (!g_page.Take(text)) {
 				return;
 			}
 			std::vector<Row> parsed;
 			std::string      why;
 			if (!Parse(text, parsed, why)) {
-				SetStatus(why, true);
+				g_page.SetStatus(why, true);
 				return;
 			}
-			// a read that may have left before a recent click shows the old value:
-			// keep what was clicked until the read that follows it
+			// A switch clicked after the newest read was asked for may be missing
+			// from this answer: it keeps its clicked value until a read asked for
+			// after the click (the one a click schedules) shows what the game holds.
 			for (auto& row : parsed) {
 				const auto clicked = g_clickedAt.find(row.key);
 				if (clicked == g_clickedAt.end()) {
 					continue;
 				}
-				if (a_now - clicked->second < kKeepClicked) {
+				if (clicked->second >= g_page.LastRequestAt()) {
 					for (const auto& old : g_rows) {
 						if (old.key == row.key) {
 							row.on = old.on;
@@ -135,17 +111,38 @@ namespace Toggles
 			}
 			g_rows = std::move(parsed);
 			g_have = true;
-			SetStatus("Switches read.", false);
+			g_page.SetStatus("Switches read.", false);
+		}
+
+		void DrawToggle(std::size_t a_index, Row& a_row, double a_now)
+		{
+			PageCommon::IdScope id{ static_cast<int>(a_index) };
+			const std::string   tip = a_row.installed ? a_row.help : a_row.help + "\n\nNot installed.";
+			bool                value = a_row.on;
+			bool                clicked = false;
+			{
+				PageCommon::DisabledScope disabled{ !a_row.installed };
+				clicked = Ui::Checkbox(a_row.label.c_str(), &value);
+			}
+			PageCommon::Tooltip(tip);
+			if (!a_row.installed) {
+				Ui::SameLine(0.0f, -1.0f);
+				Colored(PageCommon::kHint, "(not installed)");
+			} else if (clicked) {
+				a_row.on = value;
+				g_clickedAt[a_row.key] = a_now;
+				g_page.ConfirmAt(a_now + kConfirmAfter);
+				Bridge::SetToggle(a_row.key, value);
+			}
 		}
 
 		void DrawRows(double a_now)
 		{
-			bool indented = false;
+			std::optional<PageCommon::IndentScope> indent;  // the switches of a group
 			for (std::size_t i = 0; i < g_rows.size(); ++i) {
 				auto& row = g_rows[i];
-				if (row.kind != Kind::Toggle && indented) {
-					Ui::Unindent(0.0f);
-					indented = false;
+				if (row.kind != Kind::Toggle) {
+					indent.reset();
 				}
 				switch (row.kind) {
 				case Kind::Section:
@@ -156,37 +153,12 @@ namespace Toggles
 				case Kind::Group:
 					Ui::Spacing();
 					Ui::TextUnformatted(row.label.c_str());
-					Ui::Indent(0.0f);
-					indented = true;
+					indent.emplace();
 					break;
 				case Kind::Toggle:
-					{
-						Ui::PushID(static_cast<int>(i));
-						if (!row.installed) {
-							Ui::BeginDisabled(true);
-						}
-						bool value = row.on;
-						if (Ui::Checkbox(row.label.c_str(), &value) && row.installed) {
-							row.on = value;
-							g_clickedAt[row.key] = a_now;
-							g_confirmAt = a_now + kConfirmAfter;
-							Bridge::SetToggle(row.key, value);
-						}
-						if (!row.installed) {
-							Ui::EndDisabled();
-						}
-						PageCommon::Tooltip(row.installed ? row.help : row.help + "\n\nNot installed.");
-						if (!row.installed) {
-							Ui::SameLine(0.0f, -1.0f);
-							Colored(PageCommon::kHint, "(not installed)");
-						}
-						Ui::PopID();
-						break;
-					}
+					DrawToggle(i, row, a_now);
+					break;
 				}
-			}
-			if (indented) {
-				Ui::Unindent(0.0f);
 			}
 		}
 	}
@@ -196,33 +168,20 @@ namespace Toggles
 		try {
 			std::scoped_lock lock{ g_lock };
 			const double     now = Ui::GetTime();
-			if (now - g_lastFrame > kReopenGap) {
-				// the page just came up (or came back): the MCM may have changed a switch meanwhile
+			if (g_page.BeginFrame(now)) {
+				// the page just came up (or came back): the MCM or a preset may have changed a switch meanwhile
 				g_have = false;
-				SetStatus("Reading the switches...", false);
-				Bridge::Request(Bridge::Query::Toggles, true);
 			}
-			g_lastFrame = now;
-			TakeAnswer(now);
-
-			Colored(g_statusIsError ? PageCommon::kWarn : PageCommon::kOk, g_status.c_str());
-			Ui::SameLine(0.0f, -1.0f);
-			if (Ui::SmallButton("Refresh")) {
-				SetStatus("Reading the switches...", false);
-				Bridge::Request(Bridge::Query::Toggles, true);
-			}
+			TakeAnswer();
+			g_page.DrawStatusLine(now);
 
 			if (g_have) {
 				DrawRows(now);
 				Ui::Spacing();
 				Ui::Separator();
 			}
-			Colored(PageCommon::kHint, "The player's icons, as on the MCM's Toggles page. A switch applies within a second or two, while this menu stays open.");
-
-			if (g_confirmAt > 0.0 && now >= g_confirmAt) {
-				g_confirmAt = 0.0;
-				Bridge::Request(Bridge::Query::Toggles, false);
-			}
+			Colored(PageCommon::kHint, "The player's icons. A switch applies within a second or two, while this menu stays open. The per-NPC switches are on the MCM's NPC Tracking page, the meter switches on its Meters page.");
+			g_page.ServeConfirm(now, false);
 		} catch (const std::exception& e) {
 			if (!g_loggedFault) {
 				g_loggedFault = true;
@@ -242,9 +201,6 @@ namespace Toggles
 		g_have = false;
 		g_rows.clear();
 		g_clickedAt.clear();
-		g_status.clear();
-		g_statusIsError = false;
-		g_confirmAt = 0.0;
-		g_lastFrame = 0.0;
+		g_page.Reset();
 	}
 }

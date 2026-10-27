@@ -238,6 +238,9 @@ Function startUpdates()
 	; for as long as that session ran. A pass the save carried over (Papyrus
 	; resumes saved stacks) sees _passGen move and leaves the loop alone.
 	_registerRefreshEvents()
+	; preset requests are per session: one the save carried over is stale
+	_presetOwed = ""
+	_presetSaveOwed = ""
 	_passGen += 1
 	_passRunning = False
 	_lastPassEnd = 0.0
@@ -441,18 +444,26 @@ Event OnUpdate()
 EndEvent
 
 Function _updatePass()
+	; Presets asked for on the SKSE menu, before the iWant check: a load stores
+	; its values with iWant down too, as the MCM's does. A load that worked
+	; reloaded every icon, which covers a toggle pass owed before it.
+	If _presetOwed != ""
+		String presetName = _presetOwed
+		_presetOwed = ""
+		If config.applySettingsPreset(presetName)
+			_togglePassOwed = False
+		EndIf
+	EndIf
+	If _presetSaveOwed != ""
+		String saveName = _presetSaveOwed
+		_presetSaveOwed = ""
+		config.savePresetAs(saveName)
+	EndIf
 	if !iBars || !iBars.isReady()
 		return
 	endif
 	If !PlayerRef
 		PlayerRef = Game.GetPlayer()
-	EndIf
-	If _presetOwed != ""
-		String presetName = _presetOwed
-		_presetOwed = ""
-		; reloads every icon: a toggle pass owed before it is covered
-		_togglePassOwed = False
-		config.applySettingsPreset(presetName)
 	EndIf
 	If _togglePassOwed
 		_togglePassOwed = False
@@ -1705,8 +1716,8 @@ EndFunction
 ; A switch flipped on the SKSE menu's Toggles page. The MCM runs
 ; toggleUpdateWidgets once when it closes; the SKSE menu has no close the
 ; scripts can see, so each switch owes the pass and the next update pass
-; serves it (_updatePass), which never runs two at once however fast the
-; switches are clicked.
+; serves it, which never runs two at once however fast the switches are
+; clicked.
 Bool _togglePassOwed = False
 
 Function requestTogglePass()
@@ -1714,8 +1725,7 @@ Function requestTogglePass()
 	_refreshSoon(0.2)
 EndFunction
 
-; A settings preset's player bar, all four values at once and one redraw
-; (slw_config._loadLayoutSettings)
+; A player bar from a settings preset: all four values at once, one redraw
 Function presetSetBar(Int bar, Int x, Int y, Int size, Int type)
 	If !iBars || !iBars.isReady() || bar < 0 || bar > 3
 		Return
@@ -1728,12 +1738,15 @@ Function presetSetBar(Int bar, Int x, Int y, Int size, Int type)
 	iBars._drawBar(bar)
 EndFunction
 
-; A preset picked on the SKSE menu's Presets page. Loading one releases and
-; registers every icon again; the MCM did that in menu mode, with the update
-; loop waiting, but the SKSE menu does not stop the loop, so the load is owed
-; and the next update pass serves it, never alongside another pass. While the
-; mod is switched off no pass runs, and none can collide either.
+; Presets loaded or saved on the SKSE menu's Presets page. Loading one
+; releases and registers every icon again; the MCM does that in menu mode,
+; with the update loop waiting, but the SKSE menu does not stop the loop.
+; So a load is owed and the next update pass serves it, never alongside
+; another pass, and a save waits its turn behind it rather than reading a
+; half-applied load. While the mod is switched off no pass runs, and none
+; can collide either.
 String _presetOwed = ""
+String _presetSaveOwed = ""
 
 Function requestPresetLoad(String presetName)
 	If config.slw_stopped
@@ -1742,4 +1755,18 @@ Function requestPresetLoad(String presetName)
 	EndIf
 	_presetOwed = presetName
 	_refreshSoon(0.2)
+EndFunction
+
+Function requestPresetSave(String presetName)
+	If config.slw_stopped
+		config.savePresetAs(presetName)
+		Return
+	EndIf
+	_presetSaveOwed = presetName
+	_refreshSoon(0.2)
+EndFunction
+
+; A preset was loaded another way (the MCM): it supersedes a load still owed
+Function forgetOwedPresetLoad()
+	_presetOwed = ""
 EndFunction

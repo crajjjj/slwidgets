@@ -51,8 +51,8 @@ String Function GetPresets() Global
 	Return c.editorPresets()
 EndFunction
 
-; Load a settings preset as the MCM's preset menu does; the widget controller
-; serves it from its next update pass
+; Load a settings preset as the MCM's preset menu does, from the widget
+; controller's next update pass
 Function LoadPreset(String presetName) Global
 	slw_config c = _config()
 	If c && c.widget_controller && _isPresetName(presetName)
@@ -61,11 +61,11 @@ Function LoadPreset(String presetName) Global
 EndFunction
 
 ; Save the current settings as a preset (a new name makes a new file) and make
-; it the active one
+; it the active one, in the widget controller's next update pass
 Function SavePreset(String presetName) Global
 	slw_config c = _config()
-	If c && _isPresetName(presetName) && c.saveSettingsPreset(presetName)
-		c.activeSettingsPreset = presetName
+	If c && c.widget_controller && _isPresetName(presetName)
+		c.widget_controller.requestPresetSave(presetName)
 	EndIf
 EndFunction
 

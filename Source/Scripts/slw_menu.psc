@@ -112,7 +112,42 @@ Event OnConfigOpen()
 		Pages[1] = "$SLW_Meters_Page"
 		Pages[2] = "$SLW_NPC_Page"
 		Pages[3] = "$SLW_Debug_Page"
+		_forgetOptionIds()
 EndEvent
+
+; SkyUI option ids carry their page's number, and the variables holding them
+; live in the save. When the page list changes (3.2.0 dropped the Toggles page)
+; an id kept from the old numbering can equal an option of another page, and
+; the handlers would act on the wrong option. Every id is forgotten when the
+; menu opens; each page sets its own when it is drawn.
+Function _forgetOptionIds()
+	_update_interval_slider = -1
+	_skse_menu_hint = -1
+	_meters_always_toggle = -1
+	_meters_hold_slider = -1
+	_npc_hotkey_option = -1
+	_npc_label_font_menu = -1
+	_npc_label_size_slider = -1
+	_meter_toggle = Utility.CreateIntArray(config.getMeterCount(), -1)
+	_npc_clear_option = Utility.CreateIntArray(4, -1)
+	_npc_sla_arousal_toggle = Utility.CreateIntArray(4, -1)
+	_npc_sla_exposure_toggle = Utility.CreateIntArray(4, -1)
+	_npc_ap2_toggle = Utility.CreateIntArray(4, -1)
+	_npc_fhu_cum_toggle = Utility.CreateIntArray(4, -1)
+	_npc_fhu_anal_toggle = Utility.CreateIntArray(4, -1)
+	_npc_fhu_vaginal_toggle = Utility.CreateIntArray(4, -1)
+	_npc_fhu_oral_toggle = Utility.CreateIntArray(4, -1)
+	_npc_mme_milk_toggle = Utility.CreateIntArray(4, -1)
+	_npc_mme_lactacid_toggle = Utility.CreateIntArray(4, -1)
+	_npc_slp_toggle = Utility.CreateIntArray(4, -1)
+	_npc_preg_toggle = Utility.CreateIntArray(4, -1)
+	_npc_dirt_toggle = Utility.CreateIntArray(4, -1)
+	_npc_wet_toggle = Utility.CreateIntArray(4, -1)
+	_npc_baby_toggle = Utility.CreateIntArray(4, -1)
+	_npc_label_x_slider = Utility.CreateIntArray(4, -1)
+	_npc_label_y_slider = Utility.CreateIntArray(4, -1)
+	_npc_custom_label_option = Utility.CreateIntArray(4, -1)
+EndFunction
 
 Event OnPageReset(string page)
 	;config.moduleSyncConfig()

@@ -14,13 +14,9 @@ namespace Positions
 	{
 		using PageCommon::Colored;
 		using PageCommon::kHint;
-		using PageCommon::kOk;
-		using PageCommon::kWarn;
 
 		constexpr double kLivePush = 0.15;     // seconds between writes while a live slider is dragged
 		constexpr double kConfirmAfter = 1.5;  // seconds after a write before the layout is read back
-		constexpr double kReopenGap = 1.0;     // no frame drawn for this long: the page was left and came back
-		constexpr float  kAnswerTimeout = 6.0f;
 
 		// iwant_status_bars' bar types, in statusBarTypeIndex order
 		constexpr std::array<const char*, Layout::kOrientations> kOrientations{
@@ -35,26 +31,17 @@ namespace Positions
 			double pushedAt = 0.0;
 		};
 
-		std::mutex    g_lock;
-		Layout::Model g_model;
-		bool          g_haveModel = false;
-		std::string   g_status;
-		bool          g_statusIsError = false;
-		double        g_lastFrame = 0.0;
-		double        g_confirmAt = 0.0;  // read the layout back at this time; 0 = nothing owed
-		bool          g_anyActive = false;  // a slider was held in the last frame drawn
+		std::mutex            g_lock;
+		PageCommon::PageState g_page{ Bridge::Query::Layout, "layout", "SL Widgets is not running: load a game, let iWant Status Bars come up, then Refresh." };
+		Layout::Model         g_model;
+		bool                  g_haveModel = false;
+		bool                  g_anyActive = false;  // a slider was held in the last frame drawn
 		bool          g_confirmReset = false;
 		bool          g_loggedFault = false;
 
 		std::array<std::array<Row, 3>, Layout::kBars> g_barRows;  // x, y, size
 		std::array<Row, 3>                            g_npcRows;  // x, y, spacing
 		std::array<Row, 3>                            g_metersRows;  // x, y, scale
-
-		void SetStatus(std::string a_text, bool a_error)
-		{
-			g_status = std::move(a_text);
-			g_statusIsError = a_error;
-		}
 
 		// After a read nothing is owed: every slider's last written value is the one shown
 		void SyncRows()
@@ -76,37 +63,26 @@ namespace Positions
 
 		void TakeAnswer(double a_now)
 		{
-			std::string layout, error;
-			if (!Bridge::Take(Bridge::Query::Layout, layout, error)) {
-				if (Bridge::Pending(Bridge::Query::Layout) && Bridge::PendingSeconds(Bridge::Query::Layout) > kAnswerTimeout) {
-					SetStatus(std::format("SL Widgets has not answered for {:.0f} s. Is the mod enabled, with a game loaded? Refresh asks again.", Bridge::PendingSeconds(Bridge::Query::Layout)), true);
-				}
-				return;
-			}
-			if (!error.empty()) {
-				SetStatus(error, true);
-				return;
-			}
-			if (layout.empty()) {
-				SetStatus("SL Widgets is not running: load a game, let iWant Status Bars come up, then Refresh.", true);
+			std::string layout;
+			if (!g_page.Take(layout)) {
 				return;
 			}
 			if (g_anyActive) {
 				// a slider is held: the answer would put the game's value under the
 				// hand that is moving it; read again once it is released
-				g_confirmAt = a_now + kConfirmAfter;
+				g_page.ConfirmAt(a_now + kConfirmAfter);
 				return;
 			}
 			Layout::Model parsed = g_model;
 			std::string   why;
 			if (!Layout::Parse(layout, parsed, why)) {
-				SetStatus(why, true);
+				g_page.SetStatus(why, true);
 				return;
 			}
 			g_model = parsed;
 			g_haveModel = true;
 			SyncRows();
-			SetStatus("Layout read.", false);
+			g_page.SetStatus("Layout read.", false);
 		}
 
 		// A slider. True when its value is to be written now: while held and
@@ -127,7 +103,7 @@ namespace Positions
 			if (send) {
 				a_row.pushed = a_value;
 				a_row.pushedAt = a_now;
-				g_confirmAt = a_now + kConfirmAfter;
+				g_page.ConfirmAt(a_now + kConfirmAfter);
 			}
 			return send;
 		}
@@ -153,7 +129,7 @@ namespace Positions
 				Ui::EndCombo();
 			}
 			if (changed) {
-				g_confirmAt = a_now + kConfirmAfter;
+				g_page.ConfirmAt(a_now + kConfirmAfter);
 			}
 			return changed;
 		}
@@ -164,7 +140,7 @@ namespace Positions
 			for (int bar = 0; bar < Layout::kPlayerBars; ++bar) {
 				auto& b = g_model.bars[static_cast<std::size_t>(bar)];
 				auto& rows = g_barRows[static_cast<std::size_t>(bar)];
-				Ui::PushID(bar);
+				PageCommon::IdScope id{ bar };
 				std::string title = std::format("Bar {}", bar);
 				if (!b.visible) {
 					title += "   (hidden by iWant right now)";
@@ -183,7 +159,6 @@ namespace Positions
 				if (Orientation(b.type, a_now)) {
 					Bridge::SetBarType(bar, b.type);
 				}
-				Ui::PopID();
 				Ui::Spacing();
 			}
 		}
@@ -191,7 +166,7 @@ namespace Positions
 		void DrawNpc(double a_now)
 		{
 			auto& npc = g_model.npc;
-			Ui::PushID(100);
+			PageCommon::IdScope id{ 100 };
 			Ui::TextUnformatted("NPC slots");
 			std::string who;
 			for (int slot = 1; slot <= Layout::kNpcSlots; ++slot) {
@@ -219,20 +194,19 @@ namespace Positions
 				if (Ui::SmallButton("Yes")) {
 					g_confirmReset = false;
 					Bridge::ResetNpcLayout();
-					g_confirmAt = a_now + kConfirmAfter;
+					g_page.ConfirmAt(a_now + kConfirmAfter);
 				}
 				Ui::SameLine();
 				if (Ui::SmallButton("No")) {
 					g_confirmReset = false;
 				}
 			}
-			Ui::PopID();
 		}
 
 		void DrawMeters(double a_now)
 		{
 			auto& m = g_model.meters;
-			Ui::PushID(200);
+			PageCommon::IdScope id{ 200 };
 			Ui::TextUnformatted("Meter stack");
 			Colored(kHint, m.rows > 0 ? std::format("{} switched on; the stack rebuilds a moment after a change and shows itself for 30 s", m.rows).c_str() :
 			                            "none switched on: switch a meter on in the MCM to see the stack");
@@ -243,7 +217,6 @@ namespace Positions
 			if (any) {
 				Bridge::SetMeters(m.x, m.y, m.scale);
 			}
-			Ui::PopID();
 		}
 
 		void Flush()
@@ -298,24 +271,16 @@ namespace Positions
 		try {
 			std::scoped_lock lock{ g_lock };
 			const double     now = Ui::GetTime();
-			if (now - g_lastFrame > kReopenGap) {
+			if (g_page.BeginFrame(now)) {
 				// the page just came up (or came back): what the game holds may have
-				// changed in the MCMs meanwhile
+				// changed in iWant's menu or through a preset meanwhile
 				g_haveModel = false;
 				g_confirmReset = false;
-				SetStatus("Reading the layout...", false);
-				Bridge::Request(Bridge::Query::Layout, true);
 			}
-			g_lastFrame = now;
 			TakeAnswer(now);
 			g_anyActive = false;
 
-			Colored(g_statusIsError ? kWarn : kOk, g_status.c_str());
-			Ui::SameLine();
-			if (Ui::SmallButton("Refresh")) {
-				SetStatus("Reading the layout...", false);
-				Bridge::Request(Bridge::Query::Layout, true);
-			}
+			g_page.DrawStatusLine(now);
 			Ui::Separator();
 
 			if (g_haveModel) {
@@ -330,10 +295,7 @@ namespace Positions
 			Colored(kHint, "Values are iWant's 1280 x 720 stage units, written into the game at once: the icons move while this menu is open.");
 			Colored(kHint, "X and Y of a bar follow the slider. Size, orientation, the NPC cluster and the meters apply when the slider is released.");
 
-			if (g_confirmAt > 0.0 && now >= g_confirmAt && !g_anyActive) {
-				g_confirmAt = 0.0;
-				Bridge::Request(Bridge::Query::Layout, false);
-			}
+			g_page.ServeConfirm(now, g_anyActive);
 		} catch (const std::exception& e) {
 			if (!g_loggedFault) {
 				g_loggedFault = true;
@@ -353,16 +315,13 @@ namespace Positions
 		if (g_haveModel) {
 			Flush();
 		}
-		g_lastFrame = 0.0;  // the next frame is a fresh page
+		g_page.ForgetFrame();
 	}
 
 	void OnVmReset()
 	{
 		std::scoped_lock lock{ g_lock };
 		g_haveModel = false;
-		g_status.clear();
-		g_statusIsError = false;
-		g_confirmAt = 0.0;
-		g_lastFrame = 0.0;
+		g_page.Reset();
 	}
 }

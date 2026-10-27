@@ -27,6 +27,7 @@ Pre-release checklist. Each scenario should be verified in-game or by code inspe
 | 2.5 | P1 | Recheck dependencies button | `moduleReset()` + `moduleSetup()` re-detects newly installed mods, page refreshes | slw_menu |
 | 2.6 | P1 | Debug page dependency list | All `isXxxReady()` checks display OK/Not Found correctly for installed mods | slw_menu |
 | 2.7 | P2 | OnConfigClose reloads widgets | `widget_controller.reloadWidgets()` fires, icons refresh | slw_menu |
+| 2.8 | P0 | A 3.1.0 save that opened the Meters page, an NPC in slot 2: update, open NPC Tracking first, click slot 2's Clear | The slot clears; no meter switch flips (old option ids are forgotten on open) | slw_menu._forgetOptionIds |
 
 ## 3. User Settings Persistence
 
@@ -302,8 +303,10 @@ Added in 2.3.0, never run in game when written. Set the update interval to 60 s 
 |---|---|----------|----------|---------|
 | 23.1 | P0 | Presets page lists the files | Every `SettingsPresets/*.json`, the active one marked | slw_config.editorPresets |
 | 23.2 | P0 | Save as new "Test", move bar 0 and the NPC cluster, load "Test" | Status Saved, then Loaded; bar 0 and the cluster return; the icons reload once | SavePreset, requestPresetLoad, applySettingsPreset, _loadLayoutSettings |
-| 23.3 | P0 | Load a preset saved before 3.2.0 (no layout keys) | Switches applied, bars and cluster stay where they are | _loadLayoutSettings defaults |
+| 23.3 | P0 | Load a preset saved before 3.2.0 (no layout keys), with bar 0 at size 120 set in iWant's MCM | Switches applied; bars and cluster stay exactly where and as they are | _presetInt |
 | 23.4 | P1 | MCM General > Settings Preset load | Same result as the SKSE menu load (both call applySettingsPreset) | slw_menu, slw_config |
 | 23.5 | P1 | Save as new with a name holding `\` or `..` | Refused on the page; the bridge refuses it too | PresetsPage ValidName, slw_bridge._isPresetName |
-| 23.6 | P1 | Load a preset while the mod is disabled | Applied at once (no update pass runs) | requestPresetLoad |
-| 23.7 | P2 | Hand-edited preset with `bars.0.size` 500 | Clamped to 100 | _loadLayoutSettings |
+| 23.6 | P1 | Load a preset while the mod is disabled | Values stored at once, modules stay off; enabling the mod shows the preset | requestPresetLoad, applySettingsPreset |
+| 23.7 | P2 | Hand-edited preset with `bars.0.size` 500 | Clamped to 150, iWant's maximum | _presetInt |
+| 23.8 | P1 | Load then Save over another preset within a second | The save holds the loaded preset's settings (served after the load) | _updatePass owed requests |
+| 23.9 | P2 | Save as new, then switch pages and back at once | Status stays Saving... until a later read shows the file, then Saved | PresetsPage Judge |

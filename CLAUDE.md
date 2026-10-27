@@ -100,7 +100,11 @@ Still in the MCM: General (enable, update interval, presets, colour preset, a
 line pointing at the SKSE menu), Meters (switches, always show, hold time),
 NPC Tracking (hotkey, label style, per-slot switches and labels), Debug. The
 option-id variables of the moved options stay declared and unused: removing
-a script variable is safe, but there is nothing to gain.
+a script variable is safe, but there is nothing to gain. SkyUI option ids
+carry their page number and the variables holding them live in the save, so
+renumbering the pages made old ids match options of another page (a 3.1.0
+meter id clicked the 3.2.0 NPC page): `_forgetOptionIds` resets every id on
+`OnConfigOpen`. Add any new ID-based option variable to it.
 
 A change is written into the game while the menu is open and the icons follow
 (the framework freezes time, Papyrus keeps running). Build from `plugin\`:
@@ -131,12 +135,15 @@ with the rest of `SKSE`, so a release build runs it before Pyro;
     meter stack are never moved bar by bar: the controller re-derives them from
     their anchors.
   - Presets reads `slw_config.editorPresets()` and writes `slw_bridge.LoadPreset`
-    (`slw_widget_controller.requestPresetLoad`: owed and served by
-    `_updatePass` like the toggle pass, or at once while the mod is stopped,
-    then `slw_config.applySettingsPreset`, the steps the MCM's preset menu
-    did inline and now calls too) and `slw_bridge.SavePreset`. Names are file
-    names: the DLL takes letters, digits, space and `- _ ( )`, the bridge
-    refuses path characters again.
+    / `SavePreset` (`requestPresetLoad` / `requestPresetSave`: owed and served
+    at the top of `_updatePass`, before its iWant check, load first, so a save
+    never reads a half-applied load; at once while the mod is stopped).
+    `slw_config.applySettingsPreset` is the one way to load and use a preset,
+    MCM included: it supersedes a load still owed (`forgetOwedPresetLoad`), and
+    while the mod is stopped it only stores the values (setting modules up
+    would wake a disabled mod; enabling does it). `startUpdates` drops owed
+    requests a save carried over. Names are file names: the DLL takes letters,
+    digits, space and `- _ ( )`, the bridge refuses path characters again.
   - Toggles reads `slw_config.editorToggles()`: the rows in MCM order, each with
     its property name, its label and help translation keys, its value and the
     MCM's greyed-out condition. `slw_config.setToggleByKey` writes one, then
@@ -148,6 +155,15 @@ with the rest of `SKSE`, so a release build runs it before Pyro;
   (`Translations.cpp`: the game's `sLanguage`, English filling the gaps, keys
   matched case-insensitively since Papyrus may hand a key back in another
   casing). Keys travel from the scripts as whole literals, as the MCM uses them.
+- **Pages share `PageCommon::PageState`**: the read when a page comes up
+  (after a 1 s gap without frames), the read owed after a write, Refresh, the
+  status line, the timeout message, and `LastRequestAt`, the time the newest
+  read was asked for: an answer is no newer than that, so Toggles keeps a
+  clicked value only against a read asked for before the click, and Presets
+  judges a save or a load only from a read asked for after it (retrying until
+  8 s / 15 s, since the work waits for an update pass). ImGui pushes go
+  through `IdScope` / `DisabledScope` / `IndentScope`, so an exception cannot
+  leave one open in the framework's window.
 - **Write rules** (`PositionsPage.cpp`): X and Y of a player bar are written
   every 150 ms while the slider is held (one `_setBarX/Y` + `_drawBar`, cheap);
   size, orientation, the NPC cluster and the meters on release only, since
@@ -327,7 +343,7 @@ API calls use the `target` parameter, not the module's `PlayerRef` property. The
 | Mod enable | `moduleReset` + `moduleSetup` + `reloadWidgets` (labels shown for present NPCs) + `startUpdates` |
 | NPC unloads | next OnUpdate tick: `_isNpcPresent == False` → `_hideNpcLabel`. When NPC re-loads → label reappears |
 
-**Settings presets** (`slw_config.loadSettingsPreset` / `saveSettingsPreset`): JSON via PapyrusUtil. Keys `npc.{slot}.{sub_toggle_name}` store per-slot toggles. Helpers `_loadNpcSlotToggles` / `_saveNpcSlotToggles`. Missing keys in legacy presets fall back to runtime values. Since 3.2.0 they also carry the layout (`_saveLayoutSettings` / `_loadLayoutSettings`): `bars.<0-3>.x` / `.y` / `.size` / `.type` (iWant's player bars, read and written through `iBars`, skipped while iWant is not up; `_barPresetKey` hands out whole literals) and `npcgroup.x` / `.y` / `.spacing`. A key the file lacks reads as the current value and only a real change is applied, so an older preset leaves the layout alone. `applySettingsPreset` is the one way to load a preset and use it (MCM and SKSE menu).
+**Settings presets** (`slw_config.loadSettingsPreset` / `saveSettingsPreset`): JSON via PapyrusUtil. Keys `npc.{slot}.{sub_toggle_name}` store per-slot toggles. Helpers `_loadNpcSlotToggles` / `_saveNpcSlotToggles`. Missing keys in legacy presets fall back to runtime values. Since 3.2.0 they also carry the layout (`_saveLayoutSettings` / `_loadLayoutSettings`): `bars.<0-3>.x` / `.y` / `.size` / `.type` (iWant's player bars through `iBars`; `_barPresetKey` hands out whole literals) and `npcgroup.x` / `.y` / `.spacing`. `_presetInt` leaves a value alone when the file lacks its key (an older preset changes nothing, whatever the current value) and clamps only what the file holds: bars to iWant's own MCM ranges (±10000, size 0-150, type 0-9), the NPC anchor and the meter stack to the Positions page's (`plugin/src/Layout.h`; keep the two in step). The layout is applied only while iWant is up, the NPC part only with `hasBarsAPI()`; otherwise the preset's switches apply and the layout waits for the next load. `applySettingsPreset` is the one way to load a preset and use it (MCM and SKSE menu).
 
 ## Meter Stack (2.3.0)
 
