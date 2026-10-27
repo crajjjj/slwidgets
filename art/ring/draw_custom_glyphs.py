@@ -68,15 +68,15 @@ inner_line = almond(256, 300, 110, 2600)
 clit = circle(256, 128, 22)
 write("vulva", [(outer + inner + clit, True), (inner_line, False)])
 
-# --- anus: a ring with twelve radial creases (starburst)
-ring = circle(256, 256, 98) + circle(256, 256, 58)
-creases = ""
-for i in range(12):
-    ang = i * 30
-    cx = 256 + 162 * math.cos(math.radians(ang))
-    cy = 256 + 162 * math.sin(math.radians(ang))
-    creases += capsule(cx, cy, 64, 30, ang)
-write("anus", [(ring, True), (creases, False)])
+# --- anus: a ring nearly filling the box, an asterisk of four lines through its
+# center (the user's reference, 2026-10-27: inner ring + asterisk inside the
+# icon's own progress ring; the asterisk spans about 0.58 of the hole, the
+# strokes match the progress ring's weight at bar size)
+ring_out, ring_w = 250, 46
+ring = circle(256, 256, ring_out) + circle(256, 256, ring_out - ring_w)
+arm = int((ring_out - ring_w) * 0.58)
+star = "".join(capsule(256, 256, 2 * arm, int(ring_w * 0.9), i * 45) for i in range(4))
+write("anus", [(ring, True), (star, False)])
 
 # --- ovum: a cell with a nucleus hole and a corona of dots
 cell = circle(256, 256, 118) + circle(256, 256, 40)

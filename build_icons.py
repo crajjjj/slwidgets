@@ -177,9 +177,10 @@ SETS = [
     # the sets that pre-date 3.0.0
     ("ring", "sla/arousal", stages("aroused", 9), "hearts", None, None),
     ("ring", "sla/exposure", stages("exp", 9), "tired-eye", None, None),
-    ("ring", "apropos2/vaginal", stages("vag", 9), "vulva", "bandage-roll", None),
-    ("ring", "apropos2/anal", stages("ass", 9), "anus", "bandage-roll", None),
-    ("ring", "apropos2/oral", stages("oral", 9), "lips", "bandage-roll", None),
+    # no bandage badge on W&T since 3.2.0 (the user's call): the glyph alone, full size
+    ("ring", "apropos2/vaginal", stages("vag", 9), "vulva", None, None),
+    ("ring", "apropos2/anal", stages("ass", 9), "anus", None, None),
+    ("ring", "apropos2/oral", stages("oral", 9), "lips", None, None),
     ("ring", "fhu/total", stages("cum", 9), "dripping-goo", None, None),
     ("ring", "fhu/vaginal", stages("cum", 9), "goo-spurt", "<vulva", None),
     ("ring", "fhu/anal", stages("cum", 9), "goo-spurt", "<anus", None),
