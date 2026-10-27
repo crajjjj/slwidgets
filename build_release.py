@@ -88,9 +88,34 @@ def check_dds_headers():
                          f"{os.path.relpath(bad[0], ROOT)}): python savedds.py --fix <folder>")
 
 
+def check_translations():
+    """Every MCM translation file must be UTF-16LE with a BOM, CRLF-only, one
+    '$key<TAB>value' per non-empty line. A bare CR inside one line hid two
+    Debug-page labels in all ten files from 2.2.2 to 3.2.0: the engine showed
+    both keys untranslated."""
+    bad = []
+    for p in walk(os.path.join(ROOT, "Interface", "Translations")):
+        if not p.lower().endswith(".txt"):
+            continue
+        rel = os.path.relpath(p, ROOT)
+        raw = open(p, "rb").read()
+        if raw[:2] != b"\xff\xfe":
+            bad.append(f"{rel}: no UTF-16LE BOM")
+            continue
+        text = raw[2:].decode("utf-16-le", errors="replace")
+        if re.search(r"\r(?!\n)|(?<!\r)\n", text):
+            bad.append(f"{rel}: a line end that is not CRLF")
+        for n, line in enumerate(text.split("\r\n"), 1):
+            if line and (not line.startswith("$") or line.count("\t") != 1):
+                bad.append(f"{rel}:{n}: not '$key<TAB>value'")
+    if bad:
+        raise SystemExit("translation files:\n  " + "\n  ".join(bad[:10]))
+
+
 def main():
     ver = version()
     check_dds_headers()
+    check_translations()
     out_dir = os.path.join(ROOT, "Build")
     os.makedirs(out_dir, exist_ok=True)
 
