@@ -7,7 +7,7 @@
 // stop. The page holds a copy of the layout the scripts reported and reads it
 // back after each write.
 
-namespace Page
+namespace Positions
 {
 	// The page's render function, inside a framework callback
 	void Render();

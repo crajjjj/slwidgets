@@ -7,36 +7,49 @@ namespace Bridge
 		using Clock = std::chrono::steady_clock;
 
 		constexpr auto kScript = "slw_bridge"sv;
+		constexpr auto kQueries = static_cast<std::size_t>(Query::kCount);
+		constexpr std::array<std::string_view, kQueries> kQueryFunctions{ "GetLayout"sv, "GetToggles"sv, "GetPresets"sv };
 
-		std::mutex                 g_lock;
-		std::string                g_layout;  // the newest answer
-		std::string                g_error;   // why there is none
-		bool                       g_fresh = false;  // an answer waits to be taken
-		std::atomic<bool>          g_inFlight{ false };
-		std::atomic<std::uint32_t> g_generation{ 0 };  // bumped when the VM resets
-		std::atomic<std::int64_t>  g_sentAt{ 0 };      // Clock ticks of the last request
+		struct Slot
+		{
+			std::string               text;          // the newest answer
+			std::string               error;         // why there is none
+			bool                      fresh = false;  // an answer waits to be taken
+			std::atomic<bool>         inFlight{ false };
+			std::atomic<std::int64_t> sentAt{ 0 };  // Clock ticks of the last request
+		};
+
+		std::mutex                     g_lock;  // text, error and fresh of every slot
+		std::array<Slot, kQueries>     g_slots;
+		std::atomic<std::uint32_t>     g_generation{ 0 };  // bumped when the VM resets
 
 		std::int64_t Now()
 		{
 			return Clock::now().time_since_epoch().count();
 		}
 
-		void Deliver(std::string a_layout, std::string a_error)
+		Slot& SlotOf(Query a_query)
 		{
-			std::scoped_lock lock{ g_lock };
-			g_layout = std::move(a_layout);
-			g_error = std::move(a_error);
-			g_fresh = true;
-			g_inFlight.store(false);
+			return g_slots[static_cast<std::size_t>(a_query)];
 		}
 
-		// The answer of GetLayout. Runs on a VM thread, so it hands the string over
+		void Deliver(Query a_query, std::string a_text, std::string a_error)
+		{
+			std::scoped_lock lock{ g_lock };
+			auto&            slot = SlotOf(a_query);
+			slot.text = std::move(a_text);
+			slot.error = std::move(a_error);
+			slot.fresh = true;
+			slot.inFlight.store(false);
+		}
+
+		// The answer of a query. Runs on a VM thread, so it hands the string over
 		// under the lock and touches nothing else.
-		class LayoutResult : public RE::BSScript::IStackCallbackFunctor
+		class StringResult : public RE::BSScript::IStackCallbackFunctor
 		{
 		public:
-			explicit LayoutResult(std::uint32_t a_generation) :
-				_generation(a_generation) {}
+			StringResult(Query a_query, std::uint32_t a_generation) :
+				_query(a_query), _generation(a_generation) {}
 
 			void operator()(RE::BSScript::Variable a_result) override
 			{
@@ -44,131 +57,160 @@ namespace Bridge
 					return;  // from before a load: not about the VM that is running now
 				}
 				if (a_result.IsString()) {
-					Deliver(std::string{ a_result.GetString() }, {});
+					Deliver(_query, std::string{ a_result.GetString() }, {});
 				} else {
-					Deliver({}, "SL Widgets answered without a layout");
+					Deliver(_query, {}, "SL Widgets answered with no data");
 				}
 			}
 
 			void SetObject(const RE::BSTSmartPointer<RE::BSScript::Object>&) override {}
 
 		private:
+			Query         _query;
 			std::uint32_t _generation;
 		};
 
-		// Queues one static call of slw_bridge on the game thread. Integer arguments
-		// only, copied into the task. The argument object is never deleted here: who
-		// owns it after the call is not documented, and a few bytes per call is the
-		// only safe side of that.
+		// What a C++ argument becomes for the VM
+		std::int32_t      Arg(int a_value) { return a_value; }
+		bool              Arg(bool a_value) { return a_value; }
+		RE::BSFixedString Arg(const std::string& a_value) { return RE::BSFixedString{ a_value }; }
+
+		// Queues one static call of slw_bridge on the game thread. With a_query,
+		// its answer is delivered to that query, a failure as its error. The
+		// argument object is never deleted here: who owns it after the call is not
+		// documented, and a few bytes per call is the only safe side of that.
 		template <class... Args>
-		void Call(std::string_view a_function, RE::BSScript::IStackCallbackFunctor* a_callback, Args... a_args)
+		void Call(std::string_view a_function, std::optional<Query> a_query, Args... a_args)
 		{
 			const auto* tasks = SKSE::GetTaskInterface();
 			if (!tasks) {
-				if (a_callback) {
-					delete a_callback;
-					Deliver({}, "no SKSE task interface");
+				if (a_query) {
+					Deliver(*a_query, {}, "no SKSE task interface");
 				}
 				return;
 			}
+			const auto generation = g_generation.load();
 			tasks->AddTask([=]() {
-				RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor> callback{ a_callback };
 				auto* vm = RE::BSScript::Internal::VirtualMachine::GetSingleton();
 				if (!vm) {
-					if (a_callback) {
-						Deliver({}, "no Papyrus VM");
+					if (a_query) {
+						Deliver(*a_query, {}, "no Papyrus VM");
 					}
 					return;
 				}
-				auto* args = RE::MakeFunctionArguments(static_cast<std::int32_t>(a_args)...);
+				RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor> callback;
+				if (a_query) {
+					callback.reset(new StringResult(*a_query, generation));
+				}
+				auto* args = RE::MakeFunctionArguments(Arg(a_args)...);
 				if (vm->DispatchStaticCall(RE::BSFixedString{ kScript }, RE::BSFixedString{ a_function }, args, callback)) {
 					return;
 				}
 				logger::warn("slw_bridge.{} was refused by the VM: slw_bridge.pex missing, or from another SL Widgets build", a_function);
-				if (a_callback) {
-					Deliver({}, "slw_bridge.pex did not answer: install the SL Widgets scripts of the same release as the DLL");
+				if (a_query) {
+					Deliver(*a_query, {}, "slw_bridge.pex did not answer: install the SL Widgets scripts of the same release as the DLL");
 				}
 			});
 		}
 	}
 
-	void RequestLayout(bool a_force)
+	void Request(Query a_query, bool a_force)
 	{
-		if (!a_force && g_inFlight.exchange(true)) {
+		auto& slot = SlotOf(a_query);
+		if (!a_force && slot.inFlight.exchange(true)) {
 			return;
 		}
-		g_inFlight.store(true);
-		g_sentAt.store(Now());
-		Call("GetLayout"sv, new LayoutResult(g_generation.load()));
+		slot.inFlight.store(true);
+		slot.sentAt.store(Now());
+		Call(kQueryFunctions[static_cast<std::size_t>(a_query)], a_query);
 	}
 
-	bool Take(std::string& a_layout, std::string& a_error)
+	bool Take(Query a_query, std::string& a_text, std::string& a_error)
 	{
 		std::scoped_lock lock{ g_lock };
-		if (!g_fresh) {
+		auto&            slot = SlotOf(a_query);
+		if (!slot.fresh) {
 			return false;
 		}
-		g_fresh = false;
-		a_layout = g_layout;
-		a_error = g_error;
+		slot.fresh = false;
+		a_text = slot.text;
+		a_error = slot.error;
 		return true;
 	}
 
-	bool Pending()
+	bool Pending(Query a_query)
 	{
-		return g_inFlight.load();
+		return SlotOf(a_query).inFlight.load();
 	}
 
-	float PendingSeconds()
+	float PendingSeconds(Query a_query)
 	{
-		if (!g_inFlight.load()) {
+		const auto& slot = SlotOf(a_query);
+		if (!slot.inFlight.load()) {
 			return 0.0f;
 		}
-		return std::chrono::duration<float>(Clock::duration{ Now() - g_sentAt.load() }).count();
+		return std::chrono::duration<float>(Clock::duration{ Now() - slot.sentAt.load() }).count();
 	}
 
 	void OnVmReset()
 	{
 		++g_generation;
 		std::scoped_lock lock{ g_lock };
-		g_fresh = false;
-		g_layout.clear();
-		g_error.clear();
-		g_inFlight.store(false);
+		for (auto& slot : g_slots) {
+			slot.fresh = false;
+			slot.text.clear();
+			slot.error.clear();
+			slot.inFlight.store(false);
+		}
 	}
 
 	void SetBarPos(int a_bar, int a_x, int a_y)
 	{
-		Call("SetBarPos"sv, nullptr, a_bar, a_x, a_y);
+		Call("SetBarPos"sv, std::nullopt, a_bar, a_x, a_y);
 	}
 
 	void SetBarSize(int a_bar, int a_size)
 	{
-		Call("SetBarSize"sv, nullptr, a_bar, a_size);
+		Call("SetBarSize"sv, std::nullopt, a_bar, a_size);
 	}
 
 	void SetBarType(int a_bar, int a_type)
 	{
-		Call("SetBarType"sv, nullptr, a_bar, a_type);
+		Call("SetBarType"sv, std::nullopt, a_bar, a_type);
 	}
 
 	void SetNpcGroup(int a_x, int a_y)
 	{
-		Call("SetNpcGroup"sv, nullptr, a_x, a_y);
+		Call("SetNpcGroup"sv, std::nullopt, a_x, a_y);
 	}
 
 	void SetNpcSpacing(int a_spacing)
 	{
-		Call("SetNpcSpacing"sv, nullptr, a_spacing);
+		Call("SetNpcSpacing"sv, std::nullopt, a_spacing);
 	}
 
 	void SetMeters(int a_x, int a_y, int a_scale)
 	{
-		Call("SetMeters"sv, nullptr, a_x, a_y, a_scale);
+		Call("SetMeters"sv, std::nullopt, a_x, a_y, a_scale);
 	}
 
 	void ResetNpcLayout()
 	{
-		Call("ResetNpcLayout"sv, nullptr);
+		Call("ResetNpcLayout"sv, std::nullopt);
+	}
+
+	void SetToggle(const std::string& a_key, bool a_value)
+	{
+		Call("SetToggle"sv, std::nullopt, a_key, a_value);
+	}
+
+	void LoadPreset(const std::string& a_name)
+	{
+		Call("LoadPreset"sv, std::nullopt, a_name);
+	}
+
+	void SavePreset(const std::string& a_name)
+	{
+		Call("SavePreset"sv, std::nullopt, a_name);
 	}
 }

@@ -102,6 +102,7 @@ If you press the hotkey and nothing happens, check each of these conditions.
 ## Settings preset won't save / load
 
 - PapyrusUtil must be installed and working. Check your Papyrus log for PapyrusUtil errors.
+- On the SKSE menu's Presets page, a name takes letters, digits, spaces and `- _ ( )` only.
 - Preset files are written to `Data/SKSE/Plugins/SlWidgets/SettingsPresets/`. Confirm the folder exists and is writable (mod manager virtual filesystem sometimes blocks writes to this path — try running via MO2 rather than Vortex if this occurs, or configure Vortex to allow writes to SKSE plugin data).
 
 ---

@@ -18,8 +18,8 @@ pyro.exe -i skyrimse.ppj --game-path "C:\SteamLibrary\steamapps\common\Skyrim Sp
 # Sources: Source/Scripts/*.psc -> Scripts/*.pex; also rewrites Build/SLWidgets.zip
 ```
 
-The Positions page DLL is a separate build (see "Positions page plugin"
-below); run it before Pyro for a release, since the zip packs the DLL.
+The SKSE menu DLL is a separate build (see "SKSE menu plugin" below); run it
+before Pyro for a release, since the zip packs the DLL.
 
 ### Import order matters (and `skyrimse.ppj` is gitignored)
 
@@ -74,15 +74,36 @@ tools/esp/SlwEsp -- SLWidgets.esp` does both for the names listed in its
 (not byte-faithful: it recomputes the header's next FormID), which is fine for
 this two-record plugin; check it afterwards (houseCARL / xEdit).
 
-### Positions page plugin (`plugin\`, 3.1.0+)
+### SKSE menu plugin (`plugin\`, 3.1.0+)
 
-`SLWidgetsMenu.dll`, a page in SKSE Menu Framework's menu (section "SL Widgets",
-"Positions") with sliders for X, Y, size and orientation of iWant's player bars
-0-3, X, Y and spacing of the NPC cluster, X, Y and scale of the meter stack. A
-change is written into the game while the menu is open and the real icons move
-(the framework freezes time, Papyrus keeps running). The user asked for exactly
-this and turned down a drag editor with boxes over the HUD (built first, then
-replaced): "I need just x y z and orientation. No boxes." Build from `plugin\`:
+`SLWidgetsMenu.dll`, pages in SKSE Menu Framework's menu (section "SL Widgets").
+The SKSE menu takes the MCM over page by page, and a setting that moves LEAVES
+the MCM in the same release (the user, 2026-10-27: "trim the mcm also as part
+of this step - no deferred work"). The MCM ends as a stub: enable/disable,
+settings presets (the fallback without SKSE Menu Framework: a preset is an
+editable JSON file) and the dependency check. `OnConfigOpen` rebuilds `Pages`
+on every open, so a trimmed page list needs no save migration. Pages so far:
+
+- **Toggles** (3.2.0, `TogglesPage.cpp`): the player icon switches, grouped by
+  mod, greyed while the mod is not installed. The MCM's Toggles page is gone.
+- **Positions** (3.1.0, `PositionsPage.cpp`): sliders for X, Y, size and
+  orientation of iWant's player bars 0-3, X, Y and spacing of the NPC cluster,
+  X, Y and scale of the meter stack, the NPC layout reset. The MCM's sliders for
+  these are gone since 3.2.0 (iWant's own MCM still has its bar sliders). The
+  user asked for exactly this and turned down a drag editor with boxes over
+  the HUD (built first, then replaced): "I need just x y z and orientation.
+  No boxes."
+- **Presets** (3.2.0, `PresetsPage.cpp`): the settings presets, load, save over,
+  save as new. The MCM's General page keeps load and save as well.
+
+Still in the MCM: General (enable, update interval, presets, colour preset, a
+line pointing at the SKSE menu), Meters (switches, always show, hold time),
+NPC Tracking (hotkey, label style, per-slot switches and labels), Debug. The
+option-id variables of the moved options stay declared and unused: removing
+a script variable is safe, but there is nothing to gain.
+
+A change is written into the game while the menu is open and the icons follow
+(the framework freezes time, Papyrus keeps running). Build from `plugin\`:
 `xmake f -m release && xmake` (VS 2022, xmake 3.0+, the CommonLibSSE-NG
 submodule at `plugin\lib\commonlibsse-ng`, shallow at v7.1.0: `git submodule
 update --init --recursive`). The DLL lands in `SKSE\Plugins`, which the ppj zips
@@ -90,39 +111,63 @@ with the rest of `SKSE`, so a release build runs it before Pyro;
 `build_release.py` refuses a zip without a DLL of the current version.
 
 - **Version**: the target's `on_load` reads `slw_util.GetVersionString()`, the
-  same line `build_release.py` reads; nothing else to bump. The description
-  scope of xmake.lua cannot read files, hence the hook. The resource's
-  ProductVersion stays 0.0.0 (project version); FileVersion carries the mod's.
+  same line `build_release.py` reads. The description scope of xmake.lua cannot
+  read files, hence the hook. **After a version bump run `xmake f -c -m
+  release`** (the `-c` matters): the version resource is a config file xmake
+  regenerates only on a clean reconfigure, so a plain rebuild, or `xmake f`
+  with unchanged options, keeps the old FileVersion (3.2.0 first built as
+  3.1.0.0; the packager caught it). ProductVersion stays 0.0.0.
 - **Never installs**: `XSE_TES5_MODS_PATH` is set on this machine and the
   commonlib plugin rule would `xmake install` into `<mods>\SLWidgetsMenu`;
   `on_config` repoints `installdir` and an empty `on_install` replaces the
   rule's. Build with the variable cleared as well.
-- **Where state lives**: nowhere new. The DLL is a view over the save: it reads
-  the layout as ONE string from `slw_widget_controller.editorLayout()` and
-  writes through `editorSetBarPos` / `editorSetBarSize` / `editorSetBarType`
-  (iWant's setters + `_resizeBar` + `_drawBar`, as iWant's MCM does),
-  `editorSetNpcGroup` (`setNpcGroupPos` + `_layoutNpcBars`),
-  `editorSetNpcSpacing` and `editorSetMeters` (`setMetersLayout` +
-  `_refreshSoon`). The NPC bars and the meter stack are never moved bar by
-  bar: the controller re-derives them from their anchors.
-- **Write rules** (`Page.cpp`): X and Y of a player bar are written every
-  150 ms while the slider is held (one `_setBarX/Y` + `_drawBar`, cheap);
+- **Where state lives**: nowhere new. The DLL is a view over the save. Each
+  page reads ONE string through a `Bridge::Query` and writes through setters:
+  - Positions reads `slw_widget_controller.editorLayout()` and writes
+    `editorSetBarPos` / `editorSetBarSize` / `editorSetBarType` (iWant's setters
+    + `_resizeBar` + `_drawBar`, as iWant's MCM does), `editorSetNpcGroup`
+    (`setNpcGroupPos` + `_layoutNpcBars`), `editorSetNpcSpacing` and
+    `editorSetMeters` (`setMetersLayout` + `_refreshSoon`). The NPC bars and the
+    meter stack are never moved bar by bar: the controller re-derives them from
+    their anchors.
+  - Presets reads `slw_config.editorPresets()` and writes `slw_bridge.LoadPreset`
+    (`slw_widget_controller.requestPresetLoad`: owed and served by
+    `_updatePass` like the toggle pass, or at once while the mod is stopped,
+    then `slw_config.applySettingsPreset`, the steps the MCM's preset menu
+    did inline and now calls too) and `slw_bridge.SavePreset`. Names are file
+    names: the DLL takes letters, digits, space and `- _ ( )`, the bridge
+    refuses path characters again.
+  - Toggles reads `slw_config.editorToggles()`: the rows in MCM order, each with
+    its property name, its label and help translation keys, its value and the
+    MCM's greyed-out condition. `slw_config.setToggleByKey` writes one, then
+    `slw_widget_controller.requestTogglePass` owes the `toggleUpdateWidgets`
+    pass the MCM runs on close; `_updatePass` serves it, so passes never
+    overlap however fast switches are clicked. A new player switch is a row in
+    `editorToggles` and a branch in `setToggleByKey`, no DLL change.
+- **Labels** come from the mod's own `Interface\Translations\SLWidgets_<LANG>.txt`
+  (`Translations.cpp`: the game's `sLanguage`, English filling the gaps, keys
+  matched case-insensitively since Papyrus may hand a key back in another
+  casing). Keys travel from the scripts as whole literals, as the MCM uses them.
+- **Write rules** (`PositionsPage.cpp`): X and Y of a player bar are written
+  every 150 ms while the slider is held (one `_setBarX/Y` + `_drawBar`, cheap);
   size, orientation, the NPC cluster and the meters on release only, since
   each of those is a resize pass, a full `_layoutNpcBars` or a stack rebuild.
-  `kCloseMenu` flushes a slider still held. The layout is read back 1.5 s
-  after a write, never while a slider is held (the answer would overwrite the
-  value under the hand), and whenever the page comes up after a 1 s gap.
+  `kCloseMenu` flushes a slider still held. Every page reads back 1.5 s after
+  a write (Positions never while a slider is held, Toggles keeping a value
+  clicked in the last 4 s) and whenever it comes up after a 1 s gap.
 - **The bridge** is `slw_bridge.psc`, hidden global functions the DLL reaches
-  with `DispatchStaticCall` on the SKSE task queue; the answer arrives on a VM
+  with `DispatchStaticCall` on the SKSE task queue; an answer arrives on a VM
   thread. Its signatures are an interface: the VM rejects a call whose argument
-  count differs, silently, so never change one, add a function. The layout
-  string carries `v=1`; `Layout::kVersion` in the DLL must match (bump both).
+  count differs, silently, so never change one, add a function. Each string
+  carries `v=1`; `Layout::kVersion` / `Toggles::kVersion` must match (bump
+  both sides). Never name a Papyrus parameter `key`: `Key` is a vanilla type,
+  and the compiler reads the name as the type.
 - **Framework facts** (SKSE-Menu-Framework-3 source, 2026-10): registration
   lists are unlocked and the loading screen renders at kDataLoaded, so
   everything registers at `kPostPostLoad`. A blocking window sets
   `Main::freezeTime` (Papyrus runs on), blocks game input and draws the
   cursor. Escape calls `WindowManager::Close` and dispatches `kCloseMenu`.
-  nefaram runs 3.8, which lacks `GetMainWindow`; the page needs nothing of it.
+  nefaram runs 3.8, which lacks `GetMainWindow`; the pages need nothing of it.
 - **ImGui rules** as SLO VE's: the vendored header only through `Ui.h`, no
   ImGui structs read, every export used is on the probe list in `Env.cpp`.
   Slider commits follow SLO VE's `IsItemActive` / `wasActive` pattern.
@@ -189,7 +234,7 @@ Script properties filled via the Creation Kit (CK) in the ESP/ESM must NOT be re
 | `Source/Scripts/slw_widget_controller.psc` | Main update loop, NPC bar reconciliation, name label management, default layout; the meter stack (willpower bar included) at the end |
 | `Source/Scripts/slw_base_module.psc` | Base class for all modules (extends Quest) |
 | `Source/Scripts/slw_module_mme.psc` | Milk module: MME + SGO4 + MAL |
-| `Source/Scripts/slw_menu.psc` | MCM menu (extends SKI_ConfigBase), 5 pages including Meters and NPC Tracking |
+| `Source/Scripts/slw_menu.psc` | MCM menu (extends SKI_ConfigBase), 4 pages: General, Meters, NPC Tracking, Debug (3.2.0: the Toggles page and the position sliders moved to the SKSE menu) |
 | `Source/Scripts/slw_interface_sgo4.psc` | Thin wrapper for SGO4 script API |
 | `Source/Scripts/slw_interface_slove.psc` | SLO VE willpower, read from StorageUtil (no compile-time dependency on SLO VE) |
 | `Source/Scripts/slw_module_sunhelm.psc` | 3.0.0: SunHelm food, thirst, cold, fatigue (player only). Holds the need quests as plain `Quest` (a variable typed to a foreign script must resolve when the module loads, which fails without SunHelm); an icon shows only while its quest `IsRunning()`, since SunHelm switches a need off by stopping it |
@@ -202,7 +247,7 @@ Script properties filled via the Creation Kit (CK) in the ESP/ESM must NOT be re
 | `Source/ApiHeaders/*.psc` | Compile stubs for foreign script types that are cast at runtime (SGO4, SunHelm): only the members SL Widgets reads, `extends Quest`; the cast resolves by script name in game |
 | `build_icons.py` | 3.0.0: draws the whole icon set into `Interface/.../library/` from `art/ring/glyphs/*.svg` (needs `pip install pillow resvg-py`) and the shipped Default / HideEmpty presets from its ramp; adds the new keys to the white presets and to the classic pack's presets; `--sheet` renders `docs/assets/ring-style.png` |
 | `art/ring/draw_custom_glyphs.py` | Writes the hand-drawn glyphs (vulva, anus, ovum, belly, sperm, sun, snowflake) into `art/ring/glyphs/`; the rest are game-icons.net files (CC BY 3.0, credits in `art/ring/glyphs/CREDITS.md`) |
-| `plugin/` | 3.1.0: `SLWidgetsMenu.dll`, the Positions page (xmake + CommonLibSSE-NG, SKSE Menu Framework). `Page.cpp` the sliders and their write rules, `Layout.cpp` the layout string's model, `Bridge.cpp` the Papyrus calls, `Env.cpp` the export probe |
+| `plugin/` | 3.1.0+: `SLWidgetsMenu.dll`, the SKSE menu pages (xmake + CommonLibSSE-NG, SKSE Menu Framework). `TogglesPage.cpp` / `PositionsPage.cpp` the pages, `Layout.cpp` the layout string's model, `Translations.cpp` the MCM strings, `Bridge.cpp` the Papyrus calls, `Env.cpp` the export probe |
 | `Source/Scripts/slw_bridge.psc` | 3.1.0: the global functions the DLL calls; forwards to the `editor*` functions at the end of `slw_widget_controller`. Signatures are an interface |
 | `build_release.py` | 3.0.0: renames Pyro's zip to `Build/SLWidgets <version>.zip` and packs the optional `SLWidgets Classic Icons <version>.zip` from `art/classic`; run after the Papyrus build |
 | `tools/esp/SlwEsp/` | Mutagen (dotnet 9) tool that registers module scripts in `SLWidgets.esp` (script on the modules quest + object property on `slw_config`); idempotent, keeps a `.bak` |
@@ -232,7 +277,7 @@ API calls use the `target` parameter, not the module's `PlayerRef` property. The
 4. `onWidgetReload(iBars, target, slot)`: load icons via `getIconNameForSlot()`; `onWidgetStatusUpdate(iBars, target, slot)`: query API with `target`
 5. Add config toggle property to `slw_config.psc` (player sub-toggle)
 6. If mod supports NPCs: add `_slot_use_X` Bool[] array, `MOD_X` AutoReadOnly Int constant, and entries in `_ensureSlotToggles`/`isOnForSlot`/`getSlotModuleEnable`/`setSlotModuleEnable`. Update modules to call `config.isOnForSlot(playerToggle, slot, MOD_X)` instead of `config.isOn(playerToggle)`.
-7. Add MCM toggle to `slw_menu.psc` Toggles page; if NPC-capable, add to NPC Tracking page per slot and `_tryToggleSubCode` ladder
+7. Add the player switch to the SKSE menu: a row in `slw_config.editorToggles` (property name, label and help translation keys, the installed condition) and a branch in `setToggleByKey`; no DLL change. If NPC-capable, add it to the MCM's NPC Tracking page per slot and the `_tryToggleSubCode` ladder
 8. Add the icon's base name to `_getOwnedIconBaseNames()` in `slw_widget_controller.psc` so it gets reconciled into NPC bars
 9. Add dependency check to MCM Debug page
 10. Add translation key to all 10 `Interface/Translations/SLWidgets_*.txt` files
@@ -282,7 +327,7 @@ API calls use the `target` parameter, not the module's `PlayerRef` property. The
 | Mod enable | `moduleReset` + `moduleSetup` + `reloadWidgets` (labels shown for present NPCs) + `startUpdates` |
 | NPC unloads | next OnUpdate tick: `_isNpcPresent == False` → `_hideNpcLabel`. When NPC re-loads → label reappears |
 
-**Settings presets** (`slw_config.loadSettingsPreset` / `saveSettingsPreset`): JSON via PapyrusUtil. Keys `npc.{slot}.{sub_toggle_name}` store per-slot toggles. Helpers `_loadNpcSlotToggles` / `_saveNpcSlotToggles`. Missing keys in legacy presets fall back to runtime values.
+**Settings presets** (`slw_config.loadSettingsPreset` / `saveSettingsPreset`): JSON via PapyrusUtil. Keys `npc.{slot}.{sub_toggle_name}` store per-slot toggles. Helpers `_loadNpcSlotToggles` / `_saveNpcSlotToggles`. Missing keys in legacy presets fall back to runtime values. Since 3.2.0 they also carry the layout (`_saveLayoutSettings` / `_loadLayoutSettings`): `bars.<0-3>.x` / `.y` / `.size` / `.type` (iWant's player bars, read and written through `iBars`, skipped while iWant is not up; `_barPresetKey` hands out whole literals) and `npcgroup.x` / `.y` / `.spacing`. A key the file lacks reads as the current value and only a real change is applied, so an older preset leaves the layout alone. `applySettingsPreset` is the one way to load a preset and use it (MCM and SKSE menu).
 
 ## Meter Stack (2.3.0)
 

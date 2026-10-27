@@ -113,7 +113,7 @@ Three mods can provide the `iwant_widgets` script: the original **iWant Widgets*
 
 The Prisma renderer centres the fixed 1280 × 720 stage rather than letting the game stretch it, so on ultrawide monitors the usable **left** margin sits at *negative* X — roughly −200 on 21:9 and −640 on 32:9. The right margin extends past 1279 as before.
 
-Both the iWant Status Bars MCM and the SL Widgets NPC group sliders accept **−1280 … 2560** for X and **−720 … 719** for Y with position lock on (unlocking still opens ±10000). Because coordinates are icon *centres*, small negative values also let a bar tuck flush against the screen edge on any monitor.
+The iWant Status Bars MCM accepts **−1280 … 2559** for X and **−720 … 1439** for Y with position lock on (unlocking opens ±10000), and the SKSE menu's [Positions](position-editor.md#positions) page the same. Because coordinates are icon *centres*, small negative values also let a bar tuck flush against the screen edge on any monitor.
 
 See [Screen coordinates](customization.md#screen-coordinates) for the standard-stage ranges.
 

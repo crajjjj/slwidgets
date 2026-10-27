@@ -880,6 +880,7 @@ Bool Function loadSettingsPreset(String presetName)
 	module_injuries = jsonutil.GetPathBoolValue(path, "module_injuries", module_injuries)
 	module_diseases = jsonutil.GetPathBoolValue(path, "module_diseases", module_diseases)
 	_loadMeterSettings(path)
+	_loadLayoutSettings(path)
 	_loadNpcSlotToggles(path)
 	Return true
 EndFunction
@@ -1016,6 +1017,7 @@ Bool Function saveSettingsPreset(String presetName)
 	jsonutil.SetPathIntValue(path, "module_injuries", module_injuries as Int)
 	jsonutil.SetPathIntValue(path, "module_diseases", module_diseases as Int)
 	_saveMeterSettings(path)
+	_saveLayoutSettings(path)
 	_saveNpcSlotToggles(path)
 	If !jsonutil.Save(path, false)
 		WriteLog("SLWidgets: Error saving settings preset '" + presetName + "'", 2)
@@ -1044,5 +1046,293 @@ Function _saveNpcSlotToggles(String path)
 		jsonutil.SetPathIntValue(path, _npcPresetKey(slot, MOD_WET), _slot_use_wet[slot] as Int)
 		jsonutil.SetPathIntValue(path, _npcPresetKey(slot, MOD_BABY), _slot_use_baby[slot] as Int)
 		slot += 1
+	EndWhile
+EndFunction
+; ---------------------------------------------------------------------------
+; Toggles page (SLWidgetsMenu.dll, through slw_bridge)
+;
+; The MCM's Toggles page as data: one row per player icon switch, in the MCM's
+; order, with the translation keys of its label and help text and whether its
+; mod is installed (the MCM's greyed-out flag). The DLL draws the rows and
+; resolves the keys from Interface\Translations itself, so a new switch needs a
+; row here and a branch in setToggleByKey, and no DLL change.
+;
+; Format: "v=1|s=<section key>|h=<group key>|t=<property>,<label key>,<help key>,<on>,<installed>|..."
+; The version is the DLL's Toggles::kVersion: bump both when a field changes.
+; ---------------------------------------------------------------------------
+
+String Function editorToggles()
+	String s = "v=1"
+	s += "|s=$SLW_Static"
+
+	s += "|h=$SLW_Sexlab_Aroused"
+	Bool sla = module_sla.isInterfaceActive()
+	s += _editorToggle("module_sla_arousal", "$SLW_Arousal_Icon_Enabled", "$SLW_Arousal_Toggle_Info", module_sla_arousal, sla)
+	s += _editorToggle("module_sla_exposure", "$SLW_Exposure_Icon_Enabled", "$SLW_Exposure_Toggle_Info", module_sla_exposure, sla)
+
+	s += "|h=$SLW_Apropos2"
+	s += _editorToggle("module_apropos_two_wt", "$SLW_WT_Icon_Enabled", "$SLW_WT_Toggle_Info", module_apropos_two_wt, module_apropos_two.isInterfaceActive())
+
+	s += "|h=$SLW_FHU"
+	Bool fhu = module_fhu.isInterfaceActive()
+	s += _editorToggle("module_fhu_cum", "$SLW_FHU_TI", "$SLW_FHU_Toggle_Info", module_fhu_cum, fhu)
+	s += _editorToggle("module_fhu_cum_vaginal", "$SLW_FHU_VI", "$SLW_FHU_Vaginal_Toggle_Info", module_fhu_cum_vaginal, fhu)
+	s += _editorToggle("module_fhu_cum_anal", "$SLW_FHU_AI", "$SLW_FHU_Anal_Toggle_Info", module_fhu_cum_anal, fhu)
+	s += _editorToggle("module_fhu_cum_oral", "$SLW_FHU_OI", "$SLW_FHU_Oral_Toggle_Info", module_fhu_cum_oral, fhu)
+
+	s += "|h=$SLW_MME"
+	s += _editorToggle("module_mme_milk", "$SLW_MME_MI", "$SLW_MME_Milk_Toggle_Info", module_mme_milk, module_mme.isInterfaceActive())
+	s += _editorToggle("module_mme_lactacid", "$SLW_MME_LI", "$SLW_MME_Lactacid_Toggle_Info", module_mme_lactacid, isMMEReady())
+
+	s += "|h=$SLW_Needs"
+	Bool paf = module_paf.isInterfaceActive()
+	s += _editorToggle("module_paf_pee", "$SLW_Needs_Pee", "$SLW_PAF_Pee_Info", module_paf_pee, paf)
+	s += _editorToggle("module_paf_poo", "$SLW_Needs_Poop", "$SLW_PAF_Poo_Info", module_paf_poo, paf)
+
+	s += "|h=$SLW_SunHelm"
+	Bool sh = module_sunhelm.isInterfaceActive()
+	s += _editorToggle("module_sh_food", "$SLW_SH_Food", "$SLW_SH_Food_Info", module_sh_food, sh)
+	s += _editorToggle("module_sh_thirst", "$SLW_SH_Thirst", "$SLW_SH_Thirst_Info", module_sh_thirst, sh)
+	s += _editorToggle("module_sh_cold", "$SLW_SH_Cold", "$SLW_SH_Cold_Info", module_sh_cold, sh)
+	s += _editorToggle("module_sh_fatigue", "$SLW_SH_Fatigue", "$SLW_SH_Fatigue_Info", module_sh_fatigue, sh)
+
+	s += "|h=$SLW_Hygiene"
+	s += _editorToggle("module_dirtiness", "$SLW_Dirtiness_Icon", "$SLW_Dirtiness_Info", module_dirtiness, module_hygiene.Plugin_Bathing)
+	s += _editorToggle("module_wetness", "$SLW_Wetness_Icon", "$SLW_Wetness_Info", module_wetness, module_hygiene.Plugin_WetFunction)
+
+	s += "|h=$SLW_SPH"
+	Bool sph = module_sph.isInterfaceActive()
+	s += _editorToggle("module_sph_pubic", "$SLW_SPH_Pubic", "$SLW_SPH_Pubic_Info", module_sph_pubic, sph)
+	s += _editorToggle("module_sph_armpit", "$SLW_SPH_Armpit", "$SLW_SPH_Armpit_Info", module_sph_armpit, sph)
+
+	s += "|h=$SLW_BabyHealth"
+	s += _editorToggle("module_baby_health", "$SLW_BabyHealth_Icon", "$SLW_BabyHealth_Info", module_baby_health, module_baby.isInterfaceActive())
+
+	s += "|h=$SLW_StressFear"
+	Bool saf = module_stress.isInterfaceActive()
+	s += _editorToggle("module_saf_stress", "$SLW_Stress_Icon", "$SLW_Stress_Info", module_saf_stress, saf)
+	s += _editorToggle("module_saf_fear", "$SLW_Fear_Icon", "$SLW_Fear_Info", module_saf_fear, saf)
+
+	s += "|h=$SLW_Health"
+	s += _editorToggle("module_injuries", "$SLW_Injuries_Icon", "$SLW_Injuries_Info", module_injuries, module_health.Plugin_BladeBlunt)
+	s += _editorToggle("module_diseases", "$SLW_Diseases_Icon", "$SLW_Diseases_Info", module_diseases, module_health.isInterfaceActive())
+
+	s += "|s=$SLW_Conditional"
+
+	s += "|h=$SLW_SLP"
+	s += _editorToggle("module_parasites_enabled", "$SLW_SLP_Icon", "$SLW_Parasites_Toggle_Info", module_parasites_enabled, module_slp.isInterfaceActive())
+
+	s += "|h=$SLW_Pregnancy"
+	s += _editorToggle("module_pregnancy_enabled", "$SLW_Pregnancy_Icons", "$SLW_Pregnancy_Toggle_Info", module_pregnancy_enabled, module_pregnancy.isInterfaceActive())
+
+	s += "|h=$SLW_Defeat"
+	s += _editorToggle("module_defeat_enabled", "$SLW_Defeat_Icon", "$SLW_Defeat_Toggle_Info", module_defeat_enabled, module_defeat.isInterfaceActive())
+	Return s
+EndFunction
+
+String Function _editorToggle(String toggleKey, String label, String help, Bool on, Bool installed)
+	Return "|t=" + toggleKey + "," + label + "," + help + "," + (on As Int) + "," + (installed As Int)
+EndFunction
+
+; A switch of editorToggles by its key, which is the property's name. False for
+; a key it does not know (a DLL newer than these scripts).
+Bool Function setToggleByKey(String toggleKey, Bool value)
+	If toggleKey == "module_sla_arousal"
+		module_sla_arousal = value
+	ElseIf toggleKey == "module_sla_exposure"
+		module_sla_exposure = value
+	ElseIf toggleKey == "module_apropos_two_wt"
+		module_apropos_two_wt = value
+	ElseIf toggleKey == "module_fhu_cum"
+		module_fhu_cum = value
+	ElseIf toggleKey == "module_fhu_cum_vaginal"
+		module_fhu_cum_vaginal = value
+	ElseIf toggleKey == "module_fhu_cum_anal"
+		module_fhu_cum_anal = value
+	ElseIf toggleKey == "module_fhu_cum_oral"
+		module_fhu_cum_oral = value
+	ElseIf toggleKey == "module_mme_milk"
+		module_mme_milk = value
+	ElseIf toggleKey == "module_mme_lactacid"
+		module_mme_lactacid = value
+	ElseIf toggleKey == "module_paf_pee"
+		module_paf_pee = value
+	ElseIf toggleKey == "module_paf_poo"
+		module_paf_poo = value
+	ElseIf toggleKey == "module_sh_food"
+		module_sh_food = value
+	ElseIf toggleKey == "module_sh_thirst"
+		module_sh_thirst = value
+	ElseIf toggleKey == "module_sh_cold"
+		module_sh_cold = value
+	ElseIf toggleKey == "module_sh_fatigue"
+		module_sh_fatigue = value
+	ElseIf toggleKey == "module_dirtiness"
+		module_dirtiness = value
+	ElseIf toggleKey == "module_wetness"
+		module_wetness = value
+	ElseIf toggleKey == "module_sph_pubic"
+		module_sph_pubic = value
+	ElseIf toggleKey == "module_sph_armpit"
+		module_sph_armpit = value
+	ElseIf toggleKey == "module_baby_health"
+		module_baby_health = value
+	ElseIf toggleKey == "module_saf_stress"
+		module_saf_stress = value
+	ElseIf toggleKey == "module_saf_fear"
+		module_saf_fear = value
+	ElseIf toggleKey == "module_injuries"
+		module_injuries = value
+	ElseIf toggleKey == "module_diseases"
+		module_diseases = value
+	ElseIf toggleKey == "module_parasites_enabled"
+		module_parasites_enabled = value
+	ElseIf toggleKey == "module_pregnancy_enabled"
+		module_pregnancy_enabled = value
+	ElseIf toggleKey == "module_defeat_enabled"
+		module_defeat_enabled = value
+	Else
+		Return False
+	EndIf
+	Return True
+EndFunction
+
+; ---------------------------------------------------------------------------
+; Settings presets: the layout (3.2.0), loading as a whole, and the SKSE
+; menu's Presets page
+; ---------------------------------------------------------------------------
+
+; A settings preset loaded and put to work. The MCM's preset menu did these
+; steps inline; the SKSE menu's Presets page reaches them through the widget
+; controller, which runs them inside its update pass (requestPresetLoad).
+Bool Function applySettingsPreset(String presetName)
+	If !loadSettingsPreset(presetName)
+		Return False
+	EndIf
+	activeSettingsPreset = presetName
+	loadPreset(activePreset)
+	moduleReset()
+	moduleSetup()
+	widget_controller.reloadWidgets()
+	Return True
+EndFunction
+
+; The Presets page's list: "v=1|a=<active preset>|p=<name>|p=<name>|..."
+; The version is the DLL's Presets::kVersion: bump both when a field changes.
+String Function editorPresets()
+	String s = "v=1|a=" + activeSettingsPreset
+	String[] names = getSettingsPresetNames()
+	Int i = 0
+	While i < names.Length
+		s += "|p=" + names[i]
+		i += 1
+	EndWhile
+	Return s
+EndFunction
+
+; The layout keys of a player bar, one whole literal each: JsonUtil's path
+; functions match keys verbatim, and a key built from parts can come back in
+; another script's casing (see getMeterPresetKey). Field 0 x, 1 y, 2 icon size,
+; 3 iWant bar type (the line-up: left, right, up, down, circle, ...).
+String Function _barPresetKey(Int bar, Int field)
+	If bar == 0
+		If field == 0
+			Return "bars.0.x"
+		ElseIf field == 1
+			Return "bars.0.y"
+		ElseIf field == 2
+			Return "bars.0.size"
+		EndIf
+		Return "bars.0.type"
+	ElseIf bar == 1
+		If field == 0
+			Return "bars.1.x"
+		ElseIf field == 1
+			Return "bars.1.y"
+		ElseIf field == 2
+			Return "bars.1.size"
+		EndIf
+		Return "bars.1.type"
+	ElseIf bar == 2
+		If field == 0
+			Return "bars.2.x"
+		ElseIf field == 1
+			Return "bars.2.y"
+		ElseIf field == 2
+			Return "bars.2.size"
+		EndIf
+		Return "bars.2.type"
+	EndIf
+	If field == 0
+		Return "bars.3.x"
+	ElseIf field == 1
+		Return "bars.3.y"
+	ElseIf field == 2
+		Return "bars.3.size"
+	EndIf
+	Return "bars.3.type"
+EndFunction
+
+; iWant's player bars 0-3 (position, icon size, line-up) and the NPC cluster
+; (anchor, spacing). The meter stack travels in _saveMeterSettings. Without
+; iWant up the bars cannot be read, and a preset saved then keeps whatever bar
+; keys the file already held.
+Function _saveLayoutSettings(String path)
+	slw_widget_controller wc = widget_controller
+	If !wc
+		Return
+	EndIf
+	jsonutil.SetPathIntValue(path, "npcgroup.x", wc.npcGroupX)
+	jsonutil.SetPathIntValue(path, "npcgroup.y", wc.npcGroupY)
+	jsonutil.SetPathIntValue(path, "npcgroup.spacing", wc.npcVerticalSpacing)
+	iWant_Status_Bars bars = wc.iBars
+	If !bars || !bars.isReady()
+		Return
+	EndIf
+	Int bar = 0
+	While bar < 4
+		jsonutil.SetPathIntValue(path, _barPresetKey(bar, 0), bars._getBarX(bar))
+		jsonutil.SetPathIntValue(path, _barPresetKey(bar, 1), bars._getBarY(bar))
+		jsonutil.SetPathIntValue(path, _barPresetKey(bar, 2), bars._getBarIconSize(bar))
+		jsonutil.SetPathIntValue(path, _barPresetKey(bar, 3), bars._getBarType(bar))
+		bar += 1
+	EndWhile
+EndFunction
+
+; A key the file lacks reads as the current value, so a preset from before
+; 3.2.0 leaves the layout alone; only a real change is applied. Values are held
+; to the ranges of the SKSE menu's Positions page (a preset is a file anyone can
+; edit), the type to iWant's ten shapes.
+Function _loadLayoutSettings(String path)
+	slw_widget_controller wc = widget_controller
+	If !wc
+		Return
+	EndIf
+	Int gx = clampInt(jsonutil.GetPathIntValue(path, "npcgroup.x", wc.npcGroupX), -1280, 2559)
+	Int gy = clampInt(jsonutil.GetPathIntValue(path, "npcgroup.y", wc.npcGroupY), -720, 1439)
+	Int gs = clampInt(jsonutil.GetPathIntValue(path, "npcgroup.spacing", wc.npcVerticalSpacing), 50, 200)
+	If gx != wc.npcGroupX || gy != wc.npcGroupY || gs != wc.npcVerticalSpacing
+		wc.setNpcGroupPos(gx, gy)
+		; lays the NPC bars out again from the new anchor
+		wc.setNpcVerticalSpacing(gs)
+	EndIf
+	iWant_Status_Bars bars = wc.iBars
+	If !bars || !bars.isReady()
+		Return
+	EndIf
+	Int bar = 0
+	While bar < 4
+		Int x = bars._getBarX(bar)
+		Int y = bars._getBarY(bar)
+		Int size = bars._getBarIconSize(bar)
+		Int type = bars._getBarType(bar)
+		Int nx = clampInt(jsonutil.GetPathIntValue(path, _barPresetKey(bar, 0), x), -1280, 2559)
+		Int ny = clampInt(jsonutil.GetPathIntValue(path, _barPresetKey(bar, 1), y), -720, 1439)
+		Int nsize = clampInt(jsonutil.GetPathIntValue(path, _barPresetKey(bar, 2), size), 8, 100)
+		Int ntype = clampInt(jsonutil.GetPathIntValue(path, _barPresetKey(bar, 3), type), 0, 9)
+		If nx != x || ny != y || nsize != size || ntype != type
+			wc.presetSetBar(bar, nx, ny, nsize, ntype)
+		EndIf
+		bar += 1
 	EndWhile
 EndFunction

@@ -10,20 +10,30 @@ namespace Env
 		// vendored header binds it to. The header's ImGui wrappers call through
 		// GetProcAddress with NO null check, so a missing export is a crash at the
 		// call site; probing them all here turns that into "page disabled" at load.
-		// Keep in step with Page.cpp and Menu.cpp.
+		// Keep in step with the pages, PageCommon.h and Menu.cpp.
 		constexpr std::array kFrameworkExports{
 			"AddSectionItem",
 			"RegisterEventPriority",
 			"UnregisterEvent",
 			"igBeginCombo",
+			"igBeginDisabled",
+			"igBeginTooltip",
+			"igCheckbox",
 			"igEndCombo",
+			"igEndDisabled",
+			"igEndTooltip",
 			"igGetFontSize",
 			"igGetTime",
+			"igIndent",
+			"igInputText",
 			"igIsItemActive",
+			"igIsItemHovered",
 			"igPopID",
 			"igPopStyleColor",
+			"igPopTextWrapPos",
 			"igPushID_Int",
 			"igPushStyleColor_Vec4",
+			"igPushTextWrapPos",
 			"igSameLine",
 			"igSelectable_Bool",
 			"igSeparator",
@@ -32,6 +42,7 @@ namespace Env
 			"igSmallButton",
 			"igSpacing",
 			"igTextUnformatted",
+			"igUnindent",
 		};
 
 		void ProbeFramework()

@@ -20,9 +20,9 @@ Pre-release checklist. Each scenario should be verified in-game or by code inspe
 
 | # | P | Scenario | Expected | Scripts |
 |---|---|----------|----------|---------|
-| 2.1 | P0 | All 3 MCM pages render | General, Toggles, Debug pages load without script errors | slw_menu |
+| 2.1 | P0 | All 4 MCM pages render | General, Meters, NPC Tracking, Debug load without script errors; no Toggles page, no meter or NPC position sliders (3.2.0), and an old save shows the same four | slw_menu |
 | 2.2 | P0 | Enable/Disable mod toggle | Enable: `moduleReset` + `moduleSetup` + `reloadWidgets` + `startUpdates`. Disable: `stopUpdates` + `moduleReset` + `reloadWidgets` | slw_menu |
-| 2.3 | P1 | Toggle grayed when dependency missing | Each toggle's flag uses `isInterfaceActive()` — disabled when mod not found | slw_menu |
+| 2.3 | P1 | Switch grayed when dependency missing | SKSE menu Toggles page: a row whose mod is not loaded is disabled and marked (not installed) | slw_config.editorToggles |
 | 2.4 | P1 | Update interval slider | Range 1–60, value persists in `config.updateInterval`, affects `RegisterForSingleUpdate` delay | slw_menu, slw_widget_controller |
 | 2.5 | P1 | Recheck dependencies button | `moduleReset()` + `moduleSetup()` re-detects newly installed mods, page refreshes | slw_menu |
 | 2.6 | P1 | Debug page dependency list | All `isXxxReady()` checks display OK/Not Found correctly for installed mods | slw_menu |
@@ -285,3 +285,25 @@ Added in 2.3.0, never run in game when written. Set the update interval to 60 s 
 |---|---|----------|----------|---------|
 | 21.1 | P0 | Icons in the stock Flash iWant Widgets (Prisma renderer disabled) | Ring icons draw as icons, not as diagonal strokes; 3.0.0 / 3.0.1 shipped DDS headers Flash did not accept, and Prisma hid it | savedds.py |
 | 21.2 | P0 | `python savedds.py --check` on both libraries before packaging | 0 files off spec (`build_release.py` refuses otherwise) | savedds.py, build_release.py |
+
+## 22. Toggles page (SLWidgetsMenu.dll, 3.2.0)
+
+| # | P | Scenario | Expected | Scripts |
+|---|---|----------|----------|---------|
+| 22.1 | P0 | Open SKSE menu > SL Widgets > Toggles with a game loaded | Every player switch grouped as the old MCM page was, values as in the save, labels in the game's language | slw_config.editorToggles, plugin/Translations.cpp |
+| 22.2 | P0 | Switch an installed icon off and on | The icon goes and comes back within about a second, the menu still open | setToggleByKey, requestTogglePass, _updatePass |
+| 22.3 | P1 | Click five switches quickly | One toggle pass at a time (no overlap in the log), every icon ends as clicked | _togglePassOwed |
+| 22.4 | P1 | Mod disabled in the MCM, flip a switch | The property changes, nothing is drawn; enabling the mod shows the new state | _refreshSoon (stopped) |
+| 22.5 | P2 | Hover a switch | Its help text from the translation files | PageCommon::Tooltip |
+
+## 23. Presets page and layout in presets (3.2.0)
+
+| # | P | Scenario | Expected | Scripts |
+|---|---|----------|----------|---------|
+| 23.1 | P0 | Presets page lists the files | Every `SettingsPresets/*.json`, the active one marked | slw_config.editorPresets |
+| 23.2 | P0 | Save as new "Test", move bar 0 and the NPC cluster, load "Test" | Status Saved, then Loaded; bar 0 and the cluster return; the icons reload once | SavePreset, requestPresetLoad, applySettingsPreset, _loadLayoutSettings |
+| 23.3 | P0 | Load a preset saved before 3.2.0 (no layout keys) | Switches applied, bars and cluster stay where they are | _loadLayoutSettings defaults |
+| 23.4 | P1 | MCM General > Settings Preset load | Same result as the SKSE menu load (both call applySettingsPreset) | slw_menu, slw_config |
+| 23.5 | P1 | Save as new with a name holding `\` or `..` | Refused on the page; the bridge refuses it too | PresetsPage ValidName, slw_bridge._isPresetName |
+| 23.6 | P1 | Load a preset while the mod is disabled | Applied at once (no update pass runs) | requestPresetLoad |
+| 23.7 | P2 | Hand-edited preset with `bars.0.size` 500 | Clamped to 100 | _loadLayoutSettings |

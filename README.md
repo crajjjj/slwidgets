@@ -27,8 +27,8 @@ A plugin for **iWant Status Bars** that shows SexLab-related status icons for th
 - **Survival and body status** (3.0): SunHelm food, thirst, cold and fatigue; Bathing in Skyrim Renewed dirtiness and Wet Function (Redux or NG) wetness; SPH hair; BeeingFemale baby health; Stress and Fear; Blade and Blunt injuries; diseases.
 - **One drawn icon set** (3.0): every icon in the same style, white to red as a value worsens; the classic icons remain available as an optional download. See [Icon styles](https://crajjjj.github.io/slwidgets/customization/#icon-styles).
 - **Custom icon packs** to restyle the look — see [Custom Icon Packs](https://crajjjj.github.io/slwidgets/custom-packs/).
-- Position, colour, size and toggles tuned in the **MCM** — see the [MCM Reference](https://crajjjj.github.io/slwidgets/mcm-reference/).
-- **Place the bars with the game in view** (3.1): a Positions page in the SKSE Menu Framework menu whose sliders move the icons on the HUD as you change them — see [Position Editor](https://crajjjj.github.io/slwidgets/position-editor/).
+- Colour presets, meters and NPC tracking in the **MCM**; see the [MCM Reference](https://crajjjj.github.io/slwidgets/mcm-reference/).
+- **Icon switches, positions and presets in the SKSE menu** (3.1, 3.2): Toggles, Positions and Presets pages in the SKSE Menu Framework menu; icons appear, go and move on the HUD as you change them, and a preset carries the layout too; see [SKSE Menu](https://crajjjj.github.io/slwidgets/position-editor/).
 
 ## Requirements
 
@@ -36,7 +36,7 @@ A plugin for **iWant Status Bars** that shows SexLab-related status icons for th
 - iWant Widgets
 - PapyrusUtil
 - SKSE / SkyUI
-- SKSE Menu Framework 3.8+ (optional, for the position editor)
+- SKSE Menu Framework 3.8+ (to change icon switches and positions in game; without it, through settings presets)
 
 Load order: **iWidgets → iBars → SL Widgets** (SL Widgets relies on the iBars-ready event).
 

@@ -1,6 +1,6 @@
 # MCM Reference
 
-SL Widgets adds a five-page MCM menu accessible from SkyUI.
+SL Widgets adds a four-page MCM menu accessible from SkyUI. Since 3.2 the icon switches, the positions and a second home for the settings presets are in the [SKSE Menu](position-editor.md).
 
 ---
 
@@ -12,47 +12,16 @@ Core enable/disable control, update timing, and preset management.
 |---------|------|---------|-------------|
 | **Enable/Disable Mod** | Toggle | Off | Master switch. Disabling unloads all modules and hides all icons. Enabling reloads and starts the update loop. |
 | **Update Interval** | Slider 1-60 | 5 | Seconds between status checks. Lower values are more responsive but add script overhead. Changes that SLA, Fill Her Up or Apropos2 SE 1.0020+ report (see [Supported Mods](supported-mods.md)) are checked within a second or two whatever the interval. |
-| **Settings Preset** | Menu | Default | Load a saved settings preset (toggles + per-NPC state). Presets are `.json` files in `SKSE/Plugins/SlWidgets/SettingsPresets/`. |
-| **Save Settings Preset** | Button | - | Save the current state (update interval, color preset, all player toggles, all per-NPC toggles, everything on the Meters page, the stack's position and size included) to the active preset. Prompts before overwriting. |
+| **Settings Preset** | Menu | Default | Load a saved settings preset (switches, per-NPC state, meters, layout). Presets are `.json` files in `SKSE/Plugins/SlWidgets/SettingsPresets/`. |
+| **Save Settings Preset** | Button | - | Save the current state (update interval, color preset, all player switches, all per-NPC switches, everything on the Meters page, and the layout of the player bars, the NPC cluster and the meter stack) to the active preset. Prompts before overwriting. |
 | **Color Preset** | Menu | Default | Load an icon color scheme. Presets are `.json` files in `SKSE/Plugins/SlWidgets/IconPresets/`. |
+| **Switches, positions, presets: SKSE menu** | Text | - | Where the settings that left the MCM in 3.2 are: see [SKSE Menu](position-editor.md) |
 
 ---
 
-## Toggles
+## Toggles (moved)
 
-Enable or disable individual icon groups. Settings are organised by mod.
-
-### Stage icon groups
-
-| Setting | Requires | Description |
-|---------|----------|-------------|
-| **Arousal Icon Enabled** | `SexLabAroused.esm` | Heart icon tracking arousal (9 stages) |
-| **Exposure Icon Enabled** | `SexLabAroused.esm` | Eye icon tracking exposure/nudity (9 stages) |
-| **W&T Icon Enabled** | `Apropos2.esp` | Three icons for vaginal, anal, and oral wear & tear (9 stages each) |
-| **FHU Total Icon Enabled** | `sr_FillHerUp.esp` | Combined cum pool (9 stages) |
-| **FHU Vaginal Pool Icon Enabled** | `sr_FillHerUp.esp` | Vaginal cum pool (9 stages) |
-| **FHU Anal Pool Icon Enabled** | `sr_FillHerUp.esp` | Anal cum pool (9 stages) |
-| **FHU Oral Pool Icon Enabled** | `sr_FillHerUp.esp` | Oral cum pool (9 stages) |
-| **MME/SGO Milk Icon Enabled** | MME, SGO4, or MAL | Milk level (9 stages) |
-| **MME Lactacid Icon Enabled** | `MilkModNEW.esp` | Lactacid level (9 stages) |
-| **Pee Icon Enabled** | PAF, MiniNeeds, AlivePeeing, or Private Needs | Bladder fill (5 stages) |
-| **Poop Icon Enabled** | PAF, MiniNeeds, or Private Needs | Bowel fill (5 stages) |
-| **Food / Thirst / Cold / Fatigue Icon Enabled** | `SunHelmSurvival.esp` | SunHelm needs (9 stages each, player only) |
-| **Dirtiness Icon Enabled** | `Bathing in Skyrim.esp` (Renewed) | Dirt percentage (9 stages), also per NPC slot |
-| **Wetness Icon Enabled** | `WetFunctionNG.esp` or `WetFunction.esp` | Wetness (9 stages), also per NPC slot |
-| **Pubic / Armpit Hair Icon Enabled** | `SPH - Skyrim Pubic Hair.esp` | Hair length (6 / 7 stages, player only) |
-| **Baby Health Icon Enabled** | `BeeingFemale.esm` | Unborn health while pregnant (9 stages), also per NPC slot |
-| **Stress / Fear Icon Enabled** | `Stress and Fear.esp` | Stress (9 stages) and phobia count (player only) |
-| **Injuries Icon Enabled** | `BladeAndBlunt.esp` | Injury severity (4 stages, player only) |
-| **Diseases Icon Enabled** | none (`SunHelmDiseases.esp` for stages 2 and 3) | Worst disease stage, shown only while a disease is held (player only) |
-
-### Toggle icon groups
-
-| Setting | Requires | Description |
-|---------|----------|-------------|
-| **Parasites Icons Enabled** | `SexLab-Parasites.esp` | Spider egg and chaurus worm infection indicators |
-| **Pregnancy Icons Enabled** | Any pregnancy mod | Full set of pregnancy state icons for all detected pregnancy mods |
-| **Defeat Icon Enabled** | `SexLabDefeat.esp` | Weakened/raped state indicator (player only) |
+Since 3.2 the player icon switches are on the SKSE menu's [Toggles](position-editor.md#toggles) page, which lists them all with the mods they need.
 
 ---
 
@@ -68,8 +37,8 @@ Left column.
 |---------|------|---------|-------------|
 | **Always Show Meters** | Toggle | Off | On: every meter stays on screen. Off: a meter appears when its value moves by 5 points or more, or its icon changes stage, and fades out again after the time below. The willpower meter keeps its own rule either way: up during a scene, while willpower is below 100 |
 | **Fade Out After** | Slider 2-120 s | 10 | How long a meter stays up after a change. Greyed out while meters are always shown |
-| **Meters X / Y position** | Sliders | 1150 / 360 | Where the middle of the stack sits on the 1280x720 HUD stage: at the right edge, half way down. The stack grows up and down from Y |
-| **Meters size** | Slider 20-200% | 60 | Size of the meters, their icons and the spacing between them |
+
+The stack's position and size are on the SKSE menu's [Positions](position-editor.md#positions) page (the MCM's sliders before 3.2): at the right edge, half way down, 60% by default.
 
 ### Meter switches
 
@@ -82,7 +51,7 @@ Right column, grouped by mod, in the order the meters stack from the top. A swit
 | **FHU Total / Vaginal Pool / Anal Pool / Oral Pool Meter Enabled** | `sr_FillHerUp.esp` | Fill Her Up pools |
 | **Vaginal / Anal / Oral W&T Meter Enabled** | `Apropos2.esp` | Apropos2 wear and tear |
 
-All off by default: switch on the meters you want. A change to the switches, the position or the size takes effect when the menu closes, and then the whole stack, willpower included, is shown for half a minute so you can see where it sits.
+All off by default: switch on the meters you want. A change to the switches takes effect when the menu closes, and then the whole stack, willpower included, is shown for half a minute so you can see where it sits.
 
 ---
 
@@ -95,10 +64,8 @@ Configure the NPC bar cluster and per-slot settings.
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
 | **Pick Hotkey** | Key bind | Unset | In-game key for assigning/clearing NPC slots via crosshair |
-| **NPC Group X** | Slider 0–2560 | 1100 | Horizontal position of the NPC1 anchor (standard stage: 0–1279) |
-| **NPC Group Y** | Slider 0–719 | 600 | Vertical position of the NPC1 anchor |
-| **NPC Vertical Spacing** | Slider 50–200 | 105 | Distance between each stacked NPC bar pair |
-| **Reset NPC bar layout** | Button | — | Resets group X/Y to (1100, 600), spacing to 105, and clears per-slot label offsets |
+
+The cluster's position and spacing, and the reset to its default corner, are on the SKSE menu's [Positions](position-editor.md#positions) page (the MCM's sliders before 3.2).
 
 ### Label style (global)
 

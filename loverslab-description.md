@@ -16,15 +16,16 @@ Full docs, icon previews, custom packs and guides: https://crajjjj.github.io/slw
 - Survival and body status (3.0): SunHelm food, thirst, cold and fatigue; Bathing in Skyrim Renewed dirtiness and Wet Function (Redux or NG) wetness; SPH pubic and armpit hair; BeeingFemale baby health; Stress and Fear; Blade and Blunt injuries; diseases (SunHelm Diseases stages)
 - One drawn icon set (3.0): every icon in the same style, white to red as a value worsens. Prefer the old icons? The Classic Icons optional file puts them back
 - Custom icon packs: restyle any icon set; grab one from the download section
-- Settings presets: save and load your toggle setup, handy for new saves
+- SKSE menu (3.1, 3.2): icon switches, positions and presets in the SKSE Menu Framework menu; icons move on the HUD as you change them
+- Settings presets: save and load your switches and layout, handy for new saves
 
 
 ⚙️ Installation
 
 - Install with any mod manager. The SE build is ESPFE (ESL-flagged); the LE build's ESP also works on SE.
 - Load order: iWant Widgets → iWant Status Bars → SLWidgets
-- (Optional) Choose which widgets are shown in the SLWidgets MCM
-- (Optional) Save / load your SLWidgets settings in the MCM — useful for new saves
+- (Optional) Choose which icons are shown, and where, in the SKSE Menu Framework menu, section SL Widgets
+- (Optional) Save / load your SLWidgets settings there or in the MCM, useful for new saves
 - (Optional) Set icon placement, colour and size in the iWant Status Bars MCM (multiple bars supported)
 - (Optional) Install the Classic Icons file (the icons from before 3.0) or a custom icon pack from the download section (DDS textures only)
 

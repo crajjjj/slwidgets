@@ -14,7 +14,7 @@ SL Widgets displays icons through iWant Status Bars. All placement, sizing, and 
 SL Widgets picks up layout changes on the next update tick — no reload required.
 
 !!! tip "See the result as you go"
-    With SKSE Menu Framework installed, the [Position Editor](position-editor.md) page moves the bars, the NPC cluster and the meter stack on the HUD as you change its sliders, with the game in view. It writes the same values the MCM sliders hold.
+    With SKSE Menu Framework installed, the [SKSE menu's Positions page](position-editor.md#positions) moves the bars, the NPC cluster and the meter stack on the HUD as you change its sliders, with the game in view. It writes the same values the MCM sliders hold.
 
 ---
 
@@ -76,7 +76,7 @@ Each key is an icon base name prefixed with `.`. The arrays contain one value pe
 
 ## Settings presets
 
-Settings presets save and restore all MCM toggle state in one step — useful for switching between characters or playstyles.
+Settings presets save and restore SL Widgets' settings in one step, useful for switching between characters or playstyles, or for starting a new game with everything in place.
 
 **Preset files:** `Data/SKSE/Plugins/SlWidgets/SettingsPresets/*.json`
 
@@ -84,11 +84,14 @@ A saved preset includes:
 
 - Update interval
 - Active color preset
-- All 14 player-level icon toggles
+- Every player icon switch
 - All per-NPC sub-toggles for slots 1–3
+- The meter switches, how the meters show, and the stack's position and size
+- The layout (since 3.2): position, icon size and shape of iWant's player bars 0-3, and the NPC cluster's position and spacing
 
-**To save:** MCM → General → **Save Settings Preset** (enter a name, confirm).  
-**To load:** MCM → General → **Settings Preset** menu → select and confirm.
+A preset saved before 3.2 holds no bar or NPC cluster layout, and loading it leaves those where they are. Bars 0-3 are iWant's shared bars, so a preset's layout moves every mod's icons in them.
+
+**To save or load:** the SKSE menu's [Presets](position-editor.md#presets) page (saving under a new name too), or MCM → General → **Settings Preset** to load and **Save Settings Preset** to save over the active one.
 
 ---
 

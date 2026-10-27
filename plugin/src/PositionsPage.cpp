@@ -1,17 +1,22 @@
-#include "Page.h"
+#include "PositionsPage.h"
 
 #include "Bridge.h"
 #include "Layout.h"
-#include "Ui.h"
+#include "PageCommon.h"
 
 // Render runs inside the framework's callback for the page, on its render
 // thread; OnMenuClosed and OnVmReset come from the game thread. g_lock keeps
 // them apart. ImGui only through Ui.h; every script call through Bridge.
 
-namespace Page
+namespace Positions
 {
 	namespace
 	{
+		using PageCommon::Colored;
+		using PageCommon::kHint;
+		using PageCommon::kOk;
+		using PageCommon::kWarn;
+
 		constexpr double kLivePush = 0.15;     // seconds between writes while a live slider is dragged
 		constexpr double kConfirmAfter = 1.5;  // seconds after a write before the layout is read back
 		constexpr double kReopenGap = 1.0;     // no frame drawn for this long: the page was left and came back
@@ -45,21 +50,10 @@ namespace Page
 		std::array<Row, 3>                            g_npcRows;  // x, y, spacing
 		std::array<Row, 3>                            g_metersRows;  // x, y, scale
 
-		const Ui::ImVec4 kWarn{ 1.0f, 0.5f, 0.4f, 1.0f };
-		const Ui::ImVec4 kHint{ 0.7f, 0.7f, 0.7f, 1.0f };
-		const Ui::ImVec4 kOk{ 0.6f, 0.9f, 0.6f, 1.0f };
-
 		void SetStatus(std::string a_text, bool a_error)
 		{
 			g_status = std::move(a_text);
 			g_statusIsError = a_error;
-		}
-
-		void Colored(const Ui::ImVec4& a_color, const char* a_text)
-		{
-			Ui::PushStyleColor(Ui::ImGuiCol_Text, a_color);
-			Ui::TextUnformatted(a_text);
-			Ui::PopStyleColor(1);
 		}
 
 		// After a read nothing is owed: every slider's last written value is the one shown
@@ -83,9 +77,9 @@ namespace Page
 		void TakeAnswer(double a_now)
 		{
 			std::string layout, error;
-			if (!Bridge::Take(layout, error)) {
-				if (Bridge::Pending() && Bridge::PendingSeconds() > kAnswerTimeout) {
-					SetStatus(std::format("SL Widgets has not answered for {:.0f} s. Is the mod enabled, with a game loaded? Refresh asks again.", Bridge::PendingSeconds()), true);
+			if (!Bridge::Take(Bridge::Query::Layout, layout, error)) {
+				if (Bridge::Pending(Bridge::Query::Layout) && Bridge::PendingSeconds(Bridge::Query::Layout) > kAnswerTimeout) {
+					SetStatus(std::format("SL Widgets has not answered for {:.0f} s. Is the mod enabled, with a game loaded? Refresh asks again.", Bridge::PendingSeconds(Bridge::Query::Layout)), true);
 				}
 				return;
 			}
@@ -310,7 +304,7 @@ namespace Page
 				g_haveModel = false;
 				g_confirmReset = false;
 				SetStatus("Reading the layout...", false);
-				Bridge::RequestLayout(true);
+				Bridge::Request(Bridge::Query::Layout, true);
 			}
 			g_lastFrame = now;
 			TakeAnswer(now);
@@ -320,7 +314,7 @@ namespace Page
 			Ui::SameLine();
 			if (Ui::SmallButton("Refresh")) {
 				SetStatus("Reading the layout...", false);
-				Bridge::RequestLayout(true);
+				Bridge::Request(Bridge::Query::Layout, true);
 			}
 			Ui::Separator();
 
@@ -338,7 +332,7 @@ namespace Page
 
 			if (g_confirmAt > 0.0 && now >= g_confirmAt && !g_anyActive) {
 				g_confirmAt = 0.0;
-				Bridge::RequestLayout(false);
+				Bridge::Request(Bridge::Query::Layout, false);
 			}
 		} catch (const std::exception& e) {
 			if (!g_loggedFault) {

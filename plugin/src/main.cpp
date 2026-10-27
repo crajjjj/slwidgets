@@ -1,14 +1,16 @@
 #include "Bridge.h"
 #include "Env.h"
 #include "Menu.h"
-#include "Page.h"
+#include "PositionsPage.h"
+#include "PresetsPage.h"
+#include "TogglesPage.h"
 
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/msvc_sink.h>
 
 using namespace SKSE;
 
-// SLWidgetsMenu.dll - the SL Widgets Positions page in SKSE Menu Framework's menu.
+// SLWidgetsMenu.dll - the SL Widgets pages in SKSE Menu Framework's menu.
 // It is a convenience on top of a mod that runs entirely without it, so nothing
 // in here may take the game down: no report_and_fail, and a step that fails only
 // disables the page.
@@ -56,7 +58,9 @@ namespace
 			case MessagingInterface::kPostLoadGame:
 				// the VM is reset: an answer on its way is gone, the layout belongs to the old game
 				Bridge::OnVmReset();
-				Page::OnVmReset();
+				Positions::OnVmReset();
+				Toggles::OnVmReset();
+				Presets::OnVmReset();
 				break;
 			default:
 				break;

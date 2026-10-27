@@ -46,11 +46,11 @@ NPC 1  ← anchor point (npcGroupX, npcGroupY)
 
 NPC1 sits at the anchor. NPC2 and NPC3 stack upward so that when fewer slots are in use there is no dead space at the bottom of the cluster.
 
-**Moving the cluster:** Use the **NPC Group X** and **NPC Group Y** sliders on the NPC Tracking page. Both bars for each NPC move together — you do not need to position them individually.
+**Moving the cluster:** Use the **NPC slots** X and Y sliders on the SKSE menu's [Positions](position-editor.md#positions) page (the MCM's NPC Tracking page before 3.2). Both bars for each NPC move together; you do not need to position them individually.
 
-**Vertical spacing:** The **NPC Vertical Spacing** slider controls the gap between bar pairs (default 105 units).
+**Vertical spacing:** The **Spacing** slider beside them controls the gap between bar pairs (default 105 units).
 
-**Reset layout:** The **Reset NPC bar layout** button snaps group X/Y to the default bottom-right anchor (1100, 600), resets spacing to 105, and clears all per-slot label offsets. Press it once the first time you set up NPC tracking to get the standard cluster position.
+**Reset layout:** The **Reset NPC layout** button on the same page snaps group X/Y to the default bottom-right anchor (1100, 600), resets spacing to 105, and clears all per-slot label offsets. Press it once the first time you set up NPC tracking to get the standard cluster position.
 
 ---
 

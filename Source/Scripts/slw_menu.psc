@@ -12,6 +12,8 @@ int _sla_arousal_Toggle
 String[] _presetNames
 String[] _settingsPresetNames
 Bool _togglesDirty = false
+; 3.2.0: the line on the General page that points at the SKSE menu
+int _skse_menu_hint
 Bool _npcDirty = false
 int _sla_exposure_Toggle
 int _apropos_two_wt_Toggle
@@ -104,12 +106,12 @@ Event OnConfigClose()
 EndEvent
 
 Event OnConfigOpen()
-		Pages = New String[5]
+		; 3.2.0: the Toggles page moved to the SKSE menu
+		Pages = New String[4]
 		Pages[0] = "$SLW_General_Page"
-		Pages[1] = "$SLW_Toggles_Page"
-		Pages[2] = "$SLW_Meters_Page"
-		Pages[3] = "$SLW_NPC_Page"
-		Pages[4] = "$SLW_Debug_Page"
+		Pages[1] = "$SLW_Meters_Page"
+		Pages[2] = "$SLW_NPC_Page"
+		Pages[3] = "$SLW_Debug_Page"
 EndEvent
 
 Event OnPageReset(string page)
@@ -117,8 +119,6 @@ Event OnPageReset(string page)
 
 	if (page == "$SLW_General_Page")
 		General()
-	elseIf (page == "$SLW_Toggles_Page")
-		Toggles()
 	elseIf (page == "$SLW_Meters_Page")
 		Meters()
 	elseIf (page == "$SLW_NPC_Page")
@@ -141,6 +141,13 @@ event OnVersionUpdate(int a_version)
 		; 3.0.1: the Default preset at full alpha. The widget controller
 		; reloads the icons once (ICONS_VERSION), so there is nothing to do here.
 	EndIf
+	If a_version >= 30200 && CurrentVersion < 30200
+		Debug.Trace(self + ": Updating script to version 30200")
+		; 3.2.0: the Toggles page and the position sliders moved to the SKSE
+		; menu. OnConfigOpen rebuilds Pages every time, so an old save shows the
+		; four pages without anything done here; settings presets gained the
+		; layout of the bars and the NPC cluster.
+	EndIf
 endEvent
 
 Function General()
@@ -154,76 +161,10 @@ Function General()
 	AddMenuOptionST("SETTINGS_PRESET_MENU_STATE", "$SLW_Settings_Preset", config.activeSettingsPreset, sliderFlag)
 	AddTextOptionST("SAVE_SETTINGS_PRESET_STATE", "$SLW_Save_Settings_Preset", "$SLW_GO", 0)
 	AddMenuOptionST("PRESET_MENU_STATE", "$SLW_Color_Preset", config.activePreset, sliderFlag)
+	AddEmptyOption()
+	_skse_menu_hint = AddTextOption("$SLW_SkseMenu_Hint", "", OPTION_FLAG_NONE)
 EndFunction
 
-Function Toggles()
-    SetCursorFillMode(TOP_TO_BOTTOM)
-    SetCursorPosition(0)
-	AddHeaderOption("$SLW_Static")
-	AddHeaderOption("$SLW_Sexlab_Aroused")
-	Int slaFlag = _getFlag(config.module_sla.isInterfaceActive())
-	_sla_arousal_Toggle = addToggleOption("$SLW_Arousal_Icon_Enabled", config.module_sla_arousal, slaFlag)
-	_sla_exposure_Toggle = addToggleOption("$SLW_Exposure_Icon_Enabled",config.module_sla_exposure, slaFlag)
-	
-	AddHeaderOption("$SLW_Apropos2")
-	Int wtFlag = _getFlag(config.module_apropos_two.isInterfaceActive()) 
-	_apropos_two_wt_Toggle = addToggleOption("$SLW_WT_Icon_Enabled", config.module_apropos_two_wt, wtFlag)
-	
-	AddHeaderOption("$SLW_FHU")
-	Int fhuFlag = _getFlag(config.module_fhu.isInterfaceActive()) 
-	_fhu_cum_Toggle = addToggleOption("$SLW_FHU_TI", config.module_fhu_cum, fhuFlag)
-	_fhu_cum_Vaginal_Toggle = addToggleOption("$SLW_FHU_VI", config.module_fhu_cum_vaginal, fhuFlag)
-	_fhu_cum_Anal_Toggle = addToggleOption("$SLW_FHU_AI", config.module_fhu_cum_anal, fhuFlag)
-	_fhu_cum_Oral_Toggle = addToggleOption("$SLW_FHU_OI", config.module_fhu_cum_oral, fhuFlag)
-	
-	AddHeaderOption("$SLW_MME") 
-	_mme_milk_Toggle = addToggleOption("$SLW_MME_MI", config.module_mme_milk,_getFlag(config.module_mme.isInterfaceActive()))
-	_mme_lactacid_Toggle = addToggleOption("$SLW_MME_LI", config.module_mme_lactacid, _getFlag(isMMEReady()))
-
-	AddHeaderOption("$SLW_Needs")
-	Int pafFlag = _getFlag(config.module_paf.isInterfaceActive()) 
-	_paf_pee_Toggle = addToggleOption("$SLW_Needs_Pee", config.module_paf_pee, pafFlag)
-	_paf_poo_Toggle = addToggleOption("$SLW_Needs_Poop", config.module_paf_poo, pafFlag)
-
-	AddHeaderOption("$SLW_SunHelm")
-	Int shFlag = _getFlag(config.module_sunhelm.isInterfaceActive())
-	_sh_food_Toggle = addToggleOption("$SLW_SH_Food", config.module_sh_food, shFlag)
-	_sh_thirst_Toggle = addToggleOption("$SLW_SH_Thirst", config.module_sh_thirst, shFlag)
-	_sh_cold_Toggle = addToggleOption("$SLW_SH_Cold", config.module_sh_cold, shFlag)
-	_sh_fatigue_Toggle = addToggleOption("$SLW_SH_Fatigue", config.module_sh_fatigue, shFlag)
-
-	AddHeaderOption("$SLW_Hygiene")
-	_dirtiness_Toggle = addToggleOption("$SLW_Dirtiness_Icon", config.module_dirtiness, _getFlag(config.module_hygiene.Plugin_Bathing))
-	_wetness_Toggle = addToggleOption("$SLW_Wetness_Icon", config.module_wetness, _getFlag(config.module_hygiene.Plugin_WetFunction))
-
-	AddHeaderOption("$SLW_SPH")
-	Int sphFlag = _getFlag(config.module_sph.isInterfaceActive())
-	_sph_pubic_Toggle = addToggleOption("$SLW_SPH_Pubic", config.module_sph_pubic, sphFlag)
-	_sph_armpit_Toggle = addToggleOption("$SLW_SPH_Armpit", config.module_sph_armpit, sphFlag)
-
-	AddHeaderOption("$SLW_BabyHealth")
-	_baby_health_Toggle = addToggleOption("$SLW_BabyHealth_Icon", config.module_baby_health, _getFlag(config.module_baby.isInterfaceActive()))
-
-	AddHeaderOption("$SLW_StressFear")
-	Int safFlag = _getFlag(config.module_stress.isInterfaceActive())
-	_stress_Toggle = addToggleOption("$SLW_Stress_Icon", config.module_saf_stress, safFlag)
-	_fear_Toggle = addToggleOption("$SLW_Fear_Icon", config.module_saf_fear, safFlag)
-
-	AddHeaderOption("$SLW_Health")
-	_injuries_Toggle = addToggleOption("$SLW_Injuries_Icon", config.module_injuries, _getFlag(config.module_health.Plugin_BladeBlunt))
-	_diseases_Toggle = addToggleOption("$SLW_Diseases_Icon", config.module_diseases, _getFlag(config.module_health.isInterfaceActive()))
-
-	AddHeaderOption("$SLW_Conditional")
-	AddHeaderOption("$SLW_SLP")
-	Int slpFlag = _getFlag(config.module_slp.isInterfaceActive()) 
-	_parasites_mod_Toggle = addToggleOption("$SLW_SLP_Icon", config.module_parasites_enabled, slpFlag)
-	AddHeaderOption("$SLW_Pregnancy")
-	Int pregFlag = _getFlag(config.module_pregnancy.isInterfaceActive())
-	_pregnancy_mod_Toggle = addToggleOption("$SLW_Pregnancy_Icons", config.module_pregnancy_enabled, pregFlag)
-	AddHeaderOption("$SLW_Defeat")
-	Int defeatFlag = _getFlag(config.module_defeat.isInterfaceActive())
-	_defeat_mod_Toggle = addToggleOption("$SLW_Defeat_Icon", config.module_defeat_enabled, defeatFlag)
-EndFunction
 
 ; The bars, as opposed to the Status Bars icons: one stack of iWant Widgets
 ; meters with one place and size. Left: how the stack shows and where.
@@ -237,9 +178,6 @@ Function Meters()
 	AddHeaderOption("$SLW_Meters")
 	_meters_always_toggle = AddToggleOption("$SLW_Meters_Always", widget_controller.metersAlwaysShow)
 	_meters_hold_slider = AddSliderOption("$SLW_Meters_Hold", widget_controller.metersHoldSeconds, "{0} s", _getFlag(!widget_controller.metersAlwaysShow))
-	_meters_x_slider = AddSliderOption("$SLW_Meters_X", widget_controller.metersX, "{0}")
-	_meters_y_slider = AddSliderOption("$SLW_Meters_Y", widget_controller.metersY, "{0}")
-	_meters_scale_slider = AddSliderOption("$SLW_Meters_Scale", widget_controller.metersScale, "{0}%")
 
 	SetCursorPosition(1)
 	AddHeaderOption("$SLW_SLOVE")
@@ -388,10 +326,6 @@ Function NpcTracking()
 
 	AddHeaderOption("$SLW_NPC_Tracking")
 	_npc_hotkey_option = AddKeyMapOption("$SLW_NPC_Hotkey", config.npcHotkey)
-	_npc_group_x_slider = AddSliderOption("$SLW_NPC_Group_X", widget_controller.npcGroupX, "{0}", OPTION_FLAG_NONE)
-	_npc_group_y_slider = AddSliderOption("$SLW_NPC_Group_Y", widget_controller.npcGroupY, "{0}", OPTION_FLAG_NONE)
-	_npc_vertical_spacing_slider = AddSliderOption("$SLW_NPC_Vertical_Spacing", widget_controller.npcVerticalSpacing, "{0}", OPTION_FLAG_NONE)
-	_npc_reset_layout_option = AddTextOption("$SLW_NPC_Reset_Layout", "$SLW_GO", OPTION_FLAG_NONE)
 	AddHeaderOption("$SLW_NPC_Label_Style")
 	_npc_label_font_menu = AddMenuOption("$SLW_NPC_Label_Font", _currentFontLabel(), OPTION_FLAG_NONE)
 	_npc_label_size_slider = AddSliderOption("$SLW_NPC_Label_Size", widget_controller.npcLabelSize, "{0}", OPTION_FLAG_NONE)
@@ -499,70 +433,12 @@ EndFunction
 Event onOptionHighlight(int mcm_option)
 	If (mcm_option == _update_interval_slider)
 		SetInfoText("$SLW_UpdateInterval_Info")
-	ElseIf (mcm_option == _sla_arousal_Toggle)
-		SetInfoText("$SLW_Arousal_Toggle_Info")
-	ElseIf (mcm_option == _sla_exposure_Toggle)
-		SetInfoText("$SLW_Exposure_Toggle_Info")
-	ElseIf (mcm_option == _apropos_two_wt_Toggle)
-		SetInfoText("$SLW_WT_Toggle_Info")
-	ElseIf (mcm_option == _fhu_cum_Toggle)
-		SetInfoText("$SLW_FHU_Toggle_Info")
-	ElseIf (mcm_option == _fhu_cum_Anal_Toggle)
-		SetInfoText("$SLW_FHU_Anal_Toggle_Info")
-	ElseIf (mcm_option == _fhu_cum_Oral_Toggle)
-		SetInfoText("$SLW_FHU_Oral_Toggle_Info")
-	ElseIf (mcm_option == _fhu_cum_Vaginal_Toggle)
-		SetInfoText("$SLW_FHU_Vaginal_Toggle_Info")
-	ElseIf (mcm_option == _mme_milk_Toggle)
-		SetInfoText("$SLW_MME_Milk_Toggle_Info")
-	ElseIf (mcm_option == _mme_lactacid_Toggle)
-		SetInfoText("$SLW_MME_Lactacid_Toggle_Info")
-	ElseIf (mcm_option == _paf_pee_Toggle)
-		SetInfoText("$SLW_PAF_Pee_Info")
-	ElseIf (mcm_option == _paf_poo_Toggle)
-		SetInfoText("$SLW_PAF_Poo_Info")
-	ElseIf (mcm_option == _parasites_mod_Toggle)
-		SetInfoText("$SLW_Parasites_Toggle_Info")
-	ElseIf (mcm_option == _pregnancy_mod_Toggle)
-		SetInfoText("$SLW_Pregnancy_Toggle_Info")
-	ElseIf (mcm_option == _defeat_mod_Toggle)
-		SetInfoText("$SLW_Defeat_Toggle_Info")
-	ElseIf (mcm_option == _sh_food_Toggle)
-		SetInfoText("$SLW_SH_Food_Info")
-	ElseIf (mcm_option == _sh_thirst_Toggle)
-		SetInfoText("$SLW_SH_Thirst_Info")
-	ElseIf (mcm_option == _sh_cold_Toggle)
-		SetInfoText("$SLW_SH_Cold_Info")
-	ElseIf (mcm_option == _sh_fatigue_Toggle)
-		SetInfoText("$SLW_SH_Fatigue_Info")
-	ElseIf (mcm_option == _dirtiness_Toggle)
-		SetInfoText("$SLW_Dirtiness_Info")
-	ElseIf (mcm_option == _wetness_Toggle)
-		SetInfoText("$SLW_Wetness_Info")
-	ElseIf (mcm_option == _sph_pubic_Toggle)
-		SetInfoText("$SLW_SPH_Pubic_Info")
-	ElseIf (mcm_option == _sph_armpit_Toggle)
-		SetInfoText("$SLW_SPH_Armpit_Info")
-	ElseIf (mcm_option == _baby_health_Toggle)
-		SetInfoText("$SLW_BabyHealth_Info")
-	ElseIf (mcm_option == _stress_Toggle)
-		SetInfoText("$SLW_Stress_Info")
-	ElseIf (mcm_option == _fear_Toggle)
-		SetInfoText("$SLW_Fear_Info")
-	ElseIf (mcm_option == _injuries_Toggle)
-		SetInfoText("$SLW_Injuries_Info")
-	ElseIf (mcm_option == _diseases_Toggle)
-		SetInfoText("$SLW_Diseases_Info")
+	ElseIf (mcm_option == _skse_menu_hint)
+		SetInfoText("$SLW_SkseMenu_Info")
 	ElseIf (mcm_option == _meters_always_toggle)
 		SetInfoText("$SLW_Meters_Always_Info")
 	ElseIf (mcm_option == _meters_hold_slider)
 		SetInfoText("$SLW_Meters_Hold_Info")
-	ElseIf (mcm_option == _meters_x_slider)
-		SetInfoText("$SLW_Meters_X_Info")
-	ElseIf (mcm_option == _meters_y_slider)
-		SetInfoText("$SLW_Meters_Y_Info")
-	ElseIf (mcm_option == _meters_scale_slider)
-		SetInfoText("$SLW_Meters_Scale_Info")
 	Else
 		Int meter = _findMeterForOption(mcm_option)
 		If meter == 0
@@ -580,115 +456,7 @@ EndEvent
 Event onOptionSelect(int mcm_option)
 	Bool _v = False
 	_togglesDirty = true
-	if(mcm_option == _sla_arousal_Toggle)
-		_v = !config.module_sla_arousal
-		config.module_sla_arousal = _v
-		setToggleOptionValue(mcm_option, _v) 
-	elseIf(mcm_option == _sla_exposure_Toggle)
-		_v = !config.module_sla_exposure
-		config.module_sla_exposure = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _apropos_two_wt_Toggle)
-		_v = !config.module_apropos_two_wt
-		config.module_apropos_two_wt = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _fhu_cum_Toggle)
-		_v = !config.module_fhu_cum
-		config.module_fhu_cum = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _fhu_cum_Vaginal_Toggle)
-		_v = !config.module_fhu_cum_vaginal
-		config.module_fhu_cum_vaginal = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _fhu_cum_Anal_Toggle)
-		_v = !config.module_fhu_cum_anal
-		config.module_fhu_cum_anal = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _fhu_cum_Oral_Toggle)
-		_v = !config.module_fhu_cum_oral
-		config.module_fhu_cum_oral = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _mme_milk_Toggle)
-		_v = !config.module_mme_milk
-		config.module_mme_milk = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _mme_lactacid_Toggle)
-		_v = !config.module_mme_lactacid
-		config.module_mme_lactacid = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _paf_pee_Toggle)
-		_v = !config.module_paf_pee
-		config.module_paf_pee = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _paf_poo_Toggle)
-		_v = !config.module_paf_poo
-		config.module_paf_poo = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _parasites_mod_Toggle)
-		_v = !config.module_parasites_enabled
-		config.module_parasites_enabled = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _pregnancy_mod_Toggle)
-		_v = !config.module_pregnancy_enabled
-		config.module_pregnancy_enabled = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _defeat_mod_Toggle)
-		_v = !config.module_defeat_enabled
-		config.module_defeat_enabled = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _sh_food_Toggle)
-		_v = !config.module_sh_food
-		config.module_sh_food = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _sh_thirst_Toggle)
-		_v = !config.module_sh_thirst
-		config.module_sh_thirst = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _sh_cold_Toggle)
-		_v = !config.module_sh_cold
-		config.module_sh_cold = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _sh_fatigue_Toggle)
-		_v = !config.module_sh_fatigue
-		config.module_sh_fatigue = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _dirtiness_Toggle)
-		_v = !config.module_dirtiness
-		config.module_dirtiness = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _wetness_Toggle)
-		_v = !config.module_wetness
-		config.module_wetness = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _sph_pubic_Toggle)
-		_v = !config.module_sph_pubic
-		config.module_sph_pubic = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _sph_armpit_Toggle)
-		_v = !config.module_sph_armpit
-		config.module_sph_armpit = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _baby_health_Toggle)
-		_v = !config.module_baby_health
-		config.module_baby_health = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _stress_Toggle)
-		_v = !config.module_saf_stress
-		config.module_saf_stress = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _fear_Toggle)
-		_v = !config.module_saf_fear
-		config.module_saf_fear = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _injuries_Toggle)
-		_v = !config.module_injuries
-		config.module_injuries = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _diseases_Toggle)
-		_v = !config.module_diseases
-		config.module_diseases = _v
-		setToggleOptionValue(mcm_option, _v)
-	elseIf(mcm_option == _meters_always_toggle)
+	If (mcm_option == _meters_always_toggle)
 		_v = !widget_controller.metersAlwaysShow
 		widget_controller.metersAlwaysShow = _v
 		setToggleOptionValue(mcm_option, _v)
@@ -708,11 +476,6 @@ EndEvent
 
 Function _handleNpcPageSelect(Int mcm_option)
 	_initNpcOptionArrays()
-	If mcm_option == _npc_reset_layout_option
-		widget_controller.applyDefaultNpcBarLayout()
-		_npcDirty = true
-		Return
-	EndIf
 	Int slot = _findNpcSlotForOption(mcm_option, _npc_clear_option)
 	If slot > 0
 		config.clearNpcSlot(slot)
@@ -877,62 +640,7 @@ Event OnOptionSliderOpen(Int mcm_option)
 		SetSliderDialogDefaultValue(10)
 		Return
 	EndIf
-	; Same ranges as the NPC group anchor below: the 1280x720 stage plus the
-	; margins of an extended-stage HUD or the Prisma renderer.
-	If mcm_option == _meters_x_slider
-		SetSliderDialogStartValue(widget_controller.metersX)
-		SetSliderDialogRange(-1280, 2560)
-		SetSliderDialogInterval(5.0)
-		SetSliderDialogDefaultValue(1150)
-		Return
-	EndIf
-	If mcm_option == _meters_y_slider
-		SetSliderDialogStartValue(widget_controller.metersY)
-		SetSliderDialogRange(-720, 719)
-		SetSliderDialogInterval(5.0)
-		SetSliderDialogDefaultValue(360)
-		Return
-	EndIf
-	If mcm_option == _meters_scale_slider
-		SetSliderDialogStartValue(widget_controller.metersScale)
-		SetSliderDialogRange(20, 200)
-		SetSliderDialogInterval(5.0)
-		SetSliderDialogDefaultValue(60)
-		Return
-	EndIf
 	_initNpcOptionArrays()
-	If mcm_option == _npc_group_x_slider
-		SetSliderDialogStartValue(widget_controller.npcGroupX)
-		; iWant's Flash stage is fixed at 1280x720 and gets scaled by Skyrim
-		; to fit 16:9 monitors. On ultrawide (21:9 / 32:9), vanilla Skyrim
-		; leaves pillarboxes on either side — the 16:9 safe area ends at
-		; 1279. HUD overhauls (SkyHUD, etc.) extend the stage horizontally;
-		; with one installed, X up to ~1680 fills 21:9 and ~2560 fills 32:9.
-		; The Prisma renderer instead centers the 1280 stage, so its ultrawide
-		; margins sit at NEGATIVE X (about -200 on 21:9, -640 on 32:9).
-		; Coordinates are icon centers, so small negatives also let a bar
-		; tuck flush against (or past) the screen edge on any monitor.
-		SetSliderDialogRange(-1280, 2560)
-		SetSliderDialogInterval(5.0)
-		SetSliderDialogDefaultValue(1100)
-		Return
-	EndIf
-	If mcm_option == _npc_group_y_slider
-		SetSliderDialogStartValue(widget_controller.npcGroupY)
-		SetSliderDialogRange(-720, 719)
-		SetSliderDialogInterval(5.0)
-		SetSliderDialogDefaultValue(600)
-		Return
-	EndIf
-	If mcm_option == _npc_vertical_spacing_slider
-		SetSliderDialogStartValue(widget_controller.npcVerticalSpacing)
-		; Min 50 = very compact (labels may overlap previous NPC's secondary
-		; bar). Default 105 = comfortable label clearance. Max 200 = loose.
-		SetSliderDialogRange(50, 200)
-		SetSliderDialogInterval(5.0)
-		SetSliderDialogDefaultValue(105)
-		Return
-	EndIf
 	If mcm_option == _npc_label_size_slider
 		SetSliderDialogStartValue(widget_controller.npcLabelSize)
 		SetSliderDialogRange(10, 60)
@@ -960,26 +668,6 @@ EndEvent
 
 Bool Function _handleNpcSliderAccept(Int mcm_option, Float value)
 	_initNpcOptionArrays()
-	If mcm_option == _npc_group_x_slider
-		Int newX = value As Int
-		widget_controller.setNpcGroupPos(newX, widget_controller.npcGroupY)
-		widget_controller._layoutNpcBars()
-		SetSliderOptionValue(mcm_option, newX, "{0}")
-		Return True
-	EndIf
-	If mcm_option == _npc_group_y_slider
-		Int newY = value As Int
-		widget_controller.setNpcGroupPos(widget_controller.npcGroupX, newY)
-		widget_controller._layoutNpcBars()
-		SetSliderOptionValue(mcm_option, newY, "{0}")
-		Return True
-	EndIf
-	If mcm_option == _npc_vertical_spacing_slider
-		Int newV = value As Int
-		widget_controller.setNpcVerticalSpacing(newV)
-		SetSliderOptionValue(mcm_option, newV, "{0}")
-		Return True
-	EndIf
 	If mcm_option == _npc_label_size_slider
 		Int newSize = value As Int
 		widget_controller.setNpcLabelSize(newSize)
@@ -1014,24 +702,6 @@ Event OnOptionSliderAccept(Int mcm_option, Float Value)
 	If mcm_option == _meters_hold_slider
 		widget_controller.metersHoldSeconds = Value as Int
 		SetSliderOptionValue(mcm_option, Value, "{0} s")
-		Return
-	EndIf
-	If mcm_option == _meters_x_slider
-		widget_controller.setMetersLayout(Value as Int, widget_controller.metersY, widget_controller.metersScale)
-		_togglesDirty = true
-		SetSliderOptionValue(mcm_option, Value, "{0}")
-		Return
-	EndIf
-	If mcm_option == _meters_y_slider
-		widget_controller.setMetersLayout(widget_controller.metersX, Value as Int, widget_controller.metersScale)
-		_togglesDirty = true
-		SetSliderOptionValue(mcm_option, Value, "{0}")
-		Return
-	EndIf
-	If mcm_option == _meters_scale_slider
-		widget_controller.setMetersLayout(widget_controller.metersX, widget_controller.metersY, Value as Int)
-		_togglesDirty = true
-		SetSliderOptionValue(mcm_option, Value, "{0}%")
 		Return
 	EndIf
 	_handleNpcSliderAccept(mcm_option, Value)
@@ -1189,16 +859,11 @@ State SETTINGS_PRESET_MENU_STATE
 		EndIf
 		SetOptionFlagsST(OPTION_FLAG_DISABLED)
 		SetMenuOptionValueST("$SLW_Working")
-		If !config.loadSettingsPreset(_settingsPresetNames[index])
+		If !config.applySettingsPreset(_settingsPresetNames[index])
 			SetMenuOptionValueST(config.activeSettingsPreset)
 			SetOptionFlagsST(OPTION_FLAG_NONE)
 			Return
 		EndIf
-		config.activeSettingsPreset = _settingsPresetNames[index]
-		config.loadPreset(config.activePreset)
-		config.moduleReset()
-		config.moduleSetup()
-		widget_controller.reloadWidgets()
 		_togglesDirty = false
 		SetMenuOptionValueST(config.activeSettingsPreset)
 		SetOptionFlagsST(OPTION_FLAG_NONE)

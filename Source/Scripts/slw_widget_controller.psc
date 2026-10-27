@@ -447,6 +447,17 @@ Function _updatePass()
 	If !PlayerRef
 		PlayerRef = Game.GetPlayer()
 	EndIf
+	If _presetOwed != ""
+		String presetName = _presetOwed
+		_presetOwed = ""
+		; reloads every icon: a toggle pass owed before it is covered
+		_togglePassOwed = False
+		config.applySettingsPreset(presetName)
+	EndIf
+	If _togglePassOwed
+		_togglePassOwed = False
+		toggleUpdateWidgets()
+	EndIf
 	; Slot 0 - player, always updates
 	config.moduleWidgetStateUpdate(iBars, PlayerRef, 0)
 	_updateMeters()
@@ -1688,5 +1699,47 @@ EndFunction
 ; the interval, so the move shows while the editor is still open.
 Function editorSetMeters(Int x, Int y, Int scale)
 	setMetersLayout(x, y, scale)
+	_refreshSoon(0.2)
+EndFunction
+
+; A switch flipped on the SKSE menu's Toggles page. The MCM runs
+; toggleUpdateWidgets once when it closes; the SKSE menu has no close the
+; scripts can see, so each switch owes the pass and the next update pass
+; serves it (_updatePass), which never runs two at once however fast the
+; switches are clicked.
+Bool _togglePassOwed = False
+
+Function requestTogglePass()
+	_togglePassOwed = True
+	_refreshSoon(0.2)
+EndFunction
+
+; A settings preset's player bar, all four values at once and one redraw
+; (slw_config._loadLayoutSettings)
+Function presetSetBar(Int bar, Int x, Int y, Int size, Int type)
+	If !iBars || !iBars.isReady() || bar < 0 || bar > 3
+		Return
+	EndIf
+	iBars._setBarX(bar, x)
+	iBars._setBarY(bar, y)
+	iBars._setBarIconSize(bar, size)
+	iBars._setBarType(bar, type)
+	iBars._resizeBar(bar)
+	iBars._drawBar(bar)
+EndFunction
+
+; A preset picked on the SKSE menu's Presets page. Loading one releases and
+; registers every icon again; the MCM did that in menu mode, with the update
+; loop waiting, but the SKSE menu does not stop the loop, so the load is owed
+; and the next update pass serves it, never alongside another pass. While the
+; mod is switched off no pass runs, and none can collide either.
+String _presetOwed = ""
+
+Function requestPresetLoad(String presetName)
+	If config.slw_stopped
+		config.applySettingsPreset(presetName)
+		Return
+	EndIf
+	_presetOwed = presetName
 	_refreshSoon(0.2)
 EndFunction
