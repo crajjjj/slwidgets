@@ -262,3 +262,20 @@ Added in 2.3.0, never run in game when written. Set the update interval to 60 s 
 ---
 
 *Last updated: 2026-10-08*
+
+## 20. Position editor (SLWidgetsMenu.dll, 3.1.0)
+
+| # | P | Scenario | Expected | Scripts |
+|---|---|----------|----------|---------|
+| 20.1 | P0 | Framework absent | `SLWidgetsMenu.log` says the editor is disabled; the mod and its MCM behave as before | plugin/Env.cpp, Menu.cpp |
+| 20.2 | P0 | Open the editor with a game loaded | Boxes for bars 0-3 with their icons, the NPC rows, the meter stack; the toolbar says "Layout read." | slw_bridge, slw_widget_controller.editorLayout |
+| 20.3 | P0 | Calibration | A box sits exactly over its real icons at 16:9 and at an ultrawide resolution (stage scaled by height, centered) | plugin/Editor.cpp MakeMapper |
+| 20.4 | P0 | Drag a player bar and release | The real icons move once, to where the box is; iWant's MCM shows the new X/Y | editorSetBarPos |
+| 20.5 | P0 | Drag the NPC cluster | All six NPC bars and the labels follow; the NPC Tracking sliders show the new anchor | editorSetNpcGroup |
+| 20.6 | P1 | Drag the meter stack | The stack rebuilds within a second and shows its 30 s preview at the new place | editorSetMeters |
+| 20.7 | P1 | Arrow keys and Shift | Nudge by 1 / 10, written 0.3 s after the last key; `+` / `-` resize a bar, scale the meters | plugin/Editor.cpp HandleKeys |
+| 20.8 | P1 | Escape and the framework hotkey | Both close the editor with the framework's menu; Done closes the editor alone (and brings the panel back where the framework can hide it) | Menu.cpp OnEvent |
+| 20.9 | P1 | Open at the main menu (no game) | The toolbar says SL Widgets is not running; nothing is written | slw_bridge.GetLayout |
+| 20.10 | P1 | Old slw_bridge.pex under a new DLL | The toolbar names the mismatch; no crash | Bridge.cpp |
+| 20.11 | P2 | Framework 3.8 | The framework's panel stays open behind the editor and the toolbar says so; a newer framework hides it | Env::hasMainWindow |
+| 20.12 | P2 | Load a game while the editor was open in the previous session | The editor is closed and its layout dropped on load | main.cpp OnVmReset |

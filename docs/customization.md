@@ -13,6 +13,9 @@ SL Widgets displays icons through iWant Status Bars. All placement, sizing, and 
 
 SL Widgets picks up layout changes on the next update tick — no reload required.
 
+!!! tip "Drag instead of sliders"
+    With SKSE Menu Framework installed, the [Position Editor](position-editor.md) lets you drag the bars, the NPC cluster and the meter stack into place on the HUD. It writes the same values the sliders hold.
+
 ---
 
 ## Screen coordinates

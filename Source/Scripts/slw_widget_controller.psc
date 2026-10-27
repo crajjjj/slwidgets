@@ -1586,3 +1586,114 @@ Function _tintMeterIcon(Int meter, Int stage, Int id)
 		iBars.iWidgets.setRGB(id, 255, 114, 114)
 	EndIf
 EndFunction
+
+; ---------------------------------------------------------------------------
+; Position editor (SLWidgetsMenu.dll, through slw_bridge)
+;
+; The DLL reads the whole layout as ONE string and writes through the setters
+; the MCM uses, so iWant's arrays are only ever touched from the scripts.
+; Player bars 0-3 go straight to iWant, as iWant's own MCM does. The NPC bars
+; and the meter stack belong to their anchors (_layoutNpcBars, setMetersLayout),
+; which is why the DLL moves those as a group and never bar by bar.
+;
+; Layout string: "v=1|b0=x,y,type,size,visible,file;file|...|b9=...
+;   |npc=x,y,stride|n1=name|n2=name|n3=name|meters=x,y,scale,rows,always"
+; Files are the icons' state-0 art, Interface\exported relative, in bar order.
+; The version is the DLL's Layout::kVersion: bump both when a field changes.
+; ---------------------------------------------------------------------------
+
+String Function editorLayout()
+	If !iBars || !iBars.isReady()
+		Return ""
+	EndIf
+	String s = "v=1"
+	Int bar = 0
+	While bar < iBars.TOTAL_STATUS_BARS
+		s += "|b" + bar + "=" + iBars._getBarX(bar) + "," + iBars._getBarY(bar) + "," + iBars._getBarType(bar) + "," + iBars._getBarIconSize(bar) + "," + _editorBarVisible(bar) + "," + _editorBarFiles(bar)
+		bar += 1
+	EndWhile
+	s += "|npc=" + npcGroupX + "," + npcGroupY + "," + npcVerticalSpacing
+	s += "|n1=" + _editorSlotName(1) + "|n2=" + _editorSlotName(2) + "|n3=" + _editorSlotName(3)
+	s += "|meters=" + metersX + "," + metersY + "," + metersScale + "," + _editorMeterRows() + "," + (metersAlwaysShow As Int)
+	Return s
+EndFunction
+
+Int Function _editorBarVisible(Int bar)
+	If hasBarsAPI()
+		Return iBars.getBarVisible(bar) As Int
+	EndIf
+	Return 1
+EndFunction
+
+; The art of the icons in a bar, so the editor can draw them. A released icon
+; keeps its bar seat until the next draw scrubs it, so the widget test skips it.
+String Function _editorBarFiles(Int bar)
+	String files = ""
+	Int p = 0
+	While p < iBars.ICONS_PER_STATUS_BAR
+		Int icon = iBars._getBarIcon(bar, p)
+		If icon >= 0 && iBars._getIconWidget(icon, 0) >= 0
+			String f = iBars._getIconSourceFile(icon, 0)
+			If f != ""
+				If files != ""
+					files += ";"
+				EndIf
+				files += f
+			EndIf
+		EndIf
+		p += 1
+	EndWhile
+	Return files
+EndFunction
+
+String Function _editorSlotName(Int slot)
+	Actor a = config.getNpcSlot(slot)
+	If a
+		Return a.GetDisplayName()
+	EndIf
+	Return ""
+EndFunction
+
+Int Function _editorMeterRows()
+	Bool[] wanted = new Bool[9]
+	Int mask = _wantedMeters(wanted)
+	Int rows = 0
+	Int i = 0
+	While i < 9
+		If wanted[i]
+			rows += 1
+		EndIf
+		i += 1
+	EndWhile
+	Return rows
+EndFunction
+
+Function editorSetBarPos(Int bar, Int x, Int y)
+	If !iBars || !iBars.isReady() || bar < 0 || bar > 3
+		Return
+	EndIf
+	iBars._setBarX(bar, x)
+	iBars._setBarY(bar, y)
+	iBars._drawBar(bar)
+EndFunction
+
+Function editorSetBarSize(Int bar, Int size)
+	If !iBars || !iBars.isReady() || bar < 0 || bar > 3
+		Return
+	EndIf
+	iBars._setBarIconSize(bar, size)
+	iBars._resizeBar(bar)
+	iBars._drawBar(bar)
+EndFunction
+
+Function editorSetNpcGroup(Int x, Int y)
+	setNpcGroupPos(x, y)
+	_layoutNpcBars()
+EndFunction
+
+; The stack rebuilds on the next pass; ask for one now rather than waiting out
+; the interval, so the move shows while the editor is still open.
+Function editorSetMeters(Int x, Int y, Int scale)
+	setMetersLayout(x, y, scale)
+	_refreshSoon(0.2)
+EndFunction

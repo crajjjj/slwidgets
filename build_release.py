@@ -55,6 +55,16 @@ def check_fresh(pyro_zip, ver):
             raise SystemExit(f"{pyro_zip} has no Scripts/slw_util.pex: rerun Pyro")
     if ver.encode() not in pex:
         raise SystemExit(f"{pyro_zip} was built for another version than {ver}: rerun Pyro")
+    # The position editor ships in the same zip (plugin\ builds it into
+    # SKSE\Plugins); its version resource holds the version string in UTF-16.
+    with zipfile.ZipFile(pyro_zip) as z:
+        try:
+            dll = z.read("SKSE/Plugins/SLWidgetsMenu.dll")
+        except KeyError:
+            raise SystemExit(f"{pyro_zip} has no SKSE/Plugins/SLWidgetsMenu.dll: build plugin\\ "
+                             "(xmake f -m release && xmake), then rerun Pyro")
+    if ver.encode("utf-16-le") not in dll:
+        raise SystemExit(f"the SLWidgetsMenu.dll in {pyro_zip} is not version {ver}: rebuild plugin\\, then rerun Pyro")
     zip_time = os.path.getmtime(pyro_zip)
     sources = [os.path.join(ROOT, "SLWidgets.esp")]
     for folder in ("Scripts", os.path.join("Source", "Scripts"), "Interface", "SKSE", "Seq"):

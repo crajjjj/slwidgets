@@ -1,0 +1,3 @@
+[submodule "plugin/lib/commonlibsse-ng"]
+	path = plugin/lib/commonlibsse-ng
+	url = https://github.com/alandtse/CommonLibSSE-NG.git
