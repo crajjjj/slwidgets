@@ -245,7 +245,7 @@ namespace Presets
 				Ui::Separator();
 			}
 			Colored(PageCommon::kHint, "A settings preset holds the icon switches, the meters, the NPC slot switches and the layout: the player bars, the NPC cluster and the meter stack.");
-			Colored(PageCommon::kHint, "The files are in Data\\SKSE\\Plugins\\SlWidgets\\SettingsPresets (Mod Organizer puts new ones in overwrite). The MCM's General page loads and saves them too.");
+			Colored(PageCommon::kHint, "The files are in Data\\SKSE\\Plugins\\SlWidgets\\SettingsPresets (Mod Organizer puts new ones in overwrite).");
 			g_page.ServeConfirm(now, false);
 		} catch (const std::exception& e) {
 			if (!g_loggedFault) {

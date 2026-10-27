@@ -8,7 +8,7 @@ namespace Bridge
 
 		constexpr auto kScript = "slw_bridge"sv;
 		constexpr auto kQueries = static_cast<std::size_t>(Query::kCount);
-		constexpr std::array<std::string_view, kQueries> kQueryFunctions{ "GetLayout"sv, "GetToggles"sv, "GetPresets"sv };
+		constexpr std::array<std::string_view, kQueries> kQueryFunctions{ "GetLayout"sv, "GetToggles"sv, "GetPresets"sv, "GetGeneral"sv, "GetMeters"sv, "GetNpc"sv };
 
 		struct Slot
 		{
@@ -179,6 +179,16 @@ namespace Bridge
 		Call("SetBarType"sv, std::nullopt, a_bar, a_type);
 	}
 
+	void MoveIconInBar(int a_bar, int a_seat, int a_icon, int a_dir)
+	{
+		Call("MoveIconInBar"sv, std::nullopt, a_bar, a_seat, a_icon, a_dir);
+	}
+
+	void MoveIconToBar(int a_bar, int a_seat, int a_icon, int a_target)
+	{
+		Call("MoveIconToBar"sv, std::nullopt, a_bar, a_seat, a_icon, a_target);
+	}
+
 	void SetNpcGroup(int a_x, int a_y)
 	{
 		Call("SetNpcGroup"sv, std::nullopt, a_x, a_y);
@@ -212,5 +222,10 @@ namespace Bridge
 	void SavePreset(const std::string& a_name)
 	{
 		Call("SavePreset"sv, std::nullopt, a_name);
+	}
+
+	void SetSetting(const std::string& a_key, const std::string& a_value)
+	{
+		Call("SetSetting"sv, std::nullopt, a_key, a_value);
 	}
 }

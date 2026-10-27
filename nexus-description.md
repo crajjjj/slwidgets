@@ -1,6 +1,6 @@
 A plugin for [b]iWant Status Bars[/b] that adds adult-mod status widgets — arousal, pregnancy, milk, cum, wear & tear, needs and more — to Skyrim's HUD, for the player [b]and up to 3 NPCs[/b].
 
-210+ icons. Configurable in game through the MCM and the SKSE Menu Framework menu.
+210+ icons. Configured in game through the SKSE Menu Framework menu; the MCM shows the state.
 
 [url=https://crajjjj.github.io/slwidgets/]📖 SLWidgets Wiki — full docs with icon previews[/url]
 
@@ -9,7 +9,7 @@ A plugin for [b]iWant Status Bars[/b] that adds adult-mod status widgets — aro
 [*][b]Two icon mechanics[/b]: 9-stage gauges that fill with a mod's value (arousal, milk, cum, wear & tear, needs) and condition toggles that pop in/out (pregnancy, parasites, defeat). [url=https://crajjjj.github.io/slwidgets/icons/]See every icon →[/url]
 [*][b]NPC tracking[/b]: watch up to 3 NPCs alongside the player: aim at an NPC, press a hotkey, and they get their own icon set and a floating name label. [url=https://crajjjj.github.io/slwidgets/npc-tracking/]How it works →[/url]
 [*][b]Broad mod support[/b]: SexLab Aroused, Apropos2, Fill Her Up, MME / SGO4 / MAL, the major pregnancy frameworks, and more. [url=https://crajjjj.github.io/slwidgets/supported-mods/]Full list →[/url]
-[*][b]Meters[/b]: SLO VE willpower, arousal, the Fill Her Up pools and Apropos2 wear & tear as one stack of bars at the right edge of the screen, each with its icon beside it, always shown or fading in when a value changes; each meter is switched on in the MCM. [url=https://crajjjj.github.io/slwidgets/supported-mods/#meter-stack]How they work →[/url]
+[*][b]Meters[/b]: SLO VE willpower, arousal, the Fill Her Up pools and Apropos2 wear & tear as one stack of bars at the right edge of the screen, each with its icon beside it, always shown or fading in when a value changes; each meter is switched on in the SKSE menu. [url=https://crajjjj.github.io/slwidgets/supported-mods/#meter-stack]How they work →[/url]
 [*][b]Survival and body status[/b] (3.0): SunHelm food, thirst, cold and fatigue; Bathing in Skyrim Renewed dirtiness and Wet Function (Redux or NG) wetness; SPH pubic and armpit hair; BeeingFemale baby health; Stress and Fear; Blade and Blunt injuries; diseases (SunHelm Diseases stages). [url=https://crajjjj.github.io/slwidgets/supported-mods/#survival-hygiene-and-health-300]Details →[/url]
 [*][b]One drawn icon set[/b] (3.0): every icon in the same style, white to red as a value worsens. Prefer the old icons? The [b]Classic Icons[/b] optional file puts them back. [url=https://crajjjj.github.io/slwidgets/customization/#icon-styles]See the set →[/url]
 [*][b]Custom icon packs[/b]: restyle any icon set; grab one from the download section. [url=https://crajjjj.github.io/slwidgets/custom-packs/]Preview packs →[/url]
@@ -22,7 +22,7 @@ A plugin for [b]iWant Status Bars[/b] that adds adult-mod status widgets — aro
 [*]Install with any mod manager. The SE build is ESPFE (ESL-flagged); the LE build's ESP also works on SE.
 [*][b]Load order:[/b] iWant Widgets → iWant Status Bars → SLWidgets
 [*](Optional) Choose which icons are shown, and where, in the SKSE Menu Framework menu, section SL Widgets
-[*](Optional) Save / load your SLWidgets settings there or in the MCM, useful for new saves
+[*](Optional) Save / load your SLWidgets settings on its Presets page, useful for new saves
 [*](Optional) Set icon placement, colour and size in the iWant Status Bars MCM (multiple bars supported)
 [*](Optional) Install the Classic Icons file (the icons from before 3.0) or a custom icon pack from the download section (DDS textures only)
 [/list]
@@ -34,20 +34,15 @@ A plugin for [b]iWant Status Bars[/b] that adds adult-mod status widgets — aro
 [*]LE users: the LE build of iWant Status Bars / iWant Widgets is included in the SE FOMOD
 [/list]
 
-[size=5][b]🖱️ MCM Setup[/b][/size] [i](thanks Herowynne)[/i]
+[size=5][b]🖱️ Setup[/b][/size]
 
-[b]Step 1 — Enable the mod[/b]
-Open the SLWidgets MCM → General page → toggle [b]Disable/Enable mod[/b]. The label shows the action, not the current state:
-[list]
-[*][b]ENABLE[/b] shown = mod is currently OFF (press to turn it on)
-[*][b]DISABLE[/b] shown = mod is currently ON
-[/list]
-Back out and re-open the MCM to confirm.
+[b]Step 1: enable the mod[/b]
+Open the SKSE Menu Framework menu (its hotkey) → section [b]SL Widgets[/b] → [b]General[/b] → switch on [b]Mod enabled[/b]. A new game starts with the mod off. The SLWidgets MCM's General page shows [b]Enabled[/b] from then on, and says so if SKSE Menu Framework is missing.
 
-[b]Step 2 — Configure iWant Status Bars[/b]
-Open the iWant Status Bars MCM → Bars page → assign a hotkey under [b]Press to Toggle[/b], exit the MCM, and press the hotkey in-game. Adjust Type, X Position and Y Position as needed. After any change in the iWant Status Bars MCM, press the hotkey twice to refresh the display.
+[b]Step 2: place the icons[/b]
+The [b]Positions[/b] page moves and resizes iWant's bars, reorders their icons and moves icons between bars while you watch the HUD; iWant Status Bars' own MCM does the same and more.
 
-[i]Every menu setting explained: [url=https://crajjjj.github.io/slwidgets/mcm-reference/]MCM Reference →[/url][/i]
+[i]Every setting explained: [url=https://crajjjj.github.io/slwidgets/position-editor/]SKSE Menu →[/url][/i]
 
 [size=5][b]📦 Requirements[/b][/size]
 
@@ -56,7 +51,8 @@ Open the iWant Status Bars MCM → Bars page → assign a hotkey under [b]Press 
 [*]iWant Status Bars (2.10 or newer for NPC tracking)
 [*]iWant Widgets
 [*]PapyrusUtil
-[*]SKSE & SkyUI (for the MCM)
+[*]SKSE & SkyUI
+[*]SKSE Menu Framework 3.8+ (every setting is in its menu)
 [/list]
 
 [b]Soft dependencies[/b] — install only the ones you use
@@ -93,11 +89,11 @@ Open the iWant Status Bars MCM → Bars page → assign a hotkey under [b]Press 
 [list]
 [*]Check console messages and Papyrus logs
 [*]Make sure only one iWidgets.esp is loaded
-[*]Check the MCM Debug page for dependency status
-[*]Toggle the mod off / on — widgets reload when the MCM closes
+[*]Check the MCM Maintenance page for dependency status
+[*]Toggle the mod off / on on the SKSE menu's General page
 [*]Open the iWant Status Bars MCM to confirm icons were registered
 [*][b]NPC labels missing?[/b] Confirm the pick hotkey is bound, the NPC is loaded (same cell), and the mod is enabled
-[*][b]NPC icons in the player's bar?[/b] Press [b]Reset NPC bar layout[/b] once on the NPC Tracking page
+[*][b]NPC icons in the player's bar?[/b] Press [b]Reset NPC layout[/b] once on the SKSE menu's Positions page
 [/list]
 [i]More fixes and log locations: [url=https://crajjjj.github.io/slwidgets/troubleshooting/]Troubleshooting →[/url][/i]
 

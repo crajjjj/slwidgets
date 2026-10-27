@@ -1366,3 +1366,285 @@ Int Function _presetInt(String path, String presetKey, Int current, Int low, Int
 	EndIf
 	Return clampInt(value, low, high)
 EndFunction
+
+; ---------------------------------------------------------------------------
+; The SKSE menu's General, Meters and NPC Tracking pages (3.3.0), which hold
+; what the MCM's pages of those names held; the MCM only shows the state now.
+; Each page is a list of rows the DLL draws as it is told:
+;
+;   v=1                                            version (the DLL's SettingsPage::kVersion)
+;   h=<label>                                      a header (a $key or plain text)
+;   t=<label>,<value>                              a line of text
+;   b=<key>,<enabled>,<0|1>,<label>,<help>         a switch
+;   i=<key>,<enabled>,<value>,<min>,<max>,<label>,<help>   a slider, applied on release
+;   a=<key>,<enabled>,<label>,<help>               a button
+;   c=<key>,<enabled>,<index>,<label>,<help>,<option>;<option>;...   a choice
+;   rgb=<key>,<enabled>,<0xRRGGBB as int>,<label>,<help>   a colour
+;   k=<key>,<enabled>,<DirectInput key code, -1 none>,<label>,<help>   a hotkey
+;   s=<key>,<enabled>,<label>,<help>,<text>        a text field
+;
+; A row's key comes back with its new value as text (a switch 0 or 1, a
+; button 1, a choice its index) through editorSet. Labels and help are
+; translation keys; free text stands last in its row.
+; ---------------------------------------------------------------------------
+
+String Function editorGeneral()
+	slw_widget_controller wc = widget_controller
+	String s = "v=1|h=$SLW_General"
+	String stateHelp = "$SLW_Enabled_Info"
+	If slw_stopped
+		stateHelp = "$SLW_Disabled_Info"
+	EndIf
+	s += "|b=general.enabled,1," + ((!slw_stopped) As Int) + ",$SLW_Mod_Enabled," + stateHelp
+	s += "|i=general.interval,1," + updateInterval + ",1,60,$SLW_Update_Interval,$SLW_UpdateInterval_Info"
+	String[] names = getPresetNames()
+	Int index = 0
+	String options = ""
+	Int i = 0
+	While i < names.Length
+		If names[i] == activePreset
+			index = i
+		EndIf
+		If i > 0
+			options += ";"
+		EndIf
+		options += names[i]
+		i += 1
+	EndWhile
+	s += "|c=general.colorpreset,1," + index + ",$SLW_Color_Preset,$SLW_Color_Preset_Info," + options
+	s += "|h=$SLW_Debug_Page"
+	s += "|a=general.recheck," + ((!slw_stopped) As Int) + ",$SLW_Recheck,$SLW_UpdateDeps_Info"
+	s += "|a=general.placeholder," + ((wc && wc.isLoaded()) As Int) + ",$SLW_Empty_Icon_Add,$SLW_Empty_Icon_Add_Info"
+	Return s
+EndFunction
+
+String Function editorMeters()
+	slw_widget_controller wc = widget_controller
+	Bool always = wc.metersAlwaysShow
+	String s = "v=1|h=$SLW_Meters"
+	s += "|b=meters.always,1," + (always As Int) + ",$SLW_Meters_Always,$SLW_Meters_Always_Info"
+	s += "|i=meters.hold," + ((!always) As Int) + "," + wc.metersHoldSeconds + ",2,120,$SLW_Meters_Hold,$SLW_Meters_Hold_Info"
+	s += "|h=$SLW_SLOVE" + _editorMeter(0, isSloveReady(), "$SLW_Willpower_Bar_Info")
+	s += "|h=$SLW_Sexlab_Aroused" + _editorMeter(1, module_sla.isInterfaceActive(), "$SLW_Meter_Arousal_Info")
+	Bool fhu = module_fhu.isInterfaceActive()
+	s += "|h=$SLW_FHU" + _editorMeter(2, fhu, "$SLW_Meter_FHU_Info") + _editorMeter(3, fhu, "$SLW_Meter_FHU_Info")
+	s += _editorMeter(4, fhu, "$SLW_Meter_FHU_Info") + _editorMeter(5, fhu, "$SLW_Meter_FHU_Info")
+	Bool wt = module_apropos_two.isInterfaceActive()
+	s += "|h=$SLW_Apropos2" + _editorMeter(6, wt, "$SLW_Meter_WT_Info") + _editorMeter(7, wt, "$SLW_Meter_WT_Info")
+	s += _editorMeter(8, wt, "$SLW_Meter_WT_Info")
+	Return s
+EndFunction
+
+String Function _editorMeter(Int meter, Bool loaded, String help)
+	Return "|b=meter." + meter + "," + (loaded As Int) + "," + (isMeterOn(meter) As Int) + "," + meterLabelKey(meter) + "," + help
+EndFunction
+
+; Each label is one translation key, spelled out whole: a key built from parts
+; can come back in another script's casing (see the Arrays notes in CLAUDE.md).
+String Function meterLabelKey(Int meter)
+	If meter == 0
+		Return "$SLW_Meter_willpower"
+	ElseIf meter == 1
+		Return "$SLW_Meter_arousal"
+	ElseIf meter == 2
+		Return "$SLW_Meter_fhu_total"
+	ElseIf meter == 3
+		Return "$SLW_Meter_fhu_vaginal"
+	ElseIf meter == 4
+		Return "$SLW_Meter_fhu_anal"
+	ElseIf meter == 5
+		Return "$SLW_Meter_fhu_oral"
+	ElseIf meter == 6
+		Return "$SLW_Meter_wt_vaginal"
+	ElseIf meter == 7
+		Return "$SLW_Meter_wt_anal"
+	EndIf
+	Return "$SLW_Meter_wt_oral"
+EndFunction
+
+String Function editorNpc()
+	slw_widget_controller wc = widget_controller
+	String s = "v=1|h=$SLW_NPC_Tracking"
+	s += "|k=npc.hotkey,1," + npcHotkey + ",$SLW_NPC_Hotkey,$SLW_NPC_Hotkey_Info"
+	s += "|h=$SLW_NPC_Label_Style"
+	String[] fonts = getNpcFontKeys()
+	String[] fontLabels = getNpcFontLabels()
+	Int fontIndex = 0
+	String options = ""
+	Int i = 0
+	While i < fonts.Length
+		If fonts[i] == wc.npcLabelFont
+			fontIndex = i
+		EndIf
+		If i > 0
+			options += ";"
+		EndIf
+		options += fontLabels[i]
+		i += 1
+	EndWhile
+	s += "|c=npc.font,1," + fontIndex + ",$SLW_NPC_Label_Font,," + options
+	s += "|i=npc.labelsize,1," + wc.npcLabelSize + ",10,60,$SLW_NPC_Label_Size,"
+	s += "|rgb=npc.labelcolor,1," + wc.getNpcLabelColorPacked() + ",$SLW_NPC_Label_Color,$SLW_NPC_Label_Color_Info"
+	Int slot = 1
+	While slot <= 3
+		Actor a = getNpcSlot(slot)
+		Int on = (a != None) As Int
+		String name = "(empty)"
+		If a
+			name = a.GetDisplayName()
+		EndIf
+		s += "|h=NPC " + slot + ": " + name
+		s += "|a=npc." + slot + ".clear," + on + ",$SLW_NPC_Clear,"
+		s += _editorNpcModule(slot, MOD_SLA_AROUSAL, "$SLW_Arousal_Icon_Enabled", on)
+		s += _editorNpcModule(slot, MOD_SLA_EXPOSURE, "$SLW_Exposure_Icon_Enabled", on)
+		s += _editorNpcModule(slot, MOD_AP2, "$SLW_WT_Icon_Enabled", on)
+		s += _editorNpcModule(slot, MOD_FHU_CUM, "$SLW_FHU_TI", on)
+		s += _editorNpcModule(slot, MOD_FHU_VAGINAL, "$SLW_FHU_VI", on)
+		s += _editorNpcModule(slot, MOD_FHU_ANAL, "$SLW_FHU_AI", on)
+		s += _editorNpcModule(slot, MOD_FHU_ORAL, "$SLW_FHU_OI", on)
+		s += _editorNpcModule(slot, MOD_MME_MILK, "$SLW_MME_MI", on)
+		s += _editorNpcModule(slot, MOD_MME_LACTACID, "$SLW_MME_LI", on)
+		s += _editorNpcModule(slot, MOD_SLP, "$SLW_SLP_Icon", on)
+		s += _editorNpcModule(slot, MOD_PREG, "$SLW_Pregnancy_Icons", on)
+		s += _editorNpcModule(slot, MOD_DIRT, "$SLW_Dirtiness_Icon", on)
+		s += _editorNpcModule(slot, MOD_WET, "$SLW_Wetness_Icon", on)
+		s += _editorNpcModule(slot, MOD_BABY, "$SLW_BabyHealth_Icon", on)
+		s += "|i=npc." + slot + ".labelx," + on + "," + wc.getNpcLabelOffsetX(slot) + ",-200,200,$SLW_NPC_Label_OffsetX,"
+		s += "|i=npc." + slot + ".labely," + on + "," + wc.getNpcLabelOffsetY(slot) + ",-200,200,$SLW_NPC_Label_OffsetY,"
+		s += "|s=npc." + slot + ".label," + on + ",$SLW_NPC_Custom_Label,$SLW_NPC_Custom_Label_Info," + getNpcCustomLabel(slot)
+		slot += 1
+	EndWhile
+	Return s
+EndFunction
+
+String Function _editorNpcModule(Int slot, Int code, String label, Int enabled)
+	Return "|b=npc." + slot + "." + code + "," + enabled + "," + (getSlotModuleEnable(slot, code) As Int) + "," + label + ","
+EndFunction
+
+; Fonts that ship with Skyrim and read well at HUD sizes; the first supports
+; every character range
+String[] Function getNpcFontKeys()
+	String[] fonts = new String[7]
+	fonts[0] = "$EverywhereFont"
+	fonts[1] = "$EverywhereBoldFont"
+	fonts[2] = "$EverywhereMediumFont"
+	fonts[3] = "$SkyrimBooks"
+	fonts[4] = "$SkyrimBooks_Gaelic"
+	fonts[5] = "$HandwrittenFont"
+	fonts[6] = "$DragonFont"
+	Return fonts
+EndFunction
+
+String[] Function getNpcFontLabels()
+	String[] labels = new String[7]
+	labels[0] = "Default (Everywhere)"
+	labels[1] = "Everywhere Bold"
+	labels[2] = "Everywhere Medium"
+	labels[3] = "Skyrim Books"
+	labels[4] = "Skyrim Books Gaelic"
+	labels[5] = "Handwritten"
+	labels[6] = "Dragon"
+	Return labels
+EndFunction
+
+; A row of the General, Meters or NPC Tracking page changed: does what the
+; MCM's handler for that option did. Work that reloads icons or resets the
+; modules is owed to the widget controller's update pass, as preset loads
+; are, so it never runs alongside a pass.
+Function editorSet(String settingKey, String value)
+	slw_widget_controller wc = widget_controller
+	Int n = value As Int
+	If settingKey == "general.enabled"
+		If (n != 0) == slw_stopped
+			_editorSetEnabled(n != 0)
+		EndIf
+	ElseIf settingKey == "general.interval"
+		updateInterval = clampInt(n, 1, 60)
+	ElseIf settingKey == "general.colorpreset"
+		String[] names = getPresetNames()
+		If n >= 0 && n < names.Length
+			activePreset = names[n]
+			loadPreset(activePreset)
+			If !slw_stopped
+				wc.requestReload()
+			EndIf
+		EndIf
+	ElseIf settingKey == "general.recheck"
+		If !slw_stopped
+			wc.requestModuleRecheck()
+		EndIf
+	ElseIf settingKey == "general.placeholder"
+		wc.LoadEmptyIcon()
+	ElseIf settingKey == "meters.always"
+		wc.metersAlwaysShow = n != 0
+		wc.requestTogglePass()
+	ElseIf settingKey == "meters.hold"
+		wc.metersHoldSeconds = clampInt(n, 2, 120)
+	ElseIf settingKey == "npc.hotkey"
+		setHotkey(n)
+	ElseIf settingKey == "npc.font"
+		String[] fonts = getNpcFontKeys()
+		If n >= 0 && n < fonts.Length
+			wc.setNpcLabelFont(fonts[n])
+		EndIf
+	ElseIf settingKey == "npc.labelsize"
+		wc.setNpcLabelSize(clampInt(n, 10, 60))
+	ElseIf settingKey == "npc.labelcolor"
+		wc.setNpcLabelColorPacked(n)
+	Else
+		String[] parts = StringUtil.Split(settingKey, ".")
+		If parts.Length == 2 && parts[0] == "meter"
+			Int meter = parts[1] As Int
+			If meter >= 0 && meter < getMeterCount()
+				setMeterOn(meter, n != 0)
+				wc.requestMetersRebuild()
+				wc.requestTogglePass()
+			EndIf
+		ElseIf parts.Length == 3 && parts[0] == "npc"
+			Int slot = parts[1] As Int
+			If slot >= 1 && slot <= 3
+				_editorSetNpc(slot, parts[2], value)
+			EndIf
+		EndIf
+	EndIf
+EndFunction
+
+Function _editorSetNpc(Int slot, String field, String value)
+	slw_widget_controller wc = widget_controller
+	Int n = value As Int
+	If field == "clear"
+		clearNpcSlot(slot)
+		wc.requestTogglePass()
+	ElseIf field == "labelx"
+		wc.setNpcLabelOffset(slot, clampInt(n, -200, 200), wc.getNpcLabelOffsetY(slot))
+	ElseIf field == "labely"
+		wc.setNpcLabelOffset(slot, wc.getNpcLabelOffsetX(slot), clampInt(n, -200, 200))
+	ElseIf field == "label"
+		setNpcCustomLabel(slot, value)
+		wc.refreshNpcLabel(slot)
+	Else
+		Int code = field As Int
+		If code >= MOD_SLA_AROUSAL && code <= MOD_BABY
+			setSlotModuleEnable(slot, code, n != 0)
+			wc.requestTogglePass()
+		EndIf
+	EndIf
+EndFunction
+
+; The MCM's enable and disable flows. Enabling runs while no pass does (the
+; loop starts at the end); disabling sets slw_stopped first, so no new pass
+; starts, as the MCM's flow did.
+Function _editorSetEnabled(Bool enable)
+	slw_widget_controller wc = widget_controller
+	slw_stopped = !enable
+	If enable
+		moduleReset()
+		moduleSetup()
+		wc.reloadWidgets()
+		wc.startUpdates()
+	Else
+		wc.stopUpdates()
+		moduleReset()
+		wc.reloadWidgets()
+	EndIf
+EndFunction

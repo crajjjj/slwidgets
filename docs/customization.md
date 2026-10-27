@@ -44,7 +44,7 @@ Color presets replace the default icon RGB values with custom ones without chang
 
 **Preset files:** `Data/SKSE/Plugins/SlWidgets/IconPresets/*.json`
 
-Load a preset in MCM → **General** → **Color Preset**.
+Pick a preset with **Color Preset** on the SKSE menu's [General](position-editor.md#general) page.
 
 ### Shipped presets
 
@@ -91,7 +91,7 @@ A saved preset includes:
 
 A preset saved before 3.2 holds no bar or NPC cluster layout, and loading it leaves those where they are. Bars 0-3 are iWant's shared bars, so a preset's layout moves every mod's icons in them.
 
-**To save or load:** the SKSE menu's [Presets](position-editor.md#presets) page (saving under a new name too), or MCM → General → **Settings Preset** to load and **Save Settings Preset** to save over the active one.
+**To save or load:** the SKSE menu's [Presets](position-editor.md#presets) page: load one, save over one, or save under a new name.
 
 ---
 

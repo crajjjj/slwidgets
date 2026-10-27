@@ -180,7 +180,7 @@ namespace Toggles
 				Ui::Spacing();
 				Ui::Separator();
 			}
-			Colored(PageCommon::kHint, "The player's icons. A switch applies within a second or two, while this menu stays open. The per-NPC switches are on the MCM's NPC Tracking page, the meter switches on its Meters page.");
+			Colored(PageCommon::kHint, "The player's icons. A switch applies within a second or two, while this menu stays open. The per-NPC switches are on the NPC Tracking page, the meter switches on the Meters page.");
 			g_page.ServeConfirm(now, false);
 		} catch (const std::exception& e) {
 			if (!g_loggedFault) {

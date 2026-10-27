@@ -238,9 +238,11 @@ Function startUpdates()
 	; for as long as that session ran. A pass the save carried over (Papyrus
 	; resumes saved stacks) sees _passGen move and leaves the loop alone.
 	_registerRefreshEvents()
-	; preset requests are per session: one the save carried over is stale
+	; requests from the SKSE menu are per session: one the save carried over is stale
 	_presetOwed = ""
 	_presetSaveOwed = ""
+	_reloadOwed = False
+	_recheckOwed = False
 	_passGen += 1
 	_passRunning = False
 	_lastPassEnd = 0.0
@@ -458,6 +460,17 @@ Function _updatePass()
 		String saveName = _presetSaveOwed
 		_presetSaveOwed = ""
 		config.savePresetAs(saveName)
+	EndIf
+	If _recheckOwed
+		_recheckOwed = False
+		config.moduleReset()
+		config.moduleSetup()
+	EndIf
+	If _reloadOwed
+		_reloadOwed = False
+		; reloads every icon: a toggle pass owed before it is covered
+		_togglePassOwed = False
+		reloadWidgets()
 	EndIf
 	if !iBars || !iBars.isReady()
 		return
@@ -1618,8 +1631,9 @@ EndFunction
 ; and the meter stack belong to their anchors (_layoutNpcBars, setMetersLayout),
 ; which is why the DLL moves those as a group and never bar by bar.
 ;
-; Layout string: "v=1|b0=x,y,type,size,visible|...|b9=...
-;   |npc=x,y,stride|n1=name|n2=name|n3=name|meters=x,y,scale,rows,always"
+; Layout string: "v=2|b0=x,y,type,size,visible|...|b9=...
+;   |npc=x,y,stride|n1=name|n2=name|n3=name|meters=x,y,scale,rows,always
+;   |ic=bar,seat,icon id,label|..." (one ic per icon seated in bars 0-3)
 ; The version is the DLL's Layout::kVersion: bump both when a field changes.
 ; ---------------------------------------------------------------------------
 
@@ -1627,7 +1641,7 @@ String Function editorLayout()
 	If !iBars || !iBars.isReady()
 		Return ""
 	EndIf
-	String s = "v=1"
+	String s = "v=2"
 	Int bar = 0
 	While bar < iBars.TOTAL_STATUS_BARS
 		s += "|b" + bar + "=" + iBars._getBarX(bar) + "," + iBars._getBarY(bar) + "," + iBars._getBarType(bar) + "," + iBars._getBarIconSize(bar) + "," + _editorBarVisible(bar)
@@ -1636,6 +1650,32 @@ String Function editorLayout()
 	s += "|npc=" + npcGroupX + "," + npcGroupY + "," + npcVerticalSpacing
 	s += "|n1=" + _editorSlotName(1) + "|n2=" + _editorSlotName(2) + "|n3=" + _editorSlotName(3)
 	s += "|meters=" + metersX + "," + metersY + "," + metersScale + "," + _editorMeterRows() + "," + (metersAlwaysShow As Int)
+	s += _editorBarIcons()
+	Return s
+EndFunction
+
+; The icons seated in the player bars, labelled as iWant labels them ("name -
+; mod"). A released icon keeps its seat until the next draw scrubs it, and its
+; label already reads "No Icon - No Icon", so it is left out.
+String Function _editorBarIcons()
+	String s = ""
+	String[] labels = iBars.iconLabel
+	Int perBar = iBars.ICONS_PER_STATUS_BAR
+	Int bar = 0
+	While bar < 4
+		Int seat = 0
+		While seat < perBar
+			Int icon = iBars._getBarIcon(bar, seat)
+			If icon >= 0 && labels && icon < labels.Length
+				String label = labels[icon]
+				If label != "" && label != "No Icon - No Icon"
+					s += "|ic=" + bar + "," + seat + "," + icon + "," + label
+				EndIf
+			EndIf
+			seat += 1
+		EndWhile
+		bar += 1
+	EndWhile
 	Return s
 EndFunction
 
@@ -1675,6 +1715,57 @@ Function editorSetBarPos(Int bar, Int x, Int y)
 	iBars._setBarX(bar, x)
 	iBars._setBarY(bar, y)
 	iBars._drawBar(bar)
+EndFunction
+
+; Icon moves in the player bars, as iWant's own MCM makes them. iWant puts an
+; icon back in the first free seat whenever it is loaded again (a switch off
+; and on, a preset, enabling the mod, an icon that comes and goes with its
+; state), so a move lasts until then; the user accepted that. Each move acts
+; only while the icon still sits where the page saw it, so a list that went
+; stale cannot move another icon. _setBarIcon clears an icon from every other
+; seat before it seats it, and sizes it to its new bar.
+
+; Swaps the icon with the next icon toward dir (-1 earlier, 1 later) in its
+; bar; empty seats between are skipped, as the bar draws without them.
+Function editorMoveIconInBar(Int bar, Int seat, Int icon, Int dir)
+	If !iBars || !iBars.isReady() || bar < 0 || bar > 3 || icon < 0 || (dir != -1 && dir != 1)
+		Return
+	EndIf
+	Int perBar = iBars.ICONS_PER_STATUS_BAR
+	If seat < 0 || seat >= perBar || iBars._getBarIcon(bar, seat) != icon
+		Return
+	EndIf
+	Int other = -1
+	Int t = seat + dir
+	While t >= 0 && t < perBar && other < 0
+		other = iBars._getBarIcon(bar, t)
+		If other < 0
+			t += dir
+		EndIf
+	EndWhile
+	If other < 0
+		Return
+	EndIf
+	iBars._setBarIcon(bar, seat, other)
+	iBars._setBarIcon(bar, t, icon)
+	iBars._drawBar(bar)
+EndFunction
+
+; Moves the icon to the first free seat of another player bar
+Function editorMoveIconToBar(Int bar, Int seat, Int icon, Int target)
+	If !iBars || !iBars.isReady() || bar < 0 || bar > 3 || target < 0 || target > 3 || target == bar || icon < 0
+		Return
+	EndIf
+	If seat < 0 || seat >= iBars.ICONS_PER_STATUS_BAR || iBars._getBarIcon(bar, seat) != icon
+		Return
+	EndIf
+	Int free = iBars._nextFreeBarPosition(target)
+	If free < 0
+		Return
+	EndIf
+	iBars._setBarIcon(target, free, icon)
+	iBars._drawBar(bar)
+	iBars._drawBar(target)
 EndFunction
 
 Function editorSetBarSize(Int bar, Int size)
@@ -1769,4 +1860,21 @@ EndFunction
 ; A preset was loaded another way (the MCM): it supersedes a load still owed
 Function forgetOwedPresetLoad()
 	_presetOwed = ""
+EndFunction
+
+; Work the SKSE menu's General page owes the update pass: a widget reload
+; (a new colour preset) and a module recheck (re-detecting installed mods).
+; The MCM did both in menu mode with the loop waiting; served in the pass they
+; never run alongside another one.
+Bool _reloadOwed = False
+Bool _recheckOwed = False
+
+Function requestReload()
+	_reloadOwed = True
+	_refreshSoon(0.2)
+EndFunction
+
+Function requestModuleRecheck()
+	_recheckOwed = True
+	_refreshSoon(0.2)
 EndFunction

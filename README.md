@@ -15,7 +15,7 @@ SL Widgets SSE
   <img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License: GPL-3.0">
 </p>
 
-A plugin for **iWant Status Bars** that shows SexLab-related status icons for the player **and up to three NPCs**: arousal, milk, wear & tear, cum, pregnancy, parasites, needs, and since 3.0 survival, hygiene, hair, baby health, stress, injuries and diseases. 210+ icons, all configurable in the MCM.
+A plugin for **iWant Status Bars** that shows SexLab-related status icons for the player **and up to three NPCs**: arousal, milk, wear & tear, cum, pregnancy, parasites, needs, and since 3.0 survival, hygiene, hair, baby health, stress, injuries and diseases. 210+ icons, all configurable in game.
 
 📖 **Full documentation:** https://crajjjj.github.io/slwidgets/
 
@@ -27,8 +27,7 @@ A plugin for **iWant Status Bars** that shows SexLab-related status icons for th
 - **Survival and body status** (3.0): SunHelm food, thirst, cold and fatigue; Bathing in Skyrim Renewed dirtiness and Wet Function (Redux or NG) wetness; SPH hair; BeeingFemale baby health; Stress and Fear; Blade and Blunt injuries; diseases.
 - **One drawn icon set** (3.0): every icon in the same style, white to red as a value worsens; the classic icons remain available as an optional download. See [Icon styles](https://crajjjj.github.io/slwidgets/customization/#icon-styles).
 - **Custom icon packs** to restyle the look — see [Custom Icon Packs](https://crajjjj.github.io/slwidgets/custom-packs/).
-- Colour presets, meters and NPC tracking in the **MCM**; see the [MCM Reference](https://crajjjj.github.io/slwidgets/mcm-reference/).
-- **Icon switches, positions and presets in the SKSE menu** (3.1, 3.2): Toggles, Positions and Presets pages in the SKSE Menu Framework menu; icons appear, go and move on the HUD as you change them, and a preset carries the layout too; see [SKSE Menu](https://crajjjj.github.io/slwidgets/position-editor/).
+- **Every setting in the SKSE menu** (3.3): General, Toggles, Meters, NPC Tracking, Positions and Presets pages in the SKSE Menu Framework menu; icons appear, go and move on the HUD as you change them, and a preset carries the layout too. The MCM shows the state and the dependency check. See [SKSE Menu](https://crajjjj.github.io/slwidgets/position-editor/).
 
 ## Requirements
 
@@ -36,7 +35,7 @@ A plugin for **iWant Status Bars** that shows SexLab-related status icons for th
 - iWant Widgets
 - PapyrusUtil
 - SKSE / SkyUI
-- SKSE Menu Framework 3.8+ (to change icon switches and positions in game; without it, through settings presets)
+- SKSE Menu Framework 3.8+ (every setting is in its menu, enabling the mod included)
 
 Load order: **iWidgets → iBars → SL Widgets** (SL Widgets relies on the iBars-ready event).
 
@@ -44,7 +43,7 @@ Every SexLab / pregnancy / needs integration is **optional** — install only th
 
 ## Installation
 
-Install with any mod manager (the SE build is ESL-flagged; the LE plugin also works on SE), keep the load order above, then configure in the SL Widgets MCM. The icons from before 3.0 are an optional download that installs on top. Step-by-step instructions: [Getting Started](https://crajjjj.github.io/slwidgets/getting-started/).
+Install with any mod manager (the SE build is ESL-flagged; the LE plugin also works on SE), keep the load order above, then enable and configure the mod in the SKSE Menu Framework menu, section SL Widgets. The icons from before 3.0 are an optional download that installs on top. Step-by-step instructions: [Getting Started](https://crajjjj.github.io/slwidgets/getting-started/).
 
 Custom icon packs (optional `.dds`-only downloads) install the same way — see [Custom Icon Packs](https://crajjjj.github.io/slwidgets/custom-packs/).
 
@@ -61,6 +60,7 @@ Works alongside common UI overhauls. Mods that heavily alter `hudmenu.gfx`/`hudm
 | [Icon Gallery](https://crajjjj.github.io/slwidgets/icons/) | Preview of every icon |
 | [Custom Icon Packs](https://crajjjj.github.io/slwidgets/custom-packs/) | Alternative icon styles |
 | [NPC Tracking](https://crajjjj.github.io/slwidgets/npc-tracking/) | Tracking up to 3 NPCs |
-| [MCM Reference](https://crajjjj.github.io/slwidgets/mcm-reference/) | Every menu setting |
+| [SKSE Menu](https://crajjjj.github.io/slwidgets/position-editor/) | Every setting |
+| [MCM Reference](https://crajjjj.github.io/slwidgets/mcm-reference/) | What the MCM shows |
 | [Customization](https://crajjjj.github.io/slwidgets/customization/) | Make your own icons |
 | [Troubleshooting](https://crajjjj.github.io/slwidgets/troubleshooting/) | Logs, fixes, common issues |

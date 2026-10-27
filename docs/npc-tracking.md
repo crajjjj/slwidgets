@@ -3,15 +3,15 @@
 SL Widgets can track **up to three NPCs** simultaneously alongside the player. Each tracked NPC gets their own pair of iWant bars and a floating name label on-screen.
 
 !!! warning "Requires iWant Status Bars 2.10+"
-    NPC tracking uses bar-visibility and bar-activity calls that older releases do not have, and it depends on a bar-lookup fix made in 2.10. On 2.09 and older the whole NPC layer stays off: the pick hotkey refuses new assignments, and MCM -> Debug shows **iWant Status Bars 2.10+** as not found. Player tracking still works, but 2.10 is recommended there too: it fixes a bar-lookup bug that can size a player icon to the wrong bar, and it bounds the waits that older releases spin on forever if the bars never initialise.
+    NPC tracking uses bar-visibility and bar-activity calls that older releases do not have, and it depends on a bar-lookup fix made in 2.10. On 2.09 and older the whole NPC layer stays off: the pick hotkey refuses new assignments, and MCM -> Maintenance shows **iWant Status Bars 2.10+** as not found. Player tracking still works, but 2.10 is recommended there too: it fixes a bar-lookup bug that can size a player icon to the wrong bar, and it bounds the waits that older releases spin on forever if the bars never initialise.
 
 ---
 
 ## Setting up the hotkey
 
-1. Open MCM → **SL Widgets** → **NPC Tracking**.
-2. Click **Pick Hotkey** and press the key you want to use.
-3. Close the MCM — the hotkey is now active in-game.
+1. Open the SKSE menu → **SL Widgets** → **NPC Tracking**.
+2. Next to **Pick Hotkey** click **Set** and press the key you want to use (Escape closes the menu instead).
+3. Close the menu: the hotkey is now active in-game.
 
 ---
 
@@ -23,12 +23,12 @@ Aim your crosshair directly at an NPC and press the hotkey:
 |-----------|--------|
 | NPC is not tracked and a slot is free | NPC is assigned to the next available slot; bar and label appear immediately |
 | NPC is already tracked | That slot is cleared; bar and label are removed |
-| All 3 slots are full | Notification: "All NPC slots full — clear one in MCM" |
+| All 3 slots are full | Notification that every slot is taken: clear one first |
 
-To clear a slot from the MCM without using the hotkey, go to **NPC Tracking** → the relevant slot → **Clear Slot**.
+To clear a slot without the hotkey, use **Clear Slot** under that slot on the SKSE menu's NPC Tracking page.
 
 !!! note "Hotkey guards"
-    The hotkey does nothing while any menu is open (MCM, inventory, dialogue, loading screen) or while the mod is globally disabled.
+    The hotkey does nothing while any menu is open (inventory, dialogue, loading screen) or while the mod is globally disabled.
 
 ---
 
@@ -59,7 +59,7 @@ NPC1 sits at the anchor. NPC2 and NPC3 stack upward so that when fewer slots are
 Each assigned NPC gets a floating text label above their bar showing their display name.
 
 - The label uses the NPC's in-game display name by default.
-- Set a **Custom Label** in the slot section of the NPC Tracking page to override it.
+- Set a **Custom label** in the slot's section of the SKSE menu's NPC Tracking page to override it.
 - When the NPC is in a different cell the label appends `(away)` automatically.
 
 ### Label style
@@ -113,7 +113,7 @@ The defaults are tuned so that a typical NPC stays within the primary bar (~10 i
 
 - NPC leaves the cell or is unloaded → icons and label hide automatically.
 - NPC re-enters the cell → icons and label reappear on the next update tick.
-- NPC dies or is deleted → slot behaves as if the NPC is away. You can clear it manually in the MCM.
+- NPC dies or is deleted → slot behaves as if the NPC is away. You can clear it with **Clear Slot** on the SKSE menu's NPC Tracking page.
 
 ---
 

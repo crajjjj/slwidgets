@@ -7,7 +7,7 @@ is rejected by the VM without a trace, and the editor then shows nothing.
 Everything here forwards to slw_widget_controller, where iWant is in scope.}
 
 Int Function GetVersion() Global
-	Return 2
+	Return 4
 EndFunction
 
 slw_config Function _config() Global
@@ -38,6 +38,40 @@ Function SetToggle(String toggleKey, Bool value) Global
 	slw_config c = _config()
 	If c && c.setToggleByKey(toggleKey, value) && c.widget_controller
 		c.widget_controller.requestTogglePass()
+	EndIf
+EndFunction
+
+; The General, Meters and NPC Tracking pages, "" while no game is loaded.
+; Format: the rows described above slw_config.editorGeneral
+String Function GetGeneral() Global
+	slw_config c = _config()
+	If !c
+		Return ""
+	EndIf
+	Return c.editorGeneral()
+EndFunction
+
+String Function GetMeters() Global
+	slw_config c = _config()
+	If !c || !c.widget_controller
+		Return ""
+	EndIf
+	Return c.editorMeters()
+EndFunction
+
+String Function GetNpc() Global
+	slw_config c = _config()
+	If !c || !c.widget_controller
+		Return ""
+	EndIf
+	Return c.editorNpc()
+EndFunction
+
+; One row of those pages changed: its key and the new value as text
+Function SetSetting(String settingKey, String value) Global
+	slw_config c = _config()
+	If c && c.widget_controller
+		c.editorSet(settingKey, value)
 	EndIf
 EndFunction
 
@@ -92,6 +126,22 @@ Function SetBarPos(Int bar, Int x, Int y) Global
 	slw_widget_controller w = _controller()
 	If w
 		w.editorSetBarPos(bar, x, y)
+	EndIf
+EndFunction
+
+; A player icon one place along its bar (dir -1 or 1), or to the first free
+; seat of another player bar, while it still sits where the page saw it
+Function MoveIconInBar(Int bar, Int seat, Int icon, Int dir) Global
+	slw_widget_controller w = _controller()
+	If w
+		w.editorMoveIconInBar(bar, seat, icon, dir)
+	EndIf
+EndFunction
+
+Function MoveIconToBar(Int bar, Int seat, Int icon, Int target) Global
+	slw_widget_controller w = _controller()
+	If w
+		w.editorMoveIconToBar(bar, seat, icon, target)
 	EndIf
 EndFunction
 

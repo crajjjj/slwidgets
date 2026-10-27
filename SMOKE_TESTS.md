@@ -16,18 +16,18 @@ Pre-release checklist. Each scenario should be verified in-game or by code inspe
 | 1.4 | P1 | iWant Status Bars not installed | `iBars` remains None, `isLoaded()` returns false, no script errors | slw_widget_controller |
 | 1.5 | P1 | iWant Status Bars loads after SLW | `RegisterForModEvent` persists, late `iWantStatusBarsReady` event still captured | slw_widget_controller |
 
-## 2. MCM Menu
+## 2. MCM (read-only since 3.3.0) and the SKSE menu's General page
 
 | # | P | Scenario | Expected | Scripts |
 |---|---|----------|----------|---------|
-| 2.1 | P0 | All 4 MCM pages render | General, Meters, NPC Tracking, Debug load without script errors; no Toggles page, no meter or NPC position sliders (3.2.0), and an old save shows the same four | slw_menu |
-| 2.2 | P0 | Enable/Disable mod toggle | Enable: `moduleReset` + `moduleSetup` + `reloadWidgets` + `startUpdates`. Disable: `stopUpdates` + `moduleReset` + `reloadWidgets` | slw_menu |
-| 2.3 | P1 | Switch grayed when dependency missing | SKSE menu Toggles page: a row whose mod is not loaded is disabled and marked (not installed) | slw_config.editorToggles |
-| 2.4 | P1 | Update interval slider | Range 1–60, value persists in `config.updateInterval`, affects `RegisterForSingleUpdate` delay | slw_menu, slw_widget_controller |
-| 2.5 | P1 | Recheck dependencies button | `moduleReset()` + `moduleSetup()` re-detects newly installed mods, page refreshes | slw_menu |
-| 2.6 | P1 | Debug page dependency list | All `isXxxReady()` checks display OK/Not Found correctly for installed mods | slw_menu |
-| 2.7 | P2 | OnConfigClose reloads widgets | `widget_controller.reloadWidgets()` fires, icons refresh | slw_menu |
-| 2.8 | P0 | A 3.1.0 save that opened the Meters page, an NPC in slot 2: update, open NPC Tracking first, click slot 2's Clear | The slot clears; no meter switch flips (old option ids are forgotten on open) | slw_menu._forgetOptionIds |
+| 2.1 | P0 | MCM renders | Two pages, General and Maintenance; no option can be changed; an old save shows the same two | slw_menu |
+| 2.2 | P0 | MCM General | **SL Widgets: Enabled / Disabled** matches the mod; **SKSE menu: OK**, or names SKSE Menu Framework / SLWidgetsMenu.dll as missing | slw_menu._skseMenuState |
+| 2.3 | P0 | SKSE menu > General > Mod enabled on, then off | On: modules set up, icons load, the update loop starts. Off: loop stops, icons go. The MCM's General follows | slw_config._editorSetEnabled |
+| 2.4 | P1 | Update interval slider | Range 1-60, applied on release, persists in `config.updateInterval` | slw_config.editorSet |
+| 2.5 | P1 | Reset modules (mod enabled) | Served by the next update pass: `moduleReset` + `moduleSetup`; a newly installed mod is detected | requestModuleRecheck |
+| 2.6 | P1 | MCM Maintenance dependency list | All `isXxxReady()` checks display OK/Not Found correctly for installed mods | slw_menu |
+| 2.7 | P1 | Color Preset choice | Colours change after the next update pass reloads the icons | requestReload |
+| 2.8 | P1 | Add icon placeholder | A transparent placeholder icon takes an iWant bar seat | LoadEmptyIcon |
 
 ## 3. User Settings Persistence
 
@@ -279,6 +279,10 @@ Added in 2.3.0, never run in game when written. Set the update interval to 60 s 
 | 20.9 | P1 | Open at the main menu (no game) | The page says SL Widgets is not running; nothing is written | slw_bridge.GetLayout |
 | 20.10 | P1 | Old slw_bridge.pex under a new DLL | The page names the mismatch; no crash | Bridge.cpp |
 | 20.11 | P2 | Load a game with the page left open | The layout is dropped and read again when the page comes up | main.cpp OnVmReset |
+| 20.12 | P0 | Bar 0 > Icons: ^ / v on an icon (3.3.0) | The icon swaps places with its neighbour on the HUD; the list shows the new order after a read | editorMoveIconInBar |
+| 20.13 | P0 | Bar 0 > Icons: to 1 | The icon leaves bar 0 and appears at the end of bar 1, sized to bar 1 | editorMoveIconToBar |
+| 20.14 | P1 | A target bar with ten icons | Its to N button is greyed; the script refuses a move there anyway | _nextFreeBarPosition |
+| 20.15 | P2 | Move an SL Widgets icon, switch it off and on | It returns to the first free place (expected: moves do not stick) | iWant loadIcon |
 
 ## 21. Icon textures
 
@@ -310,3 +314,16 @@ Added in 2.3.0, never run in game when written. Set the update interval to 60 s 
 | 23.7 | P2 | Hand-edited preset with `bars.0.size` 500 | Clamped to 150, iWant's maximum | _presetInt |
 | 23.8 | P1 | Load then Save over another preset within a second | The save holds the loaded preset's settings (served after the load) | _updatePass owed requests |
 | 23.9 | P2 | Save as new, then switch pages and back at once | Status stays Saving... until a later read shows the file, then Saved | PresetsPage Judge |
+
+## 24. Meters and NPC Tracking pages (3.3.0)
+
+| # | P | Scenario | Expected | Scripts |
+|---|---|----------|----------|---------|
+| 24.1 | P0 | Meters: switch a meter on | The stack rebuilds with it within a second or two | editorSet meter.N, requestMetersRebuild |
+| 24.2 | P1 | Always Show Meters on | Fade Out After greys out; every switched-on meter stays up | editorSet meters.always |
+| 24.3 | P0 | NPC Tracking: Pick Hotkey > Set, press K | The row shows K; aiming at an NPC and pressing K tracks it | SettingsPage OnInput, setHotkey |
+| 24.4 | P1 | Pick Hotkey > Set, press Escape | The menu closes; the hotkey is unchanged | OnInput (Escape left alone) |
+| 24.5 | P1 | Label colour picked | Labels change colour while picking, at most every 0.25 s | DrawColor, setNpcLabelColorPacked |
+| 24.6 | P1 | Slot 1: switch Milk on, Clear Slot | Milk icon appears for that NPC; Clear removes icons and label | _editorSetNpc |
+| 24.7 | P1 | Custom label typed, Enter | The label shows the text; empty returns the name | setNpcCustomLabel, refreshNpcLabel |
+| 24.8 | P2 | A row with a value changed in another page, then Refresh | The page shows the new value | Bridge::Request |

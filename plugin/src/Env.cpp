@@ -13,11 +13,14 @@ namespace Env
 		// Keep in step with the pages, PageCommon.h and Menu.cpp.
 		constexpr std::array kFrameworkExports{
 			"AddSectionItem",
+			"RegisterInpoutEvent",
 			"RegisterEventPriority",
 			"UnregisterEvent",
 			"igBeginCombo",
 			"igBeginDisabled",
 			"igBeginTooltip",
+			"igCollapsingHeader_TreeNodeFlags",
+			"igColorEdit3",
 			"igCheckbox",
 			"igEndCombo",
 			"igEndDisabled",
@@ -27,6 +30,7 @@ namespace Env
 			"igIndent",
 			"igInputText",
 			"igIsItemActive",
+			"igIsItemDeactivatedAfterEdit",
 			"igIsItemHovered",
 			"igPopID",
 			"igPopStyleColor",

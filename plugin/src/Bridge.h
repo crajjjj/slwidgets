@@ -13,6 +13,9 @@ namespace Bridge
 		Layout,   // slw_bridge.GetLayout: positions (slw_widget_controller.editorLayout)
 		Toggles,  // slw_bridge.GetToggles: the player icon switches (slw_config.editorToggles)
 		Presets,  // slw_bridge.GetPresets: the settings presets and the active one (slw_config.editorPresets)
+		General,  // slw_bridge.GetGeneral: the General page's rows (slw_config.editorGeneral)
+		Meters,   // slw_bridge.GetMeters: the Meters page's rows
+		Npc,      // slw_bridge.GetNpc: the NPC Tracking page's rows
 		kCount
 	};
 
@@ -37,6 +40,8 @@ namespace Bridge
 	void SetBarPos(int a_bar, int a_x, int a_y);
 	void SetBarSize(int a_bar, int a_size);
 	void SetBarType(int a_bar, int a_type);
+	void MoveIconInBar(int a_bar, int a_seat, int a_icon, int a_dir);
+	void MoveIconToBar(int a_bar, int a_seat, int a_icon, int a_target);
 	void SetNpcGroup(int a_x, int a_y);
 	void SetNpcSpacing(int a_spacing);
 	void SetMeters(int a_x, int a_y, int a_scale);
@@ -44,4 +49,5 @@ namespace Bridge
 	void SetToggle(const std::string& a_key, bool a_value);
 	void LoadPreset(const std::string& a_name);
 	void SavePreset(const std::string& a_name);
+	void SetSetting(const std::string& a_key, const std::string& a_value);
 }

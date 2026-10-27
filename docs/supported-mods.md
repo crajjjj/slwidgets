@@ -1,6 +1,6 @@
 # Supported Mods
 
-SL Widgets auto-detects installed plugins at startup. No configuration is required to enable a mod — just have it installed and SL Widgets will pick it up. You can still individually toggle each icon group in the MCM if you want to hide certain sets.
+SL Widgets auto-detects installed plugins at startup. No configuration is required to enable a mod — just have it installed and SL Widgets will pick it up. You can still switch each icon group off on the SKSE menu's [Toggles](position-editor.md#toggles) page if you want to hide certain sets.
 
 ---
 
@@ -247,7 +247,7 @@ Not a status icon but a **bar**: the top meter of the [meter stack](#meter-stack
 | In a scene, below `100` | The bar, filled to the current willpower, draining as the scene goes on |
 | In a scene, broken (`0`) | The bar flashes and empties, and the icon turns red |
 
-The value is read from the StorageUtil keys SLO VE publishes, with the recovery since the last scene worked out, so the bar starts a scene where SLO VE will. Whether the player is in a scene is asked of SexLab's animating faction. The bar takes the stack's position and size; its switch is on the MCM's **Meters** page with the others. The stack's display mode does not apply to it: it always follows the table above. The bar is updated on the normal update interval (5 seconds by default), so it comes and goes up to that long after the scene does.
+The value is read from the StorageUtil keys SLO VE publishes, with the recovery since the last scene worked out, so the bar starts a scene where SLO VE will. Whether the player is in a scene is asked of SexLab's animating faction. The bar takes the stack's position and size; its switch is on the SKSE menu's **Meters** page with the others. The stack's display mode does not apply to it: it always follows the table above. The bar is updated on the normal update interval (5 seconds by default), so it comes and goes up to that long after the scene does.
 
 NPC support: **No** - the bar is for the player.
 
@@ -267,14 +267,14 @@ One iWant Widgets meter per value, stacked at the right edge of the screen, half
 | **FHU Vaginal / Anal / Oral Pool** | Fill Her Up | How full that pool is |
 | **Vaginal / Anal / Oral W&T** | Apropos2 | The wear and tear stage. Apropos2 only shares the stage (0-8), so these bars move in eighths |
 
-How they show is one switch on the MCM's **Meters** page (willpower keeps its own rule):
+How they show is one switch on the SKSE menu's [Meters](position-editor.md#meters) page (willpower keeps its own rule):
 
 | Mode | What you see |
 |------|--------------|
 | Fade after a change (default) | A meter fades in when its value moves by 5 points or more, or its icon changes stage, and fades out again after the hold time (10 seconds by default). Slow drifts, such as FHU absorbing or arousal wearing off, show again every 5 points instead of keeping the meter up |
 | Always show | Every meter stays on screen |
 
-Values are read on the normal update interval (5 seconds by default), and sooner when SLA, FHU or Apropos2 SE 1.0020+ report a change (see each mod above), so a meter appears within a second or two of such a change. Fading out is decided on the next check, so it can come up to an interval late. Only meters that are switched on and whose mod is installed get a row, and a row keeps its place while its meter is faded out. Each meter has its own switch, and all of them start **off**: switch on the ones you want on the MCM's **Meters** page; position, size, the display mode and the hold time are on the same page, and a settings preset saves all of them.
+Values are read on the normal update interval (5 seconds by default), and sooner when SLA, FHU or Apropos2 SE 1.0020+ report a change (see each mod above), so a meter appears within a second or two of such a change. Fading out is decided on the next check, so it can come up to an interval late. Only meters that are switched on and whose mod is installed get a row, and a row keeps its place while its meter is faded out. Each meter has its own switch, and all of them start **off**: switch on the ones you want on the SKSE menu's **Meters** page, where the display mode and the hold time are too; position and size are on its **Positions** page, and a settings preset saves all of them.
 
 NPC support: **No** - the meters are for the player. NPCs keep their status icons.
 

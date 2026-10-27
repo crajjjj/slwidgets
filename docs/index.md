@@ -3,7 +3,7 @@
 A plugin for **iWant Status Bars** that adds SexLab-related status icons to your HUD. 210+ icons across 16 mod ecosystems, with full support for tracking the player and up to three NPCs simultaneously.
 
 !!! warning "Adult mod — reference documentation"
-    SL Widgets is a mature (18+) HUD add-on that displays status from SexLab-ecosystem mods. **These pages are reference documentation:** they describe the widgets, icons, and MCM options so players can configure it and authors can integrate with it. They contain no pornographic media and exist to document software behaviour. Install and use the mod only where appropriate for your age and local laws.
+    SL Widgets is a mature (18+) HUD add-on that displays status from SexLab-ecosystem mods. **These pages are reference documentation:** they describe the widgets, icons, and settings so players can configure it and authors can integrate with it. They contain no pornographic media and exist to document software behaviour. Install and use the mod only where appropriate for your age and local laws.
 
 Two display mechanics:
 
@@ -19,7 +19,8 @@ Two display mechanics:
 - [Getting Started](getting-started.md) — requirements, installation, first-time setup
 - [Supported Mods](supported-mods.md) — every supported plugin and what icons it shows
 - [NPC Tracking](npc-tracking.md) — how to watch up to three NPCs alongside yourself
-- [MCM Reference](mcm-reference.md) — every setting explained
+- [SKSE Menu](position-editor.md) — every setting explained
+- [MCM Reference](mcm-reference.md) — the state and the dependency check the MCM shows
 - [Customization](customization.md) — icon packs, color presets, settings presets
 - [Prisma Renderer](prisma.md) — optional Flash-free renderer: sharper icons, animated GIFs, ultrawide positions
 - [Troubleshooting](troubleshooting.md) — common problems and fixes
@@ -35,7 +36,7 @@ Two display mechanics:
 | Icon count | 210+ |
 | Icon types | 9-stage fills + conditional toggles |
 | Icon styles | One drawn set (3.0.0); the classic icons are an optional download |
-| Configuration | Full SkyUI MCM with save/load presets |
+| Configuration | SKSE Menu Framework pages, with save/load presets; the MCM shows the state |
 | HUD framework | iWant Status Bars (Flash, or the optional [Prisma renderer](prisma.md)) |
 
 ---

@@ -5,10 +5,11 @@
 
 namespace Layout
 {
-	constexpr int kVersion = 1;  // slw_widget_controller.editorLayout's "v="
+	constexpr int kVersion = 2;  // slw_widget_controller.editorLayout's "v="
 	constexpr int kBars = 10;    // iWant TOTAL_STATUS_BARS
 	constexpr int kPlayerBars = 4;  // bars 0-3 hold the player's icons and belong to iWant; 4-9 are the NPC slots', laid out from the cluster anchor
 	constexpr int kNpcSlots = 3;
+	constexpr int kIconsPerBar = 10;  // iWant ICONS_PER_STATUS_BAR
 	constexpr int kOrientations = 10;  // iWant bar types: 0 left, 1 right, 2 up, 3 down, 4 circle, 5 orbit, 6-9 half circles
 
 	// What the mod accepts: iWant's locked slider range and the SL Widgets MCM's
@@ -19,6 +20,14 @@ namespace Layout
 	constexpr int kMaxMetersY = 719;  // the MCM's slider must still be able to show the value
 	constexpr int kMinMetersScale = 20, kMaxMetersScale = 200;
 
+	// An icon seated in a player bar, as iWant labels it ("name - mod")
+	struct Icon
+	{
+		int         seat = 0;
+		int         id = -1;  // iWant's icon id: a move acts only while this icon still sits in that seat
+		std::string label;
+	};
+
 	struct Bar
 	{
 		int  x = 640;
@@ -26,6 +35,7 @@ namespace Layout
 		int  type = 0;
 		int  size = 25;
 		bool visible = true;  // iWant's own show/hide; a hidden bar takes a move all the same
+		std::vector<Icon> icons;  // seat order, which is the order the bar draws (player bars only)
 	};
 
 	struct Npc

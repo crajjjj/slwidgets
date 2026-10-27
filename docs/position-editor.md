@@ -1,15 +1,13 @@
 # SKSE Menu
 
-*Since 3.1.* SL Widgets' icon switches, positions and settings presets live in the [SKSE Menu Framework](https://www.nexusmods.com/skyrimspecialedition/mods/120352) menu, and apply while the menu is open, with the game in view. Three pages: **Toggles**, **Positions** and **Presets**. The [MCM](mcm-reference.md) keeps the rest: enabling the mod, the update interval, colour presets, the meter switches, NPC tracking and the dependency check.
+Since 3.3 every SL Widgets setting lives in the [SKSE Menu Framework](https://www.nexusmods.com/skyrimspecialedition/mods/120352) menu, section **SL Widgets**, and applies while the menu is open, with the game in view. The [MCM](mcm-reference.md) only shows whether the mod is enabled and which supported mods were found.
 
 ---
 
 ## Requirements
 
-- SKSE Menu Framework 3.8 or newer.
+- **SKSE Menu Framework 3.8 or newer: required.** SL Widgets starts disabled on a new game, and it is switched on here. Without the framework the mod cannot be enabled or set up in game; the MCM's General page says so.
 - The pages themselves, `SLWidgetsMenu.dll`, ship in the SL Widgets archive under `SKSE/Plugins`. They read and write the settings the scripts hold, nothing else.
-
-Without SKSE Menu Framework SL Widgets runs as before, but the icon switches and positions can then only be changed through a [settings preset](customization.md#settings-presets): edit the preset file and load it on the MCM's General page.
 
 ---
 
@@ -17,17 +15,32 @@ Without SKSE Menu Framework SL Widgets runs as before, but the icon switches and
 
 1. Load a game.
 2. Open the SKSE Menu Framework menu with its hotkey.
-3. Pick the **SL Widgets** section, then **Toggles**, **Positions** or **Presets**.
+3. Pick the **SL Widgets** section, then a page: **General**, **Toggles**, **Meters**, **NPC Tracking**, **Positions** or **Presets**.
 
-The game freezes while the menu is open, but the widgets keep updating, so a change shows on the real icons at once. Move the framework's panel aside if it covers what you are placing.
+The game freezes while the menu is open, but the widgets keep updating, so a change shows on the real icons at once. Move the framework's panel aside if it covers what you are placing. Hover a setting for what it does.
+
+---
+
+## General
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| **Mod enabled** | Off | Starts or stops SL Widgets. Stopping removes every icon and stops the update script; starting loads the icons switched on. A new game starts with the mod off |
+| **Update interval** | 5 | Seconds between status checks (1-60). Changes that SLA, Fill Her Up or Apropos2 SE 1.0020+ report (see [Supported Mods](supported-mods.md)) are checked within a second or two whatever the interval |
+| **Color Preset** | Default | The icon colour scheme: the `.json` files in `SKSE/Plugins/SlWidgets/IconPresets/` (see [Color presets](customization.md#color-presets)) |
+
+**Maintenance:**
+
+| Button | Description |
+|--------|-------------|
+| **Reset modules** | Rechecks every supported mod and sets the modules up again. Use it after installing or removing a supported mod mid-session. Available while the mod is enabled |
+| **Add icon placeholder** | Loads a transparent placeholder icon into an iWant bar seat, to reserve space when arranging a bar by hand |
 
 ---
 
 ## Toggles
 
-*Since 3.2; the MCM's Toggles page before.* The player's icon switches, grouped by mod. Hover a switch for what the icon shows. A switch whose mod is not installed is greyed out and marked *(not installed)*. A switch applies within a second or two: the icon appears or goes while the menu is still open. The labels come from SL Widgets' own translation files, in the game's language.
-
-The per-NPC switches stay on the MCM's [NPC Tracking](mcm-reference.md#npc-tracking) page, the meter switches on its Meters page.
+*Since 3.2.* The player's icon switches, grouped by mod. A switch whose mod is not installed is greyed out and marked *(not installed)*. A switch applies within a second or two: the icon appears or goes while the menu is still open. The labels come from SL Widgets' own translation files, in the game's language.
 
 ### Stage icon groups
 
@@ -63,9 +76,51 @@ The per-NPC switches stay on the MCM's [NPC Tracking](mcm-reference.md#npc-track
 
 ---
 
-## Positions
+## Meters
 
-*Since 3.1; the position sliders of the MCM's Meters and NPC Tracking pages before 3.2.*
+Bars rather than status icons: one stack of iWant Widgets meters, for the player only, each with an icon to its left. See [Supported Mods](supported-mods.md#meter-stack). The stack's place and size are on the [Positions](#positions) page.
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| **Always Show Meters** | Off | On: every meter stays on screen. Off: a meter appears when its value moves by 5 points or more, or its icon changes stage, and fades out again after the time below. The willpower meter keeps its own rule either way: up during a scene, while willpower is below 100 |
+| **Fade Out After** | 10 | Seconds a meter stays up after a change (2-120). Greyed out while meters are always shown |
+
+One switch per meter, grouped by mod, in the order they stack; a switch is greyed out while its mod is not installed. All are off by default:
+
+| Switch | Requires | Description |
+|--------|----------|-------------|
+| **Willpower Meter Enabled** | `SLOVE.esp` | SLO VE willpower, during a scene: see [Supported Mods](supported-mods.md#slo-ve-willpower-bar) |
+| **Arousal Meter Enabled** | `SexLabAroused.esm` | SexLab Aroused arousal |
+| **FHU Total / Vaginal Pool / Anal Pool / Oral Pool Meter Enabled** | `sr_FillHerUp.esp` | Fill Her Up pools |
+| **Vaginal / Anal / Oral W&T Meter Enabled** | `Apropos2.esp` | Apropos2 wear and tear |
+
+A change rebuilds the stack within a second or two, and it then shows whole for half a minute so you can see where it sits.
+
+---
+
+## NPC Tracking
+
+How tracking works is on the [NPC Tracking](npc-tracking.md) page.
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| **Pick Hotkey** | none | **Set**, then press a key: aiming at an NPC and pressing it tracks that NPC in a free slot, pressing it on a tracked NPC stops. **Clear** removes the key. Escape closes the menu rather than becoming the key |
+| **Font** | Default (Everywhere) | Font of the three name labels; changing it recreates them |
+| **Size** | 24 | Text height of the labels (10-60); changing it recreates them |
+| **Label Color** | White | Colour of the labels, applied as you pick it |
+
+Per slot (NPC 1 to 3, named after the actor tracked there; greyed out while the slot is empty):
+
+| Setting | Description |
+|---------|-------------|
+| **Clear Slot** | Stops tracking that NPC: its icons and label go |
+| Icon switches | Arousal, Exposure, W&T, FHU total / vaginal / anal / oral, Milk, Lactacid, Parasites, Pregnancy, Dirtiness, Wetness, Baby health. Independent of the player's switches |
+| **Label Offset X / Y** | Nudge the label (±200) from its place above the slot's bar |
+| **Custom label** | Shown in place of the actor's name; empty uses the name. Applied on Enter or when you leave the field |
+
+---
+
+## Positions
 
 | Group | Sliders | Applies |
 |-------|---------|---------|
@@ -83,20 +138,26 @@ What a change writes:
 
 Values are iWant's 1280 × 720 stage units (see [Screen coordinates](customization.md#screen-coordinates)).
 
+### Icons in the bars
+
+*Since 3.3.* Under each player bar, **Icons** lists the icons it holds, in the order the bar draws them, with the mod each comes from. **^** and **v** move an icon one place along its bar; **to 0** ... **to 3** move it to the first free place of another player bar (greyed out while that bar is full, ten icons). Any mod's icon in those bars can be moved, as in iWant's own MCM.
+
+A move lasts until iWant loads that icon again, which puts it back in the first free place: when its switch goes off and on, a preset is loaded, the mod is enabled, or for an icon that comes and goes with its state (pregnancy, diseases, injuries). Then move it again.
+
 ---
 
 ## Presets
 
 *Since 3.2.* The [settings presets](customization.md#settings-presets): the list, with the active one marked; **Load** the one picked; **Save over** it (after a confirmation); or save the current settings under a new name with **Save as new**. A preset holds the icon switches, the meters, the NPC slot switches and, since 3.2, the layout: the player bars, the NPC cluster and the meter stack.
 
-Loading a preset reloads every icon, which takes a second or two. The MCM's General page loads and saves presets too.
+Loading a preset reloads every icon, which takes a second or two.
 
 ---
 
 ## Notes
 
-- Everything the pages change lives in the save, like the MCM's settings.
-- Each page has a status line with **Refresh**, which reads the values again after a change in an MCM or iWant's own menu.
+- Everything the pages change lives in the save.
+- Each page has a status line with **Refresh**, which reads the values again after a change in iWant's own menu or on another page.
 - A bar iWant has hidden is marked *(hidden by iWant right now)*; it takes a move all the same.
 - The pages and the scripts must come from the same SL Widgets release: an older `slw_bridge.pex` under a newer DLL shows a message on the page instead of the settings.
 - On the title screen, with no game loaded, the pages say SL Widgets is not running.

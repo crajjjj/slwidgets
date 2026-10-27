@@ -134,9 +134,90 @@ namespace Positions
 			return changed;
 		}
 
+		// A move picked in an icon list, made once the lists are drawn
+		struct Move
+		{
+			int  bar = -1;
+			int  index = -1;  // in that bar's icons
+			int  dir = 0;     // -1 / 1 within the bar, or 0 with a target bar
+			int  target = -1;
+		};
+
+		// The bar's icons in draw order, each with its moves. iWant puts an icon back
+		// in the first free seat when it is loaded again, so the list says so.
+		void DrawIcons(int a_bar, std::optional<Move>& a_move)
+		{
+			const auto& icons = g_model.bars[static_cast<std::size_t>(a_bar)].icons;
+			const std::string header = std::format("Icons ({})###icons", icons.size());
+			if (!Ui::CollapsingHeader(header.c_str(), 0)) {
+				return;
+			}
+			if (icons.empty()) {
+				Colored(kHint, "No icon in this bar.");
+				return;
+			}
+			for (std::size_t i = 0; i < icons.size(); ++i) {
+				PageCommon::IdScope id{ 1000 + static_cast<int>(i) };
+				const int           index = static_cast<int>(i);
+				{
+					PageCommon::DisabledScope first{ i == 0 };
+					if (Ui::SmallButton("^")) {
+						a_move = Move{ a_bar, index, -1, -1 };
+					}
+				}
+				Ui::SameLine(0.0f, -1.0f);
+				{
+					PageCommon::DisabledScope last{ i + 1 == icons.size() };
+					if (Ui::SmallButton("v")) {
+						a_move = Move{ a_bar, index, 1, -1 };
+					}
+				}
+				for (int target = 0; target < Layout::kPlayerBars; ++target) {
+					if (target == a_bar) {
+						continue;
+					}
+					Ui::SameLine(0.0f, -1.0f);
+					PageCommon::DisabledScope full{ g_model.bars[static_cast<std::size_t>(target)].icons.size() >= static_cast<std::size_t>(Layout::kIconsPerBar) };
+					if (Ui::SmallButton(std::format("to {}", target).c_str())) {
+						a_move = Move{ a_bar, index, 0, target };
+					}
+				}
+				Ui::SameLine(0.0f, -1.0f);
+				Ui::TextUnformatted(icons[i].label.c_str());
+			}
+			Colored(kHint, "A moved icon goes back to the first free seat when it is loaded again: switched off and on, a preset loaded, the mod enabled, or an icon that comes and goes with its state.");
+		}
+
+		// Sends the move and shows it at once; the read that follows corrects the guess
+		void MakeMove(const Move& a_move, double a_now)
+		{
+			auto&       icons = g_model.bars[static_cast<std::size_t>(a_move.bar)].icons;
+			const auto  i = static_cast<std::size_t>(a_move.index);
+			if (i >= icons.size()) {
+				return;
+			}
+			const auto icon = icons[i];
+			if (a_move.dir != 0) {
+				const auto j = a_move.dir < 0 ? i - 1 : i + 1;
+				if (a_move.dir < 0 ? i == 0 : j >= icons.size()) {
+					return;
+				}
+				Bridge::MoveIconInBar(a_move.bar, icon.seat, icon.id, a_move.dir);
+				std::swap(icons[i].id, icons[j].id);
+				std::swap(icons[i].label, icons[j].label);
+			} else {
+				auto& to = g_model.bars[static_cast<std::size_t>(a_move.target)].icons;
+				Bridge::MoveIconToBar(a_move.bar, icon.seat, icon.id, a_move.target);
+				icons.erase(icons.begin() + static_cast<std::ptrdiff_t>(i));
+				to.push_back(icon);  // the seat is a guess until the read
+			}
+			g_page.ConfirmAt(a_now + kConfirmAfter);
+		}
+
 		void DrawBars(double a_now)
 		{
 			Colored(kHint, "Player bars: iWant's shared bars, so every mod's icons in a bar move with it");
+			std::optional<Move> move;
 			for (int bar = 0; bar < Layout::kPlayerBars; ++bar) {
 				auto& b = g_model.bars[static_cast<std::size_t>(bar)];
 				auto& rows = g_barRows[static_cast<std::size_t>(bar)];
@@ -159,7 +240,11 @@ namespace Positions
 				if (Orientation(b.type, a_now)) {
 					Bridge::SetBarType(bar, b.type);
 				}
+				DrawIcons(bar, move);
 				Ui::Spacing();
+			}
+			if (move) {
+				MakeMove(*move, a_now);
 			}
 		}
 
@@ -209,7 +294,7 @@ namespace Positions
 			PageCommon::IdScope id{ 200 };
 			Ui::TextUnformatted("Meter stack");
 			Colored(kHint, m.rows > 0 ? std::format("{} switched on; the stack rebuilds a moment after a change and shows itself for 30 s", m.rows).c_str() :
-			                            "none switched on: switch a meter on in the MCM to see the stack");
+			                            "none switched on: switch a meter on on the Meters page to see the stack");
 			bool any = Slider("X", m.x, Layout::kMinX, Layout::kMaxX, g_metersRows[0], false, a_now);
 			Ui::SameLine();
 			any = Slider("Y", m.y, Layout::kMinY, Layout::kMaxMetersY, g_metersRows[1], false, a_now) || any;

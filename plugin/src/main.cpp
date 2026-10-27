@@ -3,6 +3,7 @@
 #include "Menu.h"
 #include "PositionsPage.h"
 #include "PresetsPage.h"
+#include "SettingsPage.h"
 #include "TogglesPage.h"
 
 #include <spdlog/sinks/basic_file_sink.h>
@@ -61,6 +62,7 @@ namespace
 				Positions::OnVmReset();
 				Toggles::OnVmReset();
 				Presets::OnVmReset();
+				Settings::OnVmReset();
 				break;
 			default:
 				break;
