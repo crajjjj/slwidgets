@@ -100,6 +100,14 @@ Function initInterface()
 		; every load: the set is idempotent, and a save whose Estrus Unified
 		; co-save was lost would otherwise never hear a change again
 		EstrusUnifiedAPI.RegisterForPregnancyEvents(self)
+		If Plugin_EstrusChaurus || Plugin_EstrusSpider || Plugin_EstrusDwemer
+			; a save that moved from the legacy plugins to Unified: nothing else
+			; clears these, and their blocks would release the icons Unified sets
+			WriteLog("ModulePregnancy: Estrus Unified present, the legacy Estrus plugins are off")
+			Plugin_EstrusChaurus = false
+			Plugin_EstrusSpider = false
+			Plugin_EstrusDwemer = false
+		EndIf
 	EndIf
 
 	If (!Plugin_EstrusChaurus && !Plugin_EstrusUnified && isECReady())
