@@ -32,3 +32,4 @@ site/
 # SKSE plugin build output (plugin\): the DLL itself is ignored by *.dll above
 plugin/.xmake/
 plugin/vsxmake*/
+__pycache__/
