@@ -54,9 +54,14 @@ namespace
 				Env::Detect();
 				Menu::Register();
 				break;
-			case MessagingInterface::kPreLoadGame:
 			case MessagingInterface::kNewGame:
 			case MessagingInterface::kPostLoadGame:
+				// the MCM's status line: are the pages up, or does the framework lack what they need
+				if (::GetModuleHandleW(L"SKSEMenuFramework")) {
+					Bridge::ReportMenu(Env::Get().frameworkOk ? 1 : 2);
+				}
+				[[fallthrough]];
+			case MessagingInterface::kPreLoadGame:
 				// the VM is reset: an answer on its way is gone, the layout belongs to the old game
 				Bridge::OnVmReset();
 				Positions::OnVmReset();

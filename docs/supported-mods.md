@@ -1,6 +1,6 @@
 # Supported Mods
 
-SL Widgets auto-detects installed plugins at startup. No configuration is required to enable a mod — just have it installed and SL Widgets will pick it up. You can still switch each icon group off on the SKSE menu's [Toggles](position-editor.md#toggles) page if you want to hide certain sets.
+SL Widgets auto-detects installed plugins at startup. No configuration is required to enable a mod: just have it installed and SL Widgets will pick it up. You can still switch each icon group off on the SKSE menu's [Toggles](position-editor.md#toggles) page if you want to hide certain sets.
 
 ---
 

@@ -25,6 +25,9 @@ Int property updateInterval = 5 auto hidden
 String property activePreset = "Default" auto hidden
 String property activeSettingsPreset = "Default" auto hidden
 Bool property slw_stopped = True auto hidden
+; SLWidgetsMenu.dll's report at each game load: 1 its pages are up, 2 the
+; installed SKSE Menu Framework lacks what they need; 0 no report (yet)
+Int property skseMenuReport = 0 auto hidden
 
 Int _iconColors = 0
 
@@ -467,7 +470,7 @@ Event OnKeyDown(Int keyCode)
 	; Refuse when mod is disabled — otherwise we'd create a name label with no
 	; icons under it (modules early-return when stopped).
 	If slw_stopped
-		Debug.Notification("SLWidgets: enable the mod first in MCM")
+		Debug.Notification("SLWidgets: enable the mod first (SKSE menu, SL Widgets, General)")
 		Return
 	EndIf
 	; Block hotkey while any menu is open (MCM, inventory, magic, container,
@@ -499,13 +502,13 @@ Event OnKeyDown(Int keyCode)
 	; never be reconciled into the slot's bars. Clearing (above) stays
 	; allowed so leftover slots from an old save can be cleaned up.
 	If widget_controller && !widget_controller.hasBarsAPI()
-		Debug.Notification("SLWidgets: NPC tracking needs iWant Status Bars 2.10 or newer (see Debug page)")
+		Debug.Notification("SLWidgets: NPC tracking needs iWant Status Bars 2.10 or newer (see the MCM's Maintenance page)")
 		Return
 	EndIf
 	; Otherwise assign to first empty slot, or refuse if all full.
 	Int empty = findFirstEmptyNpcSlot()
 	If empty == 0
-		Debug.Notification("SLWidgets: All NPC slots full - clear one in MCM.")
+		Debug.Notification("SLWidgets: All NPC slots full - clear one on the SKSE menu's NPC Tracking page.")
 		Return
 	EndIf
 	setNpcSlot(empty, a)
@@ -1374,11 +1377,10 @@ EndFunction
 ;
 ;   v=1                                            version (the DLL's SettingsPage::kVersion)
 ;   h=<label>                                      a header (a $key or plain text)
-;   t=<label>,<value>                              a line of text
 ;   b=<key>,<enabled>,<0|1>,<label>,<help>         a switch
 ;   i=<key>,<enabled>,<value>,<min>,<max>,<label>,<help>   a slider, applied on release
 ;   a=<key>,<enabled>,<label>,<help>               a button
-;   c=<key>,<enabled>,<index>,<label>,<help>,<option>;<option>;...   a choice
+;   c=<key>,<enabled>,<index>,<label>,<help>,<option>;<option>;...   a choice (index -1: none listed)
 ;   rgb=<key>,<enabled>,<0xRRGGBB as int>,<label>,<help>   a colour
 ;   k=<key>,<enabled>,<DirectInput key code, -1 none>,<label>,<help>   a hotkey
 ;   s=<key>,<enabled>,<label>,<help>,<text>        a text field
@@ -1395,10 +1397,13 @@ String Function editorGeneral()
 	If slw_stopped
 		stateHelp = "$SLW_Disabled_Info"
 	EndIf
-	s += "|b=general.enabled,1," + ((!slw_stopped) As Int) + ",$SLW_Mod_Enabled," + stateHelp
+	; enabling needs iWant up, as the MCM's switch did: icons registered before
+	; it are lost for the session. Disabling is always possible.
+	Bool canSwitch = !slw_stopped || (wc && wc.isLoaded())
+	s += "|b=general.enabled," + (canSwitch As Int) + "," + ((!slw_stopped) As Int) + ",$SLW_Mod_Enabled," + stateHelp
 	s += "|i=general.interval,1," + updateInterval + ",1,60,$SLW_Update_Interval,$SLW_UpdateInterval_Info"
 	String[] names = getPresetNames()
-	Int index = 0
+	Int index = -1
 	String options = ""
 	Int i = 0
 	While i < names.Length
@@ -1469,7 +1474,7 @@ String Function editorNpc()
 	s += "|h=$SLW_NPC_Label_Style"
 	String[] fonts = getNpcFontKeys()
 	String[] fontLabels = getNpcFontLabels()
-	Int fontIndex = 0
+	Int fontIndex = -1
 	String options = ""
 	Int i = 0
 	While i < fonts.Length
@@ -1555,8 +1560,8 @@ Function editorSet(String settingKey, String value)
 	slw_widget_controller wc = widget_controller
 	Int n = value As Int
 	If settingKey == "general.enabled"
-		If (n != 0) == slw_stopped
-			_editorSetEnabled(n != 0)
+		If n == 0 || wc.isLoaded()
+			_editorRequestEnabled(n != 0)
 		EndIf
 	ElseIf settingKey == "general.interval"
 		updateInterval = clampInt(n, 1, 60)
@@ -1585,10 +1590,12 @@ Function editorSet(String settingKey, String value)
 	ElseIf settingKey == "npc.font"
 		String[] fonts = getNpcFontKeys()
 		If n >= 0 && n < fonts.Length
-			wc.setNpcLabelFont(fonts[n])
+			wc.npcLabelFont = fonts[n]
+			wc.requestLabelRebuild()
 		EndIf
 	ElseIf settingKey == "npc.labelsize"
-		wc.setNpcLabelSize(clampInt(n, 10, 60))
+		wc.npcLabelSize = clampInt(n, 10, 60)
+		wc.requestLabelRebuild()
 	ElseIf settingKey == "npc.labelcolor"
 		wc.setNpcLabelColorPacked(n)
 	Else
@@ -1613,15 +1620,18 @@ Function _editorSetNpc(Int slot, String field, String value)
 	slw_widget_controller wc = widget_controller
 	Int n = value As Int
 	If field == "clear"
-		clearNpcSlot(slot)
-		wc.requestTogglePass()
+		; the slot empties at once; releasing its icons and label is owed
+		setNpcSlot(slot, None)
+		wc.requestNpcRelease(slot)
 	ElseIf field == "labelx"
-		wc.setNpcLabelOffset(slot, clampInt(n, -200, 200), wc.getNpcLabelOffsetY(slot))
+		wc.storeNpcLabelOffset(slot, clampInt(n, -200, 200), wc.getNpcLabelOffsetY(slot))
+		wc.requestLabelRebuild()
 	ElseIf field == "labely"
-		wc.setNpcLabelOffset(slot, wc.getNpcLabelOffsetX(slot), clampInt(n, -200, 200))
+		wc.storeNpcLabelOffset(slot, wc.getNpcLabelOffsetX(slot), clampInt(n, -200, 200))
+		wc.requestLabelRebuild()
 	ElseIf field == "label"
 		setNpcCustomLabel(slot, value)
-		wc.refreshNpcLabel(slot)
+		wc.requestLabelRebuild()
 	Else
 		Int code = field As Int
 		If code >= MOD_SLA_AROUSAL && code <= MOD_BABY
@@ -1629,6 +1639,26 @@ Function _editorSetNpc(Int slot, String field, String value)
 			wc.requestTogglePass()
 		EndIf
 	EndIf
+EndFunction
+
+; One enable or disable flow at a time. Each flow yields at every module and
+; widget call, so a second switch arriving meanwhile only records the wish;
+; the running flow sees it when it ends and runs again until the mod is in
+; the state last asked for. The flag is claimed before the first external call.
+Bool _enableBusy = False
+Int _enableWanted = -1
+
+Function _editorRequestEnabled(Bool enable)
+	_enableWanted = enable As Int
+	If _enableBusy
+		Return
+	EndIf
+	_enableBusy = True
+	While _enableWanted >= 0 && (_enableWanted == 1) == slw_stopped
+		_editorSetEnabled(_enableWanted == 1)
+	EndWhile
+	_enableWanted = -1
+	_enableBusy = False
 EndFunction
 
 ; The MCM's enable and disable flows. Enabling runs while no pass does (the

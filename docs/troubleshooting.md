@@ -6,7 +6,7 @@
 
 - **Papyrus log** — `Documents/My Games/Skyrim Special Edition/Logs/Script/Papyrus.0.log`
 - **SL Widgets user log** — `Documents/My Games/Skyrim Special Edition/Logs/Script/User/slwidgets.0.log`
-- **MCM Maintenance page** — shows exactly which of SL Widgets' dependencies were found and whether iWant Status Bars is ready; the MCM's General page shows whether the mod is enabled and whether the SKSE menu is there
+- **MCM Maintenance page**: shows exactly which of SL Widgets' dependencies were found and whether iWant Status Bars is ready; the MCM's General page shows whether the mod is enabled and whether the SKSE menu is there
 
 ---
 

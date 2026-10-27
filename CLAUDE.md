@@ -95,11 +95,25 @@ so a changed page list needs no save migration. Pages, in menu order:
   value as text)` to `slw_config.editorSet`, which does what the MCM's handler
   for that option did. Work that reloads icons or resets modules (colour
   preset, Reset modules) is owed to `_updatePass` (`requestReload`,
-  `requestModuleRecheck`); enable/disable runs the MCM's flows directly
-  (`_editorSetEnabled`). The hotkey is captured through the framework's input
-  callback (`RegisterInpoutEvent`, sic): the next keyboard key down, consumed,
-  Escape excluded (the framework closes on it). A new setting is a row in the
+  `requestModuleRecheck`), and so is NPC label and slot work (Clear Slot,
+  font, size, offsets, custom label: the values are stored at once,
+  `requestLabelRebuild` / `requestNpcRelease` owe the widget work), which
+  raced the pass's own label creation. Enable/disable runs the MCM's flows
+  (`_editorSetEnabled`) one at a time through `_editorRequestEnabled`, the
+  latest wish winning; enabling waits for iWant (`isLoaded`), as the MCM's
+  switch did, since icons registered before it are lost for the session.
+  The hotkey is captured through the framework's input callback
+  (`RegisterInpoutEvent`, sic): the next keyboard key down, consumed, Escape
+  excluded (the framework closes on it); the capture disarms when its row
+  has not been drawn for 0.5 s (the page was left) or a text field is in
+  use. A text field is written on Enter, on losing focus, and when the menu
+  closes or the page is left mid-edit. A choice whose current value is not
+  listed sends index -1 (nothing selected). A new setting is a row in the
   page's editor function and a branch in `editorSet`; no DLL change.
+- The DLL reports at each game load whether its pages registered
+  (`slw_bridge.SetMenuReport` -> `slw_config.skseMenuReport`, 1 up, 2 the
+  framework lacks a probed export), so the MCM's status line can say the
+  framework is too old rather than OK.
 
 - **Toggles** (3.2.0, `TogglesPage.cpp`): the player icon switches, grouped by
   mod, greyed while the mod is not installed. The MCM's Toggles page is gone.
@@ -115,8 +129,11 @@ so a changed page list needs no save migration. Pages, in menu order:
   (`editorMoveIconInBar` swaps with the next seated icon, `editorMoveIconToBar`
   takes the target's `_nextFreeBarPosition`; iWant's `_setBarIcon` clears the
   icon's old seat and sizes it to the bar). The layout string lists the icons
-  (`ic=bar,seat,id,label`, labels from iWant's public `iconLabel[]`), and a
-  move acts only while that id still sits in that seat. Moves do not stick:
+  through their own read, `slw_widget_controller.editorBarIcons`
+  (`ic=bar,seat,id,label`, labels from iWant's public `iconLabel[]`), asked
+  for only while an Icons list is open since it costs a call into iWant per
+  seat; a move acts only while that id still sits in that seat, and the
+  neighbour search skips the seats the list leaves out (blank / released). Moves do not stick:
   iWant re-seats an icon in the first free place whenever it is loaded again
   (switch off/on, preset, enable, state icons), and the user accepted that over
   a stored placement re-applied every pass ("its fine they don't stick").
@@ -387,7 +404,7 @@ The things here that are NOT Status Bars icons: one stack of iWant Widgets **met
 - **MCM changes only flag** (`requestMetersRebuild`, `setMetersLayout`); the next pass rebuilds. The 30 s preview (`_metersPreviewUntil`, willpower included, outside a scene too) starts only outside menu mode: a pass that runs while the menu is open (a preset loaded there, the close pass if menu mode lingers) leaves `_metersPreviewPending` set and asks the loop for a pass, which comes once the menu is closed (updates wait while a menu is open).
 - **`_metersBusy`** keeps the tick and the MCM-driven pass from building two stacks at once (every widget call lets the other thread in). A pass that finds it held asks the loop for another pass soon (`_refreshSoon`) instead of dropping the work until the next interval. `_forgetMeters` and `_stopMeters` clear it, together with the `_metersGen` bump that stops the pass holding it.
 - **Settings presets** carry `meter.arousal` ... `meter.wt_oral` (1-8; willpower travels as `module_slove_willpower`), `meters.alwaysshow`, `meters.holdseconds`, `meters.x`, `meters.y`, `meters.scale`. Each key is ONE string literal (`getMeterPresetKey`): JsonUtil's `GetPath*` / `SetPath*` match keys verbatim and case-sensitively (only plain `GetValue` / `SetValue` lowercase), and Papyrus keeps one casing per string, so a key built from parts can take another script's casing and miss. Loaded values are clamped to the MCM's slider ranges (`_clampInt`); a preset with a different position goes through `setMetersLayout` (rebuild + preview).
-- **2.2.6 leftovers.** The willpower bar had its own place (`willpowerBarX` / `Y` / `Scale`, default 640 / 640 / 60) and widget state (`_willpowerMeterId` ...), and the MCM its own option ids (`_slove_*`). All are kept declared and unused because saves hold them.
+- **2.2.6 leftovers.** The willpower bar had its own place (`willpowerBarX` / `Y` / `Scale`, default 640 / 640 / 60) and widget state (`_willpowerMeterId` ...), and the MCM its own option ids (`_slove_*`). The properties and controller variables are kept declared and unused because saves hold them; the MCM's option ids went with the rest of its options in 3.3.0.
 
 ### Willpower value
 

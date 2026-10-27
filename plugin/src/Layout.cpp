@@ -25,6 +25,49 @@ namespace Layout
 		}
 	}
 
+	bool ParseIcons(std::string_view a_text, Model& a_out, std::string& a_error)
+	{
+		a_error.clear();
+		for (auto& bar : a_out.bars) {
+			bar.icons.clear();  // the answer lists them all again
+		}
+		bool sawVersion = false;
+		for (const auto item : Text::Split(a_text, '|')) {
+			const auto eq = item.find('=');
+			if (eq == std::string_view::npos) {
+				continue;
+			}
+			const auto key = item.substr(0, eq);
+			const auto value = item.substr(eq + 1);
+			if (key == "v"sv) {
+				int version = 0;
+				if (!Text::ToInt(value, version) || version != kIconsVersion) {
+					a_error = std::format("the scripts report icon list version {} but the DLL reads {}: install both from the same release", std::string{ value }, kIconsVersion);
+					return false;
+				}
+				sawVersion = true;
+			} else if (key == "ic"sv) {
+				// bar,seat,id,label: the label is the rest and may hold commas
+				const auto f = Text::Fields(value, 4);
+				int        bar = -1;
+				Icon       icon;
+				if (f.size() != 4 || !Text::ToInt(f[0], bar) || !Text::ToInt(f[1], icon.seat) || !Text::ToInt(f[2], icon.id)) {
+					a_error = "an icon entry does not read";
+					return false;
+				}
+				if (bar >= 0 && bar < kPlayerBars) {
+					icon.label = std::string{ f[3] };
+					a_out.bars[static_cast<std::size_t>(bar)].icons.push_back(std::move(icon));
+				}
+			}
+		}
+		if (!sawVersion) {
+			a_error = "no icon list version in the answer";
+			return false;
+		}
+		return true;
+	}
+
 	int Clamp(int a_v, int a_min, int a_max)
 	{
 		return std::max(a_min, std::min(a_max, a_v));
@@ -33,9 +76,6 @@ namespace Layout
 	bool Parse(std::string_view a_text, Model& a_out, std::string& a_error)
 	{
 		a_error.clear();
-		for (auto& bar : a_out.bars) {
-			bar.icons.clear();  // the answer lists them all again
-		}
 		bool sawVersion = false;
 		for (const auto item : Text::Split(a_text, '|')) {
 			const auto eq = item.find('=');
@@ -66,22 +106,6 @@ namespace Layout
 				}
 			} else if (key.size() == 2 && key[0] == 'n' && key[1] >= '1' && key[1] <= '3') {
 				a_out.npc.names[static_cast<std::size_t>(key[1] - '1')] = std::string{ value };
-			} else if (key == "ic"sv) {
-				// bar,seat,id,label: the label is the rest and may hold commas
-				const auto c1 = value.find(',');
-				const auto c2 = c1 == std::string_view::npos ? c1 : value.find(',', c1 + 1);
-				const auto c3 = c2 == std::string_view::npos ? c2 : value.find(',', c2 + 1);
-				int        bar = -1;
-				Icon       icon;
-				if (c3 == std::string_view::npos || !Text::ToInt(value.substr(0, c1), bar) || !Text::ToInt(value.substr(c1 + 1, c2 - c1 - 1), icon.seat) ||
-					!Text::ToInt(value.substr(c2 + 1, c3 - c2 - 1), icon.id)) {
-					a_error = "an icon entry does not read";
-					return false;
-				}
-				if (bar >= 0 && bar < kPlayerBars) {
-					icon.label = std::string{ value.substr(c3 + 1) };
-					a_out.bars[static_cast<std::size_t>(bar)].icons.push_back(std::move(icon));
-				}
 			} else if (key == "meters"sv) {
 				const auto f = Text::Split(value, ',');
 				int        always = 0;

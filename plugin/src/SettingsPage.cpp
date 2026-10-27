@@ -20,12 +20,12 @@ namespace Settings
 		constexpr double kConfirmAfter = 1.5;  // seconds after a write before the page is read back
 		constexpr double kAfterAction = 2.5;   // a button usually starts more work than a value does
 		constexpr double kColorPush = 0.25;    // seconds between writes while a colour is being picked
-		constexpr std::size_t kTextCapacity = 96;
+		constexpr std::size_t kTextCapacity = 256;  // a longer text is shown, not edited: the field would cut it
+		constexpr std::int64_t kCaptureGraceMs = 500;  // the armed hotkey row not drawn for this long: the page was left
 
 		enum class Kind
 		{
 			Header,
-			Text,
 			Bool,
 			Int,
 			Action,
@@ -37,7 +37,7 @@ namespace Settings
 
 		struct Row
 		{
-			Kind                     kind = Kind::Text;
+			Kind                     kind = Kind::Header;
 			std::string              key;
 			bool                     enabled = true;
 			int                      value = 0;
@@ -45,7 +45,7 @@ namespace Settings
 			int                      max = 0;
 			std::string              label;  // translated
 			std::string              help;   // translated
-			std::string              text;   // a text row's value, a text field's content
+			std::string              text;   // a text field's content
 			std::vector<std::string> options;
 		};
 
@@ -82,31 +82,12 @@ namespace Settings
 		} };
 
 		// The hotkey capture: armed on the page, filled by the input callback
-		std::atomic<bool> g_capturing{ false };
-		std::atomic<int>  g_captured{ -2 };  // -2: nothing captured
+		std::atomic<bool>         g_capturing{ false };
+		std::atomic<int>          g_captured{ -2 };  // -2: nothing captured
+		std::atomic<std::int64_t> g_captureSeen{ 0 };  // steady ms when the armed row was last drawn
 		std::string       g_captureKey;       // the row armed, under g_lock
 
-		// A line split into a_count fields, the last one taking the rest (free text)
-		std::vector<std::string_view> Fields(std::string_view a_text, std::size_t a_count)
-		{
-			std::vector<std::string_view> out;
-			std::size_t                   start = 0;
-			while (out.size() + 1 < a_count) {
-				const auto comma = a_text.find(',', start);
-				if (comma == std::string_view::npos) {
-					break;
-				}
-				out.push_back(a_text.substr(start, comma - start));
-				start = comma + 1;
-			}
-			out.push_back(a_text.substr(std::min(start, a_text.size())));
-			return out;
-		}
-
-		bool Int(std::string_view a_text, int& a_out)
-		{
-			return Text::ToInt(a_text, a_out);
-		}
+		using Text::Fields;
 
 		bool Parse(std::string_view a_text, std::vector<Row>& a_out, std::string& a_error)
 		{
@@ -124,7 +105,7 @@ namespace Settings
 				bool       ok = true;
 				if (tag == "v"sv) {
 					int version = 0;
-					if (!Int(value, version) || version != kVersion) {
+					if (!Text::ToInt(value, version) || version != kVersion) {
 						a_error = std::format("the scripts report settings version {} but the DLL reads {}: install both from the same release", std::string{ value }, kVersion);
 						return false;
 					}
@@ -133,15 +114,10 @@ namespace Settings
 				} else if (tag == "h"sv) {
 					row.kind = Kind::Header;
 					row.label = Translations::Get(value);
-				} else if (tag == "t"sv) {
-					const auto f = Fields(value, 2);
-					row.kind = Kind::Text;
-					row.label = Translations::Get(f[0]);
-					row.text = f.size() > 1 ? Translations::Get(f[1]) : std::string{};
 				} else if (tag == "b"sv || tag == "rgb"sv || tag == "k"sv) {
 					const auto f = Fields(value, 5);
 					row.kind = tag == "b"sv ? Kind::Bool : tag == "rgb"sv ? Kind::Color : Kind::Key;
-					ok = f.size() == 5 && Int(f[1], enabled) && Int(f[2], row.value);
+					ok = f.size() == 5 && Text::ToInt(f[1], enabled) && Text::ToInt(f[2], row.value);
 					if (ok) {
 						row.key = std::string{ f[0] };
 						row.label = Translations::Get(f[3]);
@@ -150,7 +126,7 @@ namespace Settings
 				} else if (tag == "i"sv) {
 					const auto f = Fields(value, 7);
 					row.kind = Kind::Int;
-					ok = f.size() == 7 && Int(f[1], enabled) && Int(f[2], row.value) && Int(f[3], row.min) && Int(f[4], row.max);
+					ok = f.size() == 7 && Text::ToInt(f[1], enabled) && Text::ToInt(f[2], row.value) && Text::ToInt(f[3], row.min) && Text::ToInt(f[4], row.max);
 					if (ok) {
 						row.key = std::string{ f[0] };
 						row.label = Translations::Get(f[5]);
@@ -159,7 +135,7 @@ namespace Settings
 				} else if (tag == "a"sv) {
 					const auto f = Fields(value, 4);
 					row.kind = Kind::Action;
-					ok = f.size() == 4 && Int(f[1], enabled);
+					ok = f.size() == 4 && Text::ToInt(f[1], enabled);
 					if (ok) {
 						row.key = std::string{ f[0] };
 						row.label = Translations::Get(f[2]);
@@ -168,7 +144,7 @@ namespace Settings
 				} else if (tag == "c"sv) {
 					const auto f = Fields(value, 6);
 					row.kind = Kind::Choice;
-					ok = f.size() == 6 && Int(f[1], enabled) && Int(f[2], row.value);
+					ok = f.size() == 6 && Text::ToInt(f[1], enabled) && Text::ToInt(f[2], row.value);
 					if (ok) {
 						row.key = std::string{ f[0] };
 						row.label = Translations::Get(f[3]);
@@ -180,7 +156,7 @@ namespace Settings
 				} else if (tag == "s"sv) {
 					const auto f = Fields(value, 5);
 					row.kind = Kind::String;
-					ok = f.size() == 5 && Int(f[1], enabled);
+					ok = f.size() == 5 && Text::ToInt(f[1], enabled);
 					if (ok) {
 						row.key = std::string{ f[0] };
 						row.label = Translations::Get(f[2]);
@@ -261,6 +237,11 @@ namespace Settings
 			a_page.state.SetStatus("Settings read.", false);
 		}
 
+		std::int64_t SteadyMs()
+		{
+			return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+		}
+
 		std::string KeyName(int a_code)
 		{
 			static const std::unordered_map<int, const char*> kNames{
@@ -293,6 +274,7 @@ namespace Settings
 			PageCommon::Tooltip(a_row.help);
 			Ui::SameLine(0.0f, -1.0f);
 			if (g_capturing.load() && g_captureKey == a_row.key) {
+				g_captureSeen.store(SteadyMs());
 				Colored(PageCommon::kOk, "press a key...");
 				Ui::SameLine(0.0f, -1.0f);
 				if (Ui::SmallButton("Cancel")) {
@@ -303,6 +285,7 @@ namespace Settings
 			if (Ui::SmallButton("Set")) {
 				g_captureKey = a_row.key;
 				g_captured.store(-2);
+				g_captureSeen.store(SteadyMs());
 				g_capturing.store(true);
 			}
 			Ui::SameLine(0.0f, -1.0f);
@@ -335,10 +318,6 @@ namespace Settings
 				Ui::Spacing();
 				Ui::Separator();
 				Ui::TextUnformatted(row.label.c_str());
-				return;
-			}
-			if (row.kind == Kind::Text) {
-				Ui::TextUnformatted(std::format("{}: {}", row.label, row.text).c_str());
 				return;
 			}
 			PageCommon::IdScope id{ static_cast<int>(a_index) };
@@ -374,7 +353,8 @@ namespace Settings
 					break;
 				case Kind::Choice:
 					{
-						const int   shown = row.options.empty() ? -1 : std::clamp(row.value, 0, static_cast<int>(row.options.size()) - 1);
+						// -1 (the current value is not among the options) selects none, so every option can be picked
+						const int   shown = row.value >= 0 && row.value < static_cast<int>(row.options.size()) ? row.value : -1;
 						const char* preview = shown < 0 ? "" : row.options[static_cast<std::size_t>(shown)].c_str();
 						Ui::SetNextItemWidth(Ui::GetFontSize() * 12.0f);
 						if (Ui::BeginCombo(row.label.c_str(), preview, 0)) {
@@ -396,6 +376,11 @@ namespace Settings
 					break;
 				case Kind::String:
 					{
+						if (row.text.size() >= kTextCapacity) {
+							Ui::TextUnformatted(std::format("{}: {}", row.label, row.text).c_str());
+							Colored(PageCommon::kHint, "(too long to edit here)");
+							break;
+						}
 						auto& ui = a_page.ui[row.key];
 						if (ui.bufFor != row.text && !ui.wasActive) {
 							ui.buf.fill('\0');
@@ -406,6 +391,9 @@ namespace Settings
 						const bool enter = Ui::InputText(row.label.c_str(), ui.buf.data(), ui.buf.size(), Ui::ImGuiInputTextFlags_EnterReturnsTrue, nullptr, nullptr);
 						const bool left = Ui::IsItemDeactivatedAfterEdit();
 						ui.wasActive = Ui::IsItemActive();
+						if (ui.wasActive) {
+							g_capturing.store(false);  // typing here, not picking a hotkey
+						}
 						// '|' separates the rows the scripts send back: a label holding one
 						// would break the page that reads it
 						std::string typed{ ui.buf.data() };
@@ -423,6 +411,26 @@ namespace Settings
 			}
 			if (row.kind != Kind::Key) {
 				PageCommon::Tooltip(row.help);
+			}
+		}
+
+		// Text typed in a field that never saw Enter or lost focus: the menu closed
+		// or another page came up while it was being edited
+		void FlushText(Page& a_page, double a_now)
+		{
+			for (auto& row : a_page.rows) {
+				if (row.kind != Kind::String) {
+					continue;
+				}
+				auto& ui = a_page.ui[row.key];
+				std::string typed{ ui.buf.data() };
+				std::erase(typed, '|');
+				if (ui.wasActive && typed != row.text) {
+					row.text = typed;
+					ui.bufFor = typed;
+					Write(a_page, row, typed, a_now, kConfirmAfter);
+				}
+				ui.wasActive = false;
 			}
 		}
 
@@ -447,6 +455,11 @@ namespace Settings
 		// Escape is left alone: the framework closes its menu on it.
 		bool __stdcall OnInput(RE::InputEvent* a_event)
 		{
+			if (g_capturing.load() && SteadyMs() - g_captureSeen.load() > kCaptureGraceMs) {
+				// the page with the armed row is not on screen any more: a key typed
+				// elsewhere (a preset name) is not the hotkey
+				g_capturing.store(false);
+			}
 			if (!g_capturing.load() || !a_event || a_event->GetEventType() != RE::INPUT_EVENT_TYPE::kButton ||
 				a_event->GetDevice() != RE::INPUT_DEVICE::kKeyboard) {
 				return false;
@@ -473,6 +486,7 @@ namespace Settings
 			const double     now = Ui::GetTime();
 			if (page.state.BeginFrame(now)) {
 				// the page just came up (or came back): a preset or another page may have changed things meanwhile
+				FlushText(page, now);
 				page.have = false;
 			}
 			TakeAnswer(page);
@@ -518,6 +532,7 @@ namespace Settings
 				}
 				ui.wasActive = false;
 			}
+			FlushText(page, Ui::GetTime());
 			page.anyActive = false;
 			page.state.ForgetFrame();
 		}

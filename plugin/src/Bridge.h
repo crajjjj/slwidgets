@@ -16,13 +16,14 @@ namespace Bridge
 		General,  // slw_bridge.GetGeneral: the General page's rows (slw_config.editorGeneral)
 		Meters,   // slw_bridge.GetMeters: the Meters page's rows
 		Npc,      // slw_bridge.GetNpc: the NPC Tracking page's rows
+		BarIcons,  // slw_bridge.GetBarIcons: the icons of the player bars (slw_widget_controller.editorBarIcons)
 		kCount
 	};
 
 	// Ask a query. The answer, or the reason there is none, comes back through
 	// Take; a call already out is not repeated unless a_force (the user asked
-	// again after a call that never came back).
-	void Request(Query a_query, bool a_force);
+	// again after a call that never came back). False when nothing was sent.
+	bool Request(Query a_query, bool a_force);
 
 	// The newest unread answer of a query. True once per answer; a_text is the
 	// string (empty when the mod said "not ready"), a_error why there is none.
@@ -50,4 +51,8 @@ namespace Bridge
 	void LoadPreset(const std::string& a_name);
 	void SavePreset(const std::string& a_name);
 	void SetSetting(const std::string& a_key, const std::string& a_value);
+
+	// Tells the scripts whether the pages are up (1) or the framework lacks what
+	// they need (2), for the MCM's status line; sent at each game load
+	void ReportMenu(int a_report);
 }

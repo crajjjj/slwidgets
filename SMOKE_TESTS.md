@@ -327,3 +327,10 @@ Added in 2.3.0, never run in game when written. Set the update interval to 60 s 
 | 24.6 | P1 | Slot 1: switch Milk on, Clear Slot | Milk icon appears for that NPC; Clear removes icons and label | _editorSetNpc |
 | 24.7 | P1 | Custom label typed, Enter | The label shows the text; empty returns the name | setNpcCustomLabel, refreshNpcLabel |
 | 24.8 | P2 | A row with a value changed in another page, then Refresh | The page shows the new value | Bridge::Request |
+| 24.9 | P0 | Mod enabled off and on again within a second | One flow at a time; the mod ends enabled with its icons (the last switch wins) | _editorRequestEnabled |
+| 24.10 | P0 | Right after a load, before iWant is up | Mod enabled is greyed out; once iWant is up it can be switched on and the icons load | editorGeneral canSwitch |
+| 24.11 | P1 | Clear Slot while that NPC's icons update | Icons and label go once; no stray label stays | requestNpcRelease, _updatePass |
+| 24.12 | P1 | Pick Hotkey > Set, then the Presets page, type a name | The name keeps every letter; the hotkey is unchanged | kCaptureGraceMs |
+| 24.13 | P1 | Type a custom label, close the menu without Enter | The label is written anyway | FlushText |
+| 24.14 | P2 | Framework older than 3.8 | No pages; the MCM's General says the framework is too old | SetMenuReport, _skseMenuState |
+| 24.15 | P2 | Positions page with every Icons list closed | No icon read is asked for (only the layout) | ServeIcons |

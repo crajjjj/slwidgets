@@ -25,7 +25,7 @@ The game freezes while the menu is open, but the widgets keep updating, so a cha
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| **Mod enabled** | Off | Starts or stops SL Widgets. Stopping removes every icon and stops the update script; starting loads the icons switched on. A new game starts with the mod off |
+| **Mod enabled** | Off | Starts or stops SL Widgets. Stopping removes every icon and stops the update script; starting loads the icons switched on. A new game starts with the mod off, and the switch waits until iWant Status Bars is up (a few seconds after a load) |
 | **Update interval** | 5 | Seconds between status checks (1-60). Changes that SLA, Fill Her Up or Apropos2 SE 1.0020+ report (see [Supported Mods](supported-mods.md)) are checked within a second or two whatever the interval |
 | **Color Preset** | Default | The icon colour scheme: the `.json` files in `SKSE/Plugins/SlWidgets/IconPresets/` (see [Color presets](customization.md#color-presets)) |
 

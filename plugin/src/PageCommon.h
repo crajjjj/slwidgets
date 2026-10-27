@@ -96,14 +96,19 @@ namespace PageCommon
 			return reopened;
 		}
 
-		// Ask for a read now; a_announce says so in the status line (the user asked)
+		// Ask for a read now; a_announce says so in the status line (the user asked).
+		// A read still out is not doubled; this one is then asked again shortly,
+		// and LastRequestAt stays where it was: the answer coming predates now.
 		void Request(double a_now, bool a_force, bool a_announce)
 		{
 			if (a_announce) {
 				SetStatus(std::format("Reading the {}...", _what), false);
 			}
-			_lastRequestAt = a_now;
-			Bridge::Request(_query, a_force);
+			if (Bridge::Request(_query, a_force)) {
+				_lastRequestAt = a_now;
+			} else {
+				_confirmAt = a_now + kRetryAfter;
+			}
 		}
 
 		// The newest answer: true with a usable one in a_text. A timeout, an error
@@ -175,6 +180,7 @@ namespace PageCommon
 	private:
 		static constexpr double kReopenGap = 1.0;  // seconds without a frame: the page was left and came back
 		static constexpr float  kAnswerTimeout = 6.0f;
+		static constexpr double kRetryAfter = 1.0;  // seconds before a read that found one still out is asked again
 
 		Bridge::Query _query;
 		const char*   _what;

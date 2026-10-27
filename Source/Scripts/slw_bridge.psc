@@ -7,7 +7,7 @@ is rejected by the VM without a trace, and the editor then shows nothing.
 Everything here forwards to slw_widget_controller, where iWant is in scope.}
 
 Int Function GetVersion() Global
-	Return 4
+	Return 5
 EndFunction
 
 slw_config Function _config() Global
@@ -65,6 +65,25 @@ String Function GetNpc() Global
 		Return ""
 	EndIf
 	Return c.editorNpc()
+EndFunction
+
+; The icons of the player bars, "" while iWant is not running.
+; Format: slw_widget_controller.editorBarIcons
+String Function GetBarIcons() Global
+	slw_widget_controller w = _controller()
+	If !w
+		Return ""
+	EndIf
+	Return w.editorBarIcons()
+EndFunction
+
+; The DLL's report at each game load: 1 its pages are up, 2 the installed
+; SKSE Menu Framework lacks what they need; shown on the MCM's General page
+Function SetMenuReport(Int report) Global
+	slw_config c = _config()
+	If c
+		c.skseMenuReport = report
+	EndIf
 EndFunction
 
 ; One row of those pages changed: its key and the new value as text

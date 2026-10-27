@@ -6,6 +6,7 @@
 namespace Layout
 {
 	constexpr int kVersion = 2;  // slw_widget_controller.editorLayout's "v="
+	constexpr int kIconsVersion = 1;  // slw_widget_controller.editorBarIcons's "v="
 	constexpr int kBars = 10;    // iWant TOTAL_STATUS_BARS
 	constexpr int kPlayerBars = 4;  // bars 0-3 hold the player's icons and belong to iWant; 4-9 are the NPC slots', laid out from the cluster anchor
 	constexpr int kNpcSlots = 3;
@@ -65,6 +66,9 @@ namespace Layout
 	// Parses editorLayout's string. False, with a_error, on a version the parser
 	// does not know or a value that does not read; what parsed before that stays.
 	bool Parse(std::string_view a_text, Model& a_out, std::string& a_error);
+
+	// The player bars' icons from editorBarIcons's string, into the bars' icons
+	bool ParseIcons(std::string_view a_text, Model& a_out, std::string& a_error);
 
 	int Clamp(int a_v, int a_min, int a_max);
 }

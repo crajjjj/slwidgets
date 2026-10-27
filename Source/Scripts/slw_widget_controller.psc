@@ -243,6 +243,7 @@ Function startUpdates()
 	_presetSaveOwed = ""
 	_reloadOwed = False
 	_recheckOwed = False
+	_labelsOwed = False
 	_passGen += 1
 	_passRunning = False
 	_lastPassEnd = 0.0
@@ -477,6 +478,21 @@ Function _updatePass()
 	endif
 	If !PlayerRef
 		PlayerRef = Game.GetPlayer()
+	EndIf
+	If _npcReleaseOwed
+		Int slot = 1
+		While slot < _npcReleaseOwed.Length
+			If _npcReleaseOwed[slot]
+				_npcReleaseOwed[slot] = False
+				releaseNpcSlot(slot)
+				_togglePassOwed = True
+			EndIf
+			slot += 1
+		EndWhile
+	EndIf
+	If _labelsOwed
+		_labelsOwed = False
+		refreshAllNpcLabelStyles()
 	EndIf
 	If _togglePassOwed
 		_togglePassOwed = False
@@ -1632,8 +1648,9 @@ EndFunction
 ; which is why the DLL moves those as a group and never bar by bar.
 ;
 ; Layout string: "v=2|b0=x,y,type,size,visible|...|b9=...
-;   |npc=x,y,stride|n1=name|n2=name|n3=name|meters=x,y,scale,rows,always
-;   |ic=bar,seat,icon id,label|..." (one ic per icon seated in bars 0-3)
+;   |npc=x,y,stride|n1=name|n2=name|n3=name|meters=x,y,scale,rows,always"
+; The bars' icons come on their own (editorBarIcons), read only while the
+; page shows them: they cost a call into iWant per seat.
 ; The version is the DLL's Layout::kVersion: bump both when a field changes.
 ; ---------------------------------------------------------------------------
 
@@ -1650,8 +1667,15 @@ String Function editorLayout()
 	s += "|npc=" + npcGroupX + "," + npcGroupY + "," + npcVerticalSpacing
 	s += "|n1=" + _editorSlotName(1) + "|n2=" + _editorSlotName(2) + "|n3=" + _editorSlotName(3)
 	s += "|meters=" + metersX + "," + metersY + "," + metersScale + "," + _editorMeterRows() + "," + (metersAlwaysShow As Int)
-	s += _editorBarIcons()
 	Return s
+EndFunction
+
+; The icons of the player bars: "v=1|ic=bar,seat,icon id,label|..."
+String Function editorBarIcons()
+	If !iBars || !iBars.isReady()
+		Return ""
+	EndIf
+	Return "v=1" + _editorBarIcons()
 EndFunction
 
 ; The icons seated in the player bars, labelled as iWant labels them ("name -
@@ -1735,11 +1759,16 @@ Function editorMoveIconInBar(Int bar, Int seat, Int icon, Int dir)
 	If seat < 0 || seat >= perBar || iBars._getBarIcon(bar, seat) != icon
 		Return
 	EndIf
+	; the next seat the page lists: _editorBarIcons leaves out the blank icon
+	; and released ones (label "No Icon - No Icon"), so they are skipped here too
+	String[] labels = iBars.iconLabel
 	Int other = -1
 	Int t = seat + dir
 	While t >= 0 && t < perBar && other < 0
-		other = iBars._getBarIcon(bar, t)
-		If other < 0
+		Int candidate = iBars._getBarIcon(bar, t)
+		If candidate >= 0 && labels && candidate < labels.Length && labels[candidate] != "" && labels[candidate] != "No Icon - No Icon"
+			other = candidate
+		Else
 			t += dir
 		EndIf
 	EndWhile
@@ -1877,4 +1906,50 @@ EndFunction
 Function requestModuleRecheck()
 	_recheckOwed = True
 	_refreshSoon(0.2)
+EndFunction
+
+; NPC label and slot work from the SKSE menu's NPC Tracking page: destroying
+; and recreating labels or releasing a slot's icons while a pass draws the
+; same slot left a stray label, so the values are stored at once and the
+; widget work is owed to the next pass. With the mod off no pass runs and
+; none can collide: the work is done at once, as the MCM did.
+Bool _labelsOwed = False
+Bool[] _npcReleaseOwed
+
+Function requestLabelRebuild()
+	If config.slw_stopped
+		refreshAllNpcLabelStyles()
+		Return
+	EndIf
+	_labelsOwed = True
+	_refreshSoon(0.2)
+EndFunction
+
+Function requestNpcRelease(Int slot)
+	If slot < 1 || slot > 3
+		Return
+	EndIf
+	If config.slw_stopped
+		releaseNpcSlot(slot)
+		Return
+	EndIf
+	If !_npcReleaseOwed
+		_npcReleaseOwed = new Bool[4]
+	EndIf
+	_npcReleaseOwed[slot] = True
+	_refreshSoon(0.2)
+EndFunction
+
+; The offsets only; the label is rebuilt where it is owed
+Function storeNpcLabelOffset(Int slot, Int x, Int y)
+	If slot == 1
+		npc1_labelOffsetX = x
+		npc1_labelOffsetY = y
+	ElseIf slot == 2
+		npc2_labelOffsetX = x
+		npc2_labelOffsetY = y
+	ElseIf slot == 3
+		npc3_labelOffsetX = x
+		npc3_labelOffsetY = y
+	EndIf
 EndFunction

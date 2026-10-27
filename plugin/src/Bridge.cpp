@@ -8,7 +8,7 @@ namespace Bridge
 
 		constexpr auto kScript = "slw_bridge"sv;
 		constexpr auto kQueries = static_cast<std::size_t>(Query::kCount);
-		constexpr std::array<std::string_view, kQueries> kQueryFunctions{ "GetLayout"sv, "GetToggles"sv, "GetPresets"sv, "GetGeneral"sv, "GetMeters"sv, "GetNpc"sv };
+		constexpr std::array<std::string_view, kQueries> kQueryFunctions{ "GetLayout"sv, "GetToggles"sv, "GetPresets"sv, "GetGeneral"sv, "GetMeters"sv, "GetNpc"sv, "GetBarIcons"sv };
 
 		struct Slot
 		{
@@ -114,15 +114,16 @@ namespace Bridge
 		}
 	}
 
-	void Request(Query a_query, bool a_force)
+	bool Request(Query a_query, bool a_force)
 	{
 		auto& slot = SlotOf(a_query);
 		if (!a_force && slot.inFlight.exchange(true)) {
-			return;
+			return false;
 		}
 		slot.inFlight.store(true);
 		slot.sentAt.store(Now());
 		Call(kQueryFunctions[static_cast<std::size_t>(a_query)], a_query);
+		return true;
 	}
 
 	bool Take(Query a_query, std::string& a_text, std::string& a_error)
@@ -227,5 +228,10 @@ namespace Bridge
 	void SetSetting(const std::string& a_key, const std::string& a_value)
 	{
 		Call("SetSetting"sv, std::nullopt, a_key, a_value);
+	}
+
+	void ReportMenu(int a_report)
+	{
+		Call("SetMenuReport"sv, std::nullopt, a_report);
 	}
 }

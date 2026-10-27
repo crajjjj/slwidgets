@@ -88,12 +88,16 @@ Function General()
 EndFunction
 
 ; Whether the settings can be reached: SKSE Menu Framework and this mod's
-; page plugin, both found through SKSE (-1 when a plugin is not loaded)
+; page plugin, both found through SKSE (-1 when a plugin is not loaded), and
+; the plugin's own report: it registers no page at all on a framework that
+; lacks what the pages call.
 String Function _skseMenuState()
 	If SKSE.GetPluginVersion("SKSEMenuFramework") <= 0
 		Return "$SLW_SkseMenu_NoFramework"
 	ElseIf SKSE.GetPluginVersion("SLWidgetsMenu") <= 0
 		Return "$SLW_SkseMenu_NoPlugin"
+	ElseIf config.skseMenuReport == 2
+		Return "$SLW_SkseMenu_OldFramework"
 	EndIf
 	Return "$SLW_OK"
 EndFunction

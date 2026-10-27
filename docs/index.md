@@ -19,8 +19,8 @@ Two display mechanics:
 - [Getting Started](getting-started.md) — requirements, installation, first-time setup
 - [Supported Mods](supported-mods.md) — every supported plugin and what icons it shows
 - [NPC Tracking](npc-tracking.md) — how to watch up to three NPCs alongside yourself
-- [SKSE Menu](position-editor.md) — every setting explained
-- [MCM Reference](mcm-reference.md) — the state and the dependency check the MCM shows
+- [SKSE Menu](position-editor.md): every setting explained
+- [MCM Reference](mcm-reference.md): the state and the dependency check the MCM shows
 - [Customization](customization.md) — icon packs, color presets, settings presets
 - [Prisma Renderer](prisma.md) — optional Flash-free renderer: sharper icons, animated GIFs, ultrawide positions
 - [Troubleshooting](troubleshooting.md) — common problems and fixes

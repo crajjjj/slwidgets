@@ -36,6 +36,12 @@ namespace Positions
 		Layout::Model         g_model;
 		bool                  g_haveModel = false;
 		bool                  g_anyActive = false;  // a slider was held in the last frame drawn
+		// The bars' icons come on their own read, asked for only while an Icons
+		// list is open: listing them costs a call into iWant per seat
+		bool                  g_iconsOpen = false;    // an Icons list was open in the frame being drawn
+		bool                  g_iconsWanted = false;  // a list was open in the last frame, and its read asked for
+		bool                  g_iconsHave = false;
+		double                g_iconsConfirmAt = 0.0;
 		bool          g_confirmReset = false;
 		bool          g_loggedFault = false;
 
@@ -152,6 +158,11 @@ namespace Positions
 			if (!Ui::CollapsingHeader(header.c_str(), 0)) {
 				return;
 			}
+			g_iconsOpen = true;
+			if (!g_iconsHave) {
+				Colored(kHint, "Reading the icons...");
+				return;
+			}
 			if (icons.empty()) {
 				Colored(kHint, "No icon in this bar.");
 				return;
@@ -211,7 +222,34 @@ namespace Positions
 				icons.erase(icons.begin() + static_cast<std::ptrdiff_t>(i));
 				to.push_back(icon);  // the seat is a guess until the read
 			}
-			g_page.ConfirmAt(a_now + kConfirmAfter);
+			g_iconsConfirmAt = a_now + kConfirmAfter;
+		}
+
+		// The icon lists' own read: when a list opens, after a move, and its answer
+		void ServeIcons(double a_now)
+		{
+			std::string text, error;
+			if (Bridge::Take(Bridge::Query::BarIcons, text, error)) {
+				std::string why;
+				if (error.empty() && !text.empty() && Layout::ParseIcons(text, g_model, why)) {
+					g_iconsHave = true;
+				} else if (!why.empty() || !error.empty()) {
+					g_page.SetStatus(why.empty() ? error : why, true);
+				}
+			}
+			if (!g_iconsOpen) {
+				g_iconsWanted = false;
+				return;
+			}
+			if (!g_iconsWanted) {
+				g_iconsWanted = true;
+				Bridge::Request(Bridge::Query::BarIcons, true);
+			} else if (g_iconsConfirmAt > 0.0 && a_now >= g_iconsConfirmAt) {
+				g_iconsConfirmAt = 0.0;
+				if (!Bridge::Request(Bridge::Query::BarIcons, false)) {
+					g_iconsConfirmAt = a_now + 1.0;  // one still out: ask again after it
+				}
+			}
 		}
 
 		void DrawBars(double a_now)
@@ -357,6 +395,8 @@ namespace Positions
 			std::scoped_lock lock{ g_lock };
 			const double     now = Ui::GetTime();
 			if (g_page.BeginFrame(now)) {
+				g_iconsWanted = false;  // a list left open is read again
+				g_iconsHave = false;
 				// the page just came up (or came back): what the game holds may have
 				// changed in iWant's menu or through a preset meanwhile
 				g_haveModel = false;
@@ -380,6 +420,8 @@ namespace Positions
 			Colored(kHint, "Values are iWant's 1280 x 720 stage units, written into the game at once: the icons move while this menu is open.");
 			Colored(kHint, "X and Y of a bar follow the slider. Size, orientation, the NPC cluster and the meters apply when the slider is released.");
 
+			ServeIcons(now);
+			g_iconsOpen = false;
 			g_page.ServeConfirm(now, g_anyActive);
 		} catch (const std::exception& e) {
 			if (!g_loggedFault) {
@@ -407,6 +449,9 @@ namespace Positions
 	{
 		std::scoped_lock lock{ g_lock };
 		g_haveModel = false;
+		g_iconsHave = false;
+		g_iconsWanted = false;
+		g_iconsConfirmAt = 0.0;
 		g_page.Reset();
 	}
 }

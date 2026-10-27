@@ -9,7 +9,7 @@ Since 3.3 the SL Widgets MCM only shows: whether the mod is enabled, whether its
 | Line | Shows |
 |------|-------|
 | **SL Widgets** | **Enabled** or **Disabled**. A new game starts disabled: switch the mod on with **Mod enabled** on the SKSE menu's [General](position-editor.md#general) page |
-| **SKSE menu** | **OK** when SKSE Menu Framework and `SLWidgetsMenu.dll` are both loaded; otherwise which one is missing. Without them nothing in SL Widgets can be changed in game |
+| **SKSE menu** | **OK** when SKSE Menu Framework and `SLWidgetsMenu.dll` are both loaded and the pages are up; otherwise which one is missing, or that the framework is too old (3.8 or newer is needed). Without the pages nothing in SL Widgets can be changed in game |
 | **Settings: SKSE menu, section SL Widgets** | Where the settings are |
 
 ---
