@@ -1,13 +1,13 @@
 # Position Editor
 
-*Since 3.1.* An in-game editor that lets you **drag** the status bars, the NPC slot cluster and the meter stack into place on the HUD, instead of reading coordinates off sliders.
+*Since 3.1.* A **Positions** page in the SKSE Menu Framework menu: X, Y, size and orientation of the status bars, the NPC slot cluster and the meter stack as sliders, with the icons moving on the HUD as you change them, the menu still open.
 
 ---
 
 ## Requirements
 
-- [SKSE Menu Framework](https://www.nexusmods.com/skyrimspecialedition/mods/120352) 3.8 or newer. Without it SL Widgets works exactly as before; the editor is simply absent and the MCM sliders remain.
-- The editor itself, `SLWidgetsMenu.dll`, ships in the SL Widgets archive under `SKSE/Plugins`. It never changes anything on its own: it only reads and writes the same positions the MCMs hold.
+- [SKSE Menu Framework](https://www.nexusmods.com/skyrimspecialedition/mods/120352) 3.8 or newer. Without it SL Widgets works exactly as before; the page is simply absent and the MCM sliders remain.
+- The page itself, `SLWidgetsMenu.dll`, ships in the SL Widgets archive under `SKSE/Plugins`. It reads and writes the same positions the MCMs hold, nothing else.
 
 ---
 
@@ -15,53 +15,36 @@
 
 1. Load a game and let iWant Status Bars come up (the icons are showing).
 2. Open the SKSE Menu Framework menu with its hotkey.
-3. Pick the **SL Widgets** section, then **Position editor**, then **Open the position editor**.
+3. Pick the **SL Widgets** section, then **Positions**.
 
-The game freezes while the editor is open, but the widgets keep updating, so a move shows on the real icons a moment after you release it.
-
----
-
-## What you see
-
-| Box | Colour | What it is |
-|-----|--------|------------|
-| Bar 0 to Bar 3 | blue | iWant's player bars, each with its icons. A bar iWant has hidden is drawn dimmer and labelled *(hidden)* |
-| NPC 1 to NPC 3 | green | the NPC slot cluster, one row per slot with the tracked actor's name, moved as one |
-| Meters | orange | the meter stack, one row per meter switched on |
-
-A faint rectangle marks iWant's 1280 × 720 stage, which matters on an ultrawide screen (see [Screen coordinates](customization.md#screen-coordinates)).
-
-The toolbar shows the link's status, the selected box's coordinates, and the buttons below.
+The game freezes while the menu is open, but the widgets keep updating, so a change shows on the real icons at once. Move the framework's panel aside if it covers the bar you are placing.
 
 ---
 
-## Controls
+## What is on the page
 
-| Action | Effect |
-|--------|--------|
-| Drag a box | moves it; the position is written when you release |
-| Click a box, then arrow keys | nudges by 1, with ++shift++ by 10 |
-| ++plus++ / ++minus++ | icon size of a bar; scale of the meter stack |
-| **Snap to 10** | positions land on a 10-unit grid |
-| **Refresh** | reads the layout again, after a change in iWant's MCM or a loaded preset |
-| **Reset NPC layout** | the cluster back to its default corner (1100, 600) |
-| **Done** or ++esc++ | closes the editor |
+| Group | Sliders | Applies |
+|-------|---------|---------|
+| Bar 0 to Bar 3 | X, Y, Size, Orientation (iWant's ten shapes) | X and Y follow the slider as you drag; size and orientation when you release it |
+| NPC slots | X, Y, Spacing | when you release the slider; the three rows and their name labels move as one cluster |
+| Meter stack | X, Y, Scale | when you release the slider; the stack rebuilds a moment later and shows itself for 30 seconds |
+
+Above the sliders a status line says whether the layout was read, with **Refresh** to read it again (after a change in iWant's MCM, or a loaded preset). **Reset NPC layout** puts the cluster back in its default corner (1100, 600).
 
 ---
 
-## What a move changes
+## What a change writes
 
-- **Bars 0 to 3** are iWant's shared bars: a move writes iWant's X and Y, the same values its MCM sliders hold, so every mod's icons in that bar move with it.
-- **The NPC cluster** writes the *NPC group X / Y* of the [NPC Tracking](npc-tracking.md) page; the slots keep their spacing.
-- **The meter stack** writes *Meters X / Y / Scale* of the Meters page. The stack rebuilds a moment after a move and then shows its 30-second preview, so you can see it outside a scene.
+- **Bars 0 to 3** are iWant's shared bars: the page writes iWant's own X, Y, size and type, the same values its MCM sliders hold, so every mod's icons in that bar move with it.
+- **The NPC cluster** writes the *NPC group X / Y* and *spacing* of the [NPC Tracking](npc-tracking.md) page.
+- **The meter stack** writes *Meters X / Y / Scale* of the Meters page.
 
-All of it lives in the save like the MCM's settings, and goes into settings presets the same way.
+All of it lives in the save like the MCM's settings, and goes into settings presets the same way. Values are iWant's 1280 × 720 stage units (see [Screen coordinates](customization.md#screen-coordinates)).
 
 ---
 
 ## Notes
 
-- The icons in the editor are their first-stage art, drawn white: a preview of where they sit. The real icons keep their stage and colour.
-- A custom icon pack in a BSA shows as empty boxes in the preview; the editor reads loose files. The boxes move all the same.
-- On SKSE Menu Framework 3.8 the framework's own panel stays open behind the editor; drag it aside. Newer framework builds let the editor hide it.
-- The editor and the scripts must come from the same SL Widgets release: an older `slw_bridge.pex` under a newer DLL shows a message in the toolbar instead of a layout.
+- A bar iWant has hidden is marked *(hidden by iWant right now)*; it takes a move all the same.
+- The page and the scripts must come from the same SL Widgets release: an older `slw_bridge.pex` under a newer DLL shows a message on the page instead of the sliders.
+- On the title screen, with no game loaded, the page says SL Widgets is not running.

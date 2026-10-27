@@ -9,48 +9,26 @@ namespace Env
 		// Every SKSEMenuFramework.dll export the plugin reaches, by the name the
 		// vendored header binds it to. The header's ImGui wrappers call through
 		// GetProcAddress with NO null check, so a missing export is a crash at the
-		// call site; probing them all here turns that into "editor disabled" at load.
-		// Keep in step with Editor.cpp and Menu.cpp.
+		// call site; probing them all here turns that into "page disabled" at load.
+		// Keep in step with Page.cpp and Menu.cpp.
 		constexpr std::array kFrameworkExports{
 			"AddSectionItem",
-			"AddWindow",
-			"DisposeTexture",
-			"LoadTexture",
 			"RegisterEventPriority",
 			"UnregisterEvent",
-			"ImDrawList_AddImage",
-			"ImDrawList_AddLine",
-			"ImDrawList_AddRect",
-			"ImDrawList_AddRectFilled",
-			"ImDrawList_AddText_Vec2",
-			"igBegin",
-			"igBeginTooltip",
-			"igButton",
-			"igCalcTextSize",
-			"igCheckbox",
-			"igEnd",
-			"igEndTooltip",
+			"igBeginCombo",
+			"igEndCombo",
 			"igGetFontSize",
-			"igGetMousePos",
 			"igGetTime",
-			"igGetWindowDrawList",
-			"igIsItemHovered",
-			"igIsKeyDown_Nil",
-			"igIsKeyPressed_Bool",
-			"igIsMouseClicked_Bool",
-			"igIsMouseDown_Nil",
-			"igIsMouseReleased_Nil",
-			"igIsWindowHovered",
+			"igIsItemActive",
 			"igPopID",
 			"igPopStyleColor",
 			"igPushID_Int",
 			"igPushStyleColor_Vec4",
 			"igSameLine",
+			"igSelectable_Bool",
 			"igSeparator",
-			"igSetNextWindowBgAlpha",
-			"igSetNextWindowFocus",
-			"igSetNextWindowPos",
-			"igSetNextWindowSize",
+			"igSetNextItemWidth",
+			"igSliderInt",
 			"igSmallButton",
 			"igSpacing",
 			"igTextUnformatted",
@@ -75,7 +53,6 @@ namespace Env
 				return;
 			}
 			g_state.frameworkOk = true;
-			g_state.hasMainWindow = ::GetProcAddress(module, "GetMainWindow") != nullptr;
 		}
 	}
 
@@ -83,8 +60,7 @@ namespace Env
 	{
 		g_state = {};
 		ProbeFramework();
-		logger::info("SKSE Menu Framework: {}{}", g_state.frameworkOk ? "ready" : g_state.frameworkWhy,
-			g_state.frameworkOk && !g_state.hasMainWindow ? " (no GetMainWindow: the framework panel stays visible while the editor is open)" : "");
+		logger::info("SKSE Menu Framework: {}", g_state.frameworkOk ? "ready" : g_state.frameworkWhy);
 	}
 
 	const State& Get()

@@ -1596,9 +1596,8 @@ EndFunction
 ; and the meter stack belong to their anchors (_layoutNpcBars, setMetersLayout),
 ; which is why the DLL moves those as a group and never bar by bar.
 ;
-; Layout string: "v=1|b0=x,y,type,size,visible,file;file|...|b9=...
+; Layout string: "v=1|b0=x,y,type,size,visible|...|b9=...
 ;   |npc=x,y,stride|n1=name|n2=name|n3=name|meters=x,y,scale,rows,always"
-; Files are the icons' state-0 art, Interface\exported relative, in bar order.
 ; The version is the DLL's Layout::kVersion: bump both when a field changes.
 ; ---------------------------------------------------------------------------
 
@@ -1609,7 +1608,7 @@ String Function editorLayout()
 	String s = "v=1"
 	Int bar = 0
 	While bar < iBars.TOTAL_STATUS_BARS
-		s += "|b" + bar + "=" + iBars._getBarX(bar) + "," + iBars._getBarY(bar) + "," + iBars._getBarType(bar) + "," + iBars._getBarIconSize(bar) + "," + _editorBarVisible(bar) + "," + _editorBarFiles(bar)
+		s += "|b" + bar + "=" + iBars._getBarX(bar) + "," + iBars._getBarY(bar) + "," + iBars._getBarType(bar) + "," + iBars._getBarIconSize(bar) + "," + _editorBarVisible(bar)
 		bar += 1
 	EndWhile
 	s += "|npc=" + npcGroupX + "," + npcGroupY + "," + npcVerticalSpacing
@@ -1623,27 +1622,6 @@ Int Function _editorBarVisible(Int bar)
 		Return iBars.getBarVisible(bar) As Int
 	EndIf
 	Return 1
-EndFunction
-
-; The art of the icons in a bar, so the editor can draw them. A released icon
-; keeps its bar seat until the next draw scrubs it, so the widget test skips it.
-String Function _editorBarFiles(Int bar)
-	String files = ""
-	Int p = 0
-	While p < iBars.ICONS_PER_STATUS_BAR
-		Int icon = iBars._getBarIcon(bar, p)
-		If icon >= 0 && iBars._getIconWidget(icon, 0) >= 0
-			String f = iBars._getIconSourceFile(icon, 0)
-			If f != ""
-				If files != ""
-					files += ";"
-				EndIf
-				files += f
-			EndIf
-		EndIf
-		p += 1
-	EndWhile
-	Return files
 EndFunction
 
 String Function _editorSlotName(Int slot)
@@ -1686,9 +1664,24 @@ Function editorSetBarSize(Int bar, Int size)
 	iBars._drawBar(bar)
 EndFunction
 
+; iWant's bar types, as its MCM applies them (the resize covers an orbit's
+; double-sized center icon)
+Function editorSetBarType(Int bar, Int type)
+	If !iBars || !iBars.isReady() || bar < 0 || bar > 3
+		Return
+	EndIf
+	iBars._setBarType(bar, type)
+	iBars._resizeBar(bar)
+	iBars._drawBar(bar)
+EndFunction
+
 Function editorSetNpcGroup(Int x, Int y)
 	setNpcGroupPos(x, y)
 	_layoutNpcBars()
+EndFunction
+
+Function editorSetNpcSpacing(Int v)
+	setNpcVerticalSpacing(v)
 EndFunction
 
 ; The stack rebuilds on the next pass; ask for one now rather than waiting out

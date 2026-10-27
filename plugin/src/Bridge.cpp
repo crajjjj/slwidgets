@@ -147,9 +147,19 @@ namespace Bridge
 		Call("SetBarSize"sv, nullptr, a_bar, a_size);
 	}
 
+	void SetBarType(int a_bar, int a_type)
+	{
+		Call("SetBarType"sv, nullptr, a_bar, a_type);
+	}
+
 	void SetNpcGroup(int a_x, int a_y)
 	{
 		Call("SetNpcGroup"sv, nullptr, a_x, a_y);
+	}
+
+	void SetNpcSpacing(int a_spacing)
+	{
+		Call("SetNpcSpacing"sv, nullptr, a_spacing);
 	}
 
 	void SetMeters(int a_x, int a_y, int a_scale)

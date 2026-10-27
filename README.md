@@ -28,7 +28,7 @@ A plugin for **iWant Status Bars** that shows SexLab-related status icons for th
 - **One drawn icon set** (3.0): every icon in the same style, white to red as a value worsens; the classic icons remain available as an optional download. See [Icon styles](https://crajjjj.github.io/slwidgets/customization/#icon-styles).
 - **Custom icon packs** to restyle the look — see [Custom Icon Packs](https://crajjjj.github.io/slwidgets/custom-packs/).
 - Position, colour, size and toggles tuned in the **MCM** — see the [MCM Reference](https://crajjjj.github.io/slwidgets/mcm-reference/).
-- **Drag the bars into place** (3.1) with the in-game position editor, an SKSE Menu Framework window over the HUD — see [Position Editor](https://crajjjj.github.io/slwidgets/position-editor/).
+- **Place the bars with the game in view** (3.1): a Positions page in the SKSE Menu Framework menu whose sliders move the icons on the HUD as you change them — see [Position Editor](https://crajjjj.github.io/slwidgets/position-editor/).
 
 ## Requirements
 

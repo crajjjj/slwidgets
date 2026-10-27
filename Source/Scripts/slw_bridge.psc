@@ -1,6 +1,6 @@
 Scriptname slw_bridge Hidden
-{The link between SLWidgetsMenu.dll (the in-game position editor, plugin\) and
-the mod. The DLL calls these global functions through the Papyrus VM, so their
+{The link between SLWidgetsMenu.dll (the Positions page in SKSE Menu
+Framework's menu, plugin\) and the mod. The DLL calls these global functions through the Papyrus VM, so their
 names and argument lists are an interface: never change a signature, add a new
 function instead. A call whose argument count differs from what the DLL sends
 is rejected by the VM without a trace, and the editor then shows nothing.
@@ -43,11 +43,25 @@ Function SetBarSize(Int bar, Int size) Global
 	EndIf
 EndFunction
 
+Function SetBarType(Int bar, Int type) Global
+	slw_widget_controller w = _controller()
+	If w
+		w.editorSetBarType(bar, type)
+	EndIf
+EndFunction
+
 ; The NPC cluster's anchor: the bars follow (_layoutNpcBars)
 Function SetNpcGroup(Int x, Int y) Global
 	slw_widget_controller w = _controller()
 	If w
 		w.editorSetNpcGroup(x, y)
+	EndIf
+EndFunction
+
+Function SetNpcSpacing(Int v) Global
+	slw_widget_controller w = _controller()
+	If w
+		w.editorSetNpcSpacing(v)
 	EndIf
 EndFunction
 

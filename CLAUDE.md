@@ -18,7 +18,7 @@ pyro.exe -i skyrimse.ppj --game-path "C:\SteamLibrary\steamapps\common\Skyrim Sp
 # Sources: Source/Scripts/*.psc -> Scripts/*.pex; also rewrites Build/SLWidgets.zip
 ```
 
-The position editor DLL is a separate build (see "Position editor plugin"
+The Positions page DLL is a separate build (see "Positions page plugin"
 below); run it before Pyro for a release, since the zip packs the DLL.
 
 ### Import order matters (and `skyrimse.ppj` is gitignored)
@@ -65,10 +65,15 @@ tools/esp/SlwEsp -- SLWidgets.esp` does both for the names listed in its
 (not byte-faithful: it recomputes the header's next FormID), which is fine for
 this two-record plugin; check it afterwards (houseCARL / xEdit).
 
-### Position editor plugin (`plugin\`, 3.1.0+)
+### Positions page plugin (`plugin\`, 3.1.0+)
 
-`SLWidgetsMenu.dll`, an SKSE Menu Framework window where the status bars, the
-NPC cluster and the meter stack are boxes to drag. Build from `plugin\`:
+`SLWidgetsMenu.dll`, a page in SKSE Menu Framework's menu (section "SL Widgets",
+"Positions") with sliders for X, Y, size and orientation of iWant's player bars
+0-3, X, Y and spacing of the NPC cluster, X, Y and scale of the meter stack. A
+change is written into the game while the menu is open and the real icons move
+(the framework freezes time, Papyrus keeps running). The user asked for exactly
+this and turned down a drag editor with boxes over the HUD (built first, then
+replaced): "I need just x y z and orientation. No boxes." Build from `plugin\`:
 `xmake f -m release && xmake` (VS 2022, xmake 3.0+, the CommonLibSSE-NG
 submodule at `plugin\lib\commonlibsse-ng`, shallow at v7.1.0: `git submodule
 update --init --recursive`). The DLL lands in `SKSE\Plugins`, which the ppj zips
@@ -77,45 +82,41 @@ with the rest of `SKSE`, so a release build runs it before Pyro;
 
 - **Version**: the target's `on_load` reads `slw_util.GetVersionString()`, the
   same line `build_release.py` reads; nothing else to bump. The description
-  scope of xmake.lua cannot read files, hence the hook.
+  scope of xmake.lua cannot read files, hence the hook. The resource's
+  ProductVersion stays 0.0.0 (project version); FileVersion carries the mod's.
 - **Never installs**: `XSE_TES5_MODS_PATH` is set on this machine and the
   commonlib plugin rule would `xmake install` into `<mods>\SLWidgetsMenu`;
   `on_config` repoints `installdir` and an empty `on_install` replaces the
   rule's. Build with the variable cleared as well.
 - **Where state lives**: nowhere new. The DLL is a view over the save: it reads
   the layout as ONE string from `slw_widget_controller.editorLayout()` and
-  writes through `editorSetBarPos` / `editorSetBarSize` (iWant's setters +
-  `_drawBar`, as iWant's MCM does), `editorSetNpcGroup` (`setNpcGroupPos` +
-  `_layoutNpcBars`) and `editorSetMeters` (`setMetersLayout` + `_refreshSoon`).
-  The NPC bars and the meter stack are never moved bar by bar: the controller
-  re-derives them from their anchors.
+  writes through `editorSetBarPos` / `editorSetBarSize` / `editorSetBarType`
+  (iWant's setters + `_resizeBar` + `_drawBar`, as iWant's MCM does),
+  `editorSetNpcGroup` (`setNpcGroupPos` + `_layoutNpcBars`),
+  `editorSetNpcSpacing` and `editorSetMeters` (`setMetersLayout` +
+  `_refreshSoon`). The NPC bars and the meter stack are never moved bar by
+  bar: the controller re-derives them from their anchors.
+- **Write rules** (`Page.cpp`): X and Y of a player bar are written every
+  150 ms while the slider is held (one `_setBarX/Y` + `_drawBar`, cheap);
+  size, orientation, the NPC cluster and the meters on release only, since
+  each of those is a resize pass, a full `_layoutNpcBars` or a stack rebuild.
+  `kCloseMenu` flushes a slider still held. The layout is read back 1.5 s
+  after a write, never while a slider is held (the answer would overwrite the
+  value under the hand), and whenever the page comes up after a 1 s gap.
 - **The bridge** is `slw_bridge.psc`, hidden global functions the DLL reaches
   with `DispatchStaticCall` on the SKSE task queue; the answer arrives on a VM
   thread. Its signatures are an interface: the VM rejects a call whose argument
   count differs, silently, so never change one, add a function. The layout
   string carries `v=1`; `Layout::kVersion` in the DLL must match (bump both).
-- **Framework facts** (SKSE-Menu-Framework-3 source, 2026-10): `AddWindow`
-  pushes onto an unlocked vector the render thread iterates, so everything
-  registers at `kPostPostLoad`, not `kDataLoaded` (the loading screen already
-  renders then). A blocking window freezes time (`Main::freezeTime`, Papyrus
-  keeps running, so the real widgets follow a move while the editor is open),
-  blocks game input and draws the cursor. Escape calls `WindowManager::Close`
-  for every window and dispatches `kCloseMenu`, which the editor listens to.
-  The framework's main window is `#MCPMainWindow`; its position is saved to
-  the framework's INI every frame, so it is never moved by name. 3.8 (nefaram)
-  has no `GetMainWindow`: the panel stays visible behind the editor there;
-  newer builds hide it (`Env::hasMainWindow`).
+- **Framework facts** (SKSE-Menu-Framework-3 source, 2026-10): registration
+  lists are unlocked and the loading screen renders at kDataLoaded, so
+  everything registers at `kPostPostLoad`. A blocking window sets
+  `Main::freezeTime` (Papyrus runs on), blocks game input and draws the
+  cursor. Escape calls `WindowManager::Close` and dispatches `kCloseMenu`.
+  nefaram runs 3.8, which lacks `GetMainWindow`; the page needs nothing of it.
 - **ImGui rules** as SLO VE's: the vendored header only through `Ui.h`, no
-  ImGui structs read (the screen size comes from
-  `RE::BSGraphics::Renderer::GetScreenSize`, as the framework's own code does),
-  every export used is on the probe list in `Env.cpp`. The draw-list wrappers
-  live in `ImGuiMCP::ImDrawListManager`.
-- **Geometry** (`Layout.cpp`): stage to screen is scale = H/720, x offset
-  (W - 1280*scale)/2, which the Prisma renderer reproduces. Bar footprints
-  mirror `iwant_status_bars._drawBar` (line pitch 1.5 * size, circle radius
-  2 * size, half circles 3 * size); the meter rows mirror `_buildMeters`.
-  Icon previews are the state-0 art from `Interface\exported\` through the
-  framework's `LoadTexture` (loose files only).
+  ImGui structs read, every export used is on the probe list in `Env.cpp`.
+  Slider commits follow SLO VE's `IsItemActive` / `wasActive` pattern.
 
 ## Important: CK-Filled Properties
 
@@ -192,7 +193,7 @@ Script properties filled via the Creation Kit (CK) in the ESP/ESM must NOT be re
 | `Source/ApiHeaders/*.psc` | Compile stubs for foreign script types that are cast at runtime (SGO4, SunHelm): only the members SL Widgets reads, `extends Quest`; the cast resolves by script name in game |
 | `build_icons.py` | 3.0.0: draws the whole icon set into `Interface/.../library/` from `art/ring/glyphs/*.svg` (needs `pip install pillow resvg-py`) and the shipped Default / HideEmpty presets from its ramp; adds the new keys to the white presets and to the classic pack's presets; `--sheet` renders `docs/assets/ring-style.png` |
 | `art/ring/draw_custom_glyphs.py` | Writes the hand-drawn glyphs (vulva, anus, ovum, belly, sperm, sun, snowflake) into `art/ring/glyphs/`; the rest are game-icons.net files (CC BY 3.0, credits in `art/ring/glyphs/CREDITS.md`) |
-| `plugin/` | 3.1.0: `SLWidgetsMenu.dll`, the position editor (xmake + CommonLibSSE-NG, SKSE Menu Framework). `Editor.cpp` the window, `Layout.cpp` the footprint maths, `Bridge.cpp` the Papyrus calls, `Env.cpp` the export probe |
+| `plugin/` | 3.1.0: `SLWidgetsMenu.dll`, the Positions page (xmake + CommonLibSSE-NG, SKSE Menu Framework). `Page.cpp` the sliders and their write rules, `Layout.cpp` the layout string's model, `Bridge.cpp` the Papyrus calls, `Env.cpp` the export probe |
 | `Source/Scripts/slw_bridge.psc` | 3.1.0: the global functions the DLL calls; forwards to the `editor*` functions at the end of `slw_widget_controller`. Signatures are an interface |
 | `build_release.py` | 3.0.0: renames Pyro's zip to `Build/SLWidgets <version>.zip` and packs the optional `SLWidgets Classic Icons <version>.zip` from `art/classic`; run after the Papyrus build |
 | `tools/esp/SlwEsp/` | Mutagen (dotnet 9) tool that registers module scripts in `SLWidgets.esp` (script on the modules quest + object property on `slw_config`); idempotent, keeps a `.bak` |

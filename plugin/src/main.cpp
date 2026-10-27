@@ -1,16 +1,17 @@
 #include "Bridge.h"
-#include "Editor.h"
 #include "Env.h"
 #include "Menu.h"
+#include "Page.h"
 
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/msvc_sink.h>
 
 using namespace SKSE;
 
-// SLWidgetsMenu.dll - the SL Widgets in-game position editor. It is a convenience
-// on top of a mod that runs entirely without it, so nothing in here may take the
-// game down: no report_and_fail, and a step that fails only disables the editor.
+// SLWidgetsMenu.dll - the SL Widgets Positions page in SKSE Menu Framework's menu.
+// It is a convenience on top of a mod that runs entirely without it, so nothing
+// in here may take the game down: no report_and_fail, and a step that fails only
+// disables the page.
 
 namespace
 {
@@ -44,9 +45,9 @@ namespace
 		try {
 			switch (a_msg->type) {
 			case MessagingInterface::kPostPostLoad:
-				// every SKSE plugin is loaded by now, and the framework's window list
-				// has not met its render thread yet: AddWindow pushes onto that list
-				// unlocked, and the loading screen already renders at kDataLoaded
+				// every SKSE plugin is loaded by now, and the framework has not started
+				// rendering: its registration lists are unlocked, and the loading
+				// screen already renders at kDataLoaded
 				Env::Detect();
 				Menu::Register();
 				break;
@@ -55,7 +56,7 @@ namespace
 			case MessagingInterface::kPostLoadGame:
 				// the VM is reset: an answer on its way is gone, the layout belongs to the old game
 				Bridge::OnVmReset();
-				Editor::OnVmReset();
+				Page::OnVmReset();
 				break;
 			default:
 				break;

@@ -3,7 +3,7 @@
 // The link to the mod's scripts: slw_bridge.psc, global functions the DLL calls
 // through the Papyrus VM (DispatchStaticCall). Calls are queued on the SKSE task
 // queue and dispatched on the game thread; an answer arrives on a VM thread. The
-// editor reads the layout as one string (slw_widget_controller.editorLayout) and
+// page reads the layout as one string (slw_widget_controller.editorLayout) and
 // writes through the setters the MCM uses, so iWant's arrays are only ever touched
 // from the scripts.
 
@@ -29,7 +29,9 @@ namespace Bridge
 	// The setters, fire and forget
 	void SetBarPos(int a_bar, int a_x, int a_y);
 	void SetBarSize(int a_bar, int a_size);
+	void SetBarType(int a_bar, int a_type);
 	void SetNpcGroup(int a_x, int a_y);
+	void SetNpcSpacing(int a_spacing);
 	void SetMeters(int a_x, int a_y, int a_scale);
 	void ResetNpcLayout();
 }
