@@ -5,7 +5,8 @@
 Each file has the shape of a game-icons file (512 viewBox, background square
 first, white glyph after) so build_icons.py loads them like any other glyph.
 Evenodd fill makes the inner shapes holes. The glyphs: vulva, anus, ovum,
-belly (pregnant torso), sperm, sun-simple, snowflake-simple.
+belly (pregnant torso), sperm, sun-simple, snowflake-simple, and the hair
+stages pubic-0..5 and armpit-0..6.
 """
 import math
 import os
@@ -144,3 +145,113 @@ for i in range(6):
         flake += capsule(bx, by, 84, 24, bang)
     flake += circle(256 + 236 * math.cos(a), 256 + 236 * math.sin(a), 20)
 write("snowflake-simple", [(flake, False)])
+
+
+# --- hair (3.4.0): one glyph per SPH stage, from the user's references (hip
+# brackets around a Y that grows into a filled triangle; a raised arm with the
+# hollow filling up; a razor and sparkles when shaved). Strokes at weight B of
+# the drafts (x1.4): the thin reference lines vanished at the 40 px bar size.
+# build_icons draws these full and lets the ring alone show the stage.
+HAIR_K = 1.4
+
+
+def hstroke(d, w, extra=""):
+    return (f'<path fill="none" stroke="#fff" stroke-width="{w * HAIR_K:.0f}" stroke-linecap="round" '
+            f'stroke-linejoin="round"{extra} d="{d}"/>')
+
+
+def hpoly(points, w=20, extra=""):
+    d = "M" + " L".join(f"{x:.0f},{y:.0f}" for x, y in points) + " Z"
+    return f'<path fill="#fff" stroke="#fff" stroke-width="{w * HAIR_K:.0f}" stroke-linejoin="round"{extra} d="{d}"/>'
+
+
+def razor(cx, cy, s=1.0):
+    """A silhouette: the rounded head with the blade line as a hole, a handle."""
+    head_w, head_h, r = 120 * s, 46 * s, 12 * s
+    x, y = cx - head_w / 2, cy - head_h
+    head = (f"M{x + r:.0f},{y:.0f} h{head_w - 2 * r:.0f} a{r:.0f},{r:.0f} 0 0 1 {r:.0f},{r:.0f} v{head_h - 2 * r:.0f} "
+            f"a{r:.0f},{r:.0f} 0 0 1 {-r:.0f},{r:.0f} h{-(head_w - 2 * r):.0f} a{r:.0f},{r:.0f} 0 0 1 {-r:.0f},{-r:.0f} "
+            f"v{-(head_h - 2 * r):.0f} a{r:.0f},{r:.0f} 0 0 1 {r:.0f},{-r:.0f} Z ")
+    slot = f"M{x + 10 * s:.0f},{cy - head_h / 2 - 4 * s:.0f} h{head_w - 20 * s:.0f} v{8 * s:.0f} h{-(head_w - 20 * s):.0f} Z "
+    out = f'<path fill="#fff" fill-rule="evenodd" d="{head}{slot}"/>'
+    out += hpoly([(cx - 17 * s, cy), (cx + 17 * s, cy), (cx + 13 * s, cy + 96 * s), (cx - 13 * s, cy + 96 * s)], 8 * s)
+    return out
+
+
+def sparkle(cx, cy, s=1.0):
+    return hstroke(f"M{cx - 20 * s:.0f},{cy} L{cx + 20 * s:.0f},{cy} M{cx},{cy - 20 * s:.0f} L{cx},{cy + 20 * s:.0f}", 12 * s)
+
+
+def hip_brackets():
+    out = ""
+    for side in (-1, 1):
+        x_in = 256 + side * 128
+        x_ctl = 256 + side * 214
+        out += hstroke(f"M{x_in},62 Q{x_ctl},256 {x_in},450", 34)
+    return out
+
+
+def bush(w, h, y_top, tufts=False):
+    """A filled triangle, point down; tufts: three small ones on the top edge."""
+    l, r = 256 - w / 2, 256 + w / 2
+    apex = (256, y_top + h)
+    parts = hpoly([(l, y_top), (r, y_top), apex])
+    if tufts:
+        for dx in (-76, 0, 76):
+            x = 256 + dx
+            parts += hpoly([(x - 16, y_top + 4), (x + 16, y_top + 4), (x, y_top - 26)], 10)
+    return parts, apex[1]
+
+
+def cleft_stem(apex_y):
+    return hstroke(f"M256,{apex_y:.0f} L256,404", 26)
+
+
+def cleft_y(w=22):
+    return hstroke("M196,232 L256,300 L316,232", w)
+
+
+PUBIC_STAGES = [
+    lambda: cleft_y() + cleft_stem(300) + razor(332, 340, 0.82) + sparkle(184, 350, 0.9),
+    lambda: cleft_y(26) + cleft_stem(300) + hpoly([(201, 236), (311, 236), (256, 300)], 0, ' fill-opacity="0.42"'),
+    lambda: (lambda p: p[0] + cleft_stem(p[1]))(bush(120, 72, 232)),
+    lambda: (lambda p: p[0] + cleft_stem(p[1]))(bush(172, 100, 218)),
+    lambda: (lambda p: p[0] + cleft_stem(p[1]))(bush(226, 128, 204)),
+    lambda: (lambda p: p[0] + cleft_stem(p[1]))(bush(258, 144, 196, tufts=True)),
+]
+for i, make in enumerate(PUBIC_STAGES):
+    write_raw(f"pubic-{i}", hip_brackets() + make())
+
+
+def raised_arm():
+    # the arm across the top, the torso down the right, the armpit curve between
+    return hstroke("M80,64 L360,64 L360,340 L286,340 L250,156 Q244,122 204,122 L80,122 Z", 30)
+
+
+def strand(x0, y0, length, lean, wave, w=24):
+    c1 = (x0 + lean * 0.2 + wave, y0 + length * 0.35)
+    c2 = (x0 + lean * 0.8 - wave, y0 + length * 0.7)
+    return hstroke(f"M{x0:.0f},{y0:.0f} C{c1[0]:.0f},{c1[1]:.0f} {c2[0]:.0f},{c2[1]:.0f} {x0 + lean:.0f},{y0 + length:.0f}", w)
+
+
+def strands(n, length, wave, spread, w=24):
+    """n strands hanging from the arm's inner edge, fanning out as they lengthen."""
+    xs = [128 + i * (92 / max(n - 1, 1)) for i in range(n)]
+    out = ""
+    for i, x in enumerate(xs):
+        lean = (i - (n - 1) / 2) * spread
+        out += strand(x, 150, length, lean, wave * (1 if i % 2 else -1), w)
+    return out
+
+
+ARMPIT_STAGES = [
+    lambda: razor(148, 236, 0.9) + sparkle(228, 172, 0.9) + sparkle(104, 170, 0.7),
+    lambda: '<ellipse fill="#fff" fill-opacity="0.42" cx="176" cy="168" rx="56" ry="26"/>',
+    lambda: "".join(f'<circle fill="#fff" cx="{x}" cy="162" r="13"/>' for x in (128, 160, 192, 220)),
+    lambda: strands(4, 42, 0, 6),
+    lambda: strands(5, 78, 6, 9),
+    lambda: strands(5, 118, 14, 12),
+    lambda: strands(5, 140, 14, 13, 26),
+]
+for i, make in enumerate(ARMPIT_STAGES):
+    write_raw(f"armpit-{i}", raised_arm() + make())

@@ -10,7 +10,8 @@ outline whose body fills from the bottom; toggle icons (pregnancy states,
 parasites, defeat) keep a full ring and a full glyph. Everything is white on
 transparent, 100x100 DXT5, like the classic icons were, so iWant's per-stage
 tint (the colour presets) does the colouring. The ramp the set is drawn for,
-white -> gold -> orange -> red, becomes the shipped Default colour preset.
+white -> ice blue -> violet -> magenta -> red (palette A, 3.4.0), becomes the
+shipped Default colour preset; the classic style keeps the 3.0 ramp.
 
 Where things go:
   art/ring/glyphs/*.svg        the glyphs (game-icons.net + hand-drawn, see CREDITS.md)
@@ -64,7 +65,23 @@ CLASSIC_LIB = os.path.join(ROOT, "art", "classic", "library")
 FOMOD = os.path.join(ROOT, "fomod")
 
 # the tint the set is drawn for, per stage 0..8: r, g, b, and iWant alpha 0-100
+# palette A (3.4.0): white > ice blue > violet > magenta > red, picked so the set
+# stands apart from the gold-to-red and green-to-red ramps other HUD widget mods
+# use. slw_util.fillStageColors holds the same stops.
 RAMP = [
+    (255, 255, 255, 72),
+    (205, 232, 255, 85),
+    (150, 205, 255, 100),
+    (140, 165, 255, 100),
+    (170, 120, 255, 100),
+    (215, 90, 235, 100),
+    (250, 70, 180, 100),
+    (255, 50, 115, 100),
+    (255, 36, 60, 100),
+]
+# the 3.0 ramp, kept for the classic style: its thirteen generated sets were
+# coloured with it, and the classic pack is the old look
+CLASSIC_RAMP = [
     (255, 255, 255, 72),
     (255, 240, 200, 85),
     (255, 226, 150, 100),
@@ -133,21 +150,23 @@ def glyph_layer(mask, frac, outline_w=OUTLINE_W, ghost_a=GHOST_A):
     return ImageChops.lighter(outline, body)
 
 
-def build(glyph, frac, badge=None, full_ring=False, classic=False):
+def build(glyph, frac, badge=None, full_ring=False, classic=False, glyph_frac=None):
     """One icon as RGBA FINALxFINAL, white on transparent.
 
     glyph: glyph name. frac: 0..1 ring sweep and glyph fill. badge: a second
     glyph in the bottom-right corner, or "<name" for bottom-left. classic: the
-    classic look (CLASSIC_GLYPH) instead of the ring.
+    classic look (CLASSIC_GLYPH) instead of the ring. glyph_frac: the glyph's
+    fill when it is not the ring's (a glyph designed per stage is drawn full).
     """
     left = bool(badge) and badge.startswith("<")
     if left:
         badge = badge[1:]
     gsize = (CLASSIC_GLYPH if classic else GLYPH) * (0.92 if badge else 1.0)
+    gf = frac if glyph_frac is None else glyph_frac
     if classic:
-        g = glyph_layer(glyph_mask(glyph, gsize), frac, CLASSIC_OUTLINE_W, 0)
+        g = glyph_layer(glyph_mask(glyph, gsize), gf, CLASSIC_OUTLINE_W, 0)
     else:
-        g = glyph_layer(glyph_mask(glyph, gsize), frac)
+        g = glyph_layer(glyph_mask(glyph, gsize), gf)
     lay = Image.new("L", (S, S), 0)
     offx = offy = int((S - gsize) / 2)
     if badge:
@@ -186,7 +205,8 @@ COLD = ["sun-simple"] * 3 + ["snowflake-simple"] * 6
 # classic: "ring" = the set's classic art is hand-drawn and lives in
 # art/classic/library; "lib" = this script draws its classic art there too, in
 # the classic look (build(..., classic=True)). fills None = a stage set: progress
-# ring, fill i/(n-1). A list = toggle icons: full ring, that fill per file.
+# ring, fill i/(n-1). "full" = a stage set drawn per stage: progress ring, the
+# glyph full. A list = toggle icons: full ring, that fill per file.
 SETS = [
     # the sets that pre-date 3.0.0
     ("ring", "sla/arousal", stages("aroused", 9), "hearts", None, None),
@@ -219,8 +239,9 @@ SETS = [
     ("lib", "sunhelm/fatigue", stages("fatigue", 9), "bed", None, None),
     ("lib", "hygiene/dirt", stages("dirt", 9), "soap", None, None),
     ("lib", "hygiene/wet", stages("wet", 9), "droplets", None, None),
-    ("lib", "sph/pubic", stages("pubic", 6), "high-grass", None, None),
-    ("lib", "sph/armpit", stages("armpit", 7), "grass", None, None),
+    # hair (3.4.0): a hand-drawn glyph per stage (draw_custom_glyphs.py), drawn full
+    ("lib", "sph/pubic", stages("pubic", 6), [f"pubic-{i}" for i in range(6)], None, "full"),
+    ("lib", "sph/armpit", stages("armpit", 7), [f"armpit-{i}" for i in range(7)], None, "full"),
     ("lib", "bf/babyhealth", stages("baby", 9), "embryo", None, None),
     ("lib", "stress/stress", stages("stress", 9), "broken-heart", None, None),
     ("lib", "stress/fear", stages("fear", 9), "chained-heart", None, None),
@@ -261,12 +282,15 @@ def ramp_index(i, n):
     return int(round(i * 8 / (n - 1))) if n > 1 else 8
 
 
-def colours(spec, alphas=None, white=False):
-    """r, g, b, a arrays for one preset entry. alphas: None = the RAMP alphas,
-    else a 9-long list sampled like the colours. white: AllWhite variants."""
+def colours(spec, alphas=None, white=False, ramp=None):
+    """r, g, b, a arrays for one preset entry. alphas: None = the ramp's alphas,
+    else a 9-long list sampled like the colours. white: AllWhite variants.
+    ramp: the stops to sample, RAMP unless given (the classic presets take
+    CLASSIC_RAMP)."""
+    ramp = RAMP if ramp is None else ramp
     kind = spec[0]
     if kind == "tone":
-        r, g, b, a = RAMP[spec[1]]
+        r, g, b, a = ramp[spec[1]]
         if white:
             r = g = b = 255
         return {"r": [r], "g": [g], "b": [b], "a": [100]}
@@ -274,7 +298,7 @@ def colours(spec, alphas=None, white=False):
     out = {"r": [], "g": [], "b": [], "a": []}
     for i in range(n):
         ri = ramp_index(i, n)
-        r, g, b, a = RAMP[ri]
+        r, g, b, a = ramp[ri]
         if kind == "const":
             r, g, b = spec[2]
         if white:
@@ -321,8 +345,8 @@ def write_presets():
     variants = {
         os.path.join(PRESETS, "AllWhite.json"): dict(alphas=CLASSIC_A, white=True),
         os.path.join(PRESETS, "AllWhite_HideEmpty.json"): dict(alphas=classic_hide, white=True),
-        os.path.join(CLASSIC_PRESETS, "Default.json"): dict(alphas=CLASSIC_A, white=False),
-        os.path.join(CLASSIC_PRESETS, "HideEmpty.json"): dict(alphas=classic_hide, white=False),
+        os.path.join(CLASSIC_PRESETS, "Default.json"): dict(alphas=CLASSIC_A, white=False, ramp=CLASSIC_RAMP),
+        os.path.join(CLASSIC_PRESETS, "HideEmpty.json"): dict(alphas=classic_hide, white=False, ramp=CLASSIC_RAMP),
     }
     for path, kw in variants.items():
         d = json.load(open(path, encoding="utf-8"))
@@ -395,7 +419,7 @@ def write_sheet(icons):
         return col
 
     _draw_sheet(lambda folder, stem: icons[(folder, stem)], tint,
-                "SL Widgets 3.0  -  the icon set, fine to worst",
+                "SL Widgets 3.4  -  the icon set, fine to worst",
                 "Stage counts are the mod's real ones. The ring sweeps with the stage, the glyph fills from the bottom, "
                 "the colour is the per-stage tint of the Default colour preset; milk and lactacid keep one colour. "
                 "Glyphs: game-icons.net (CC BY 3.0) and hand-drawn, see art/ring/glyphs/CREDITS.md.",
@@ -418,17 +442,17 @@ def write_classic_sheet(classic_icons):
     def tint(folder, i, n):
         p = preset.get(SHEET_KEYS.get(folder))
         if p is None or i >= len(p["r"]):
-            return RAMP[ramp_index(i, n) if n > 1 else 8][:3] + (100,)
+            return CLASSIC_RAMP[ramp_index(i, n) if n > 1 else 8][:3] + (100,)
         return (p["r"][i], p["g"][i], p["b"][i], 100)
 
     _draw_sheet(lookup, tint,
                 "SL Widgets 3.4  -  the classic icons, fine to worst",
                 "Stage counts are the mod's real ones. Hand-drawn pre-3.0 art where it existed, the newer sets drawn to match; "
                 "the glyph fills from the bottom. Colours: the classic Default preset, shown in full (in game its empty stages are faint).",
-                CLASSIC_SHEET)
+                CLASSIC_SHEET, tone_ramp=CLASSIC_RAMP)
 
 
-def _draw_sheet(lookup, tint, title, foot, out):
+def _draw_sheet(lookup, tint, title, foot, out, tone_ramp=None):
     """lookup(folder, stem) -> the white-on-transparent icon; tint(folder, i, n) ->
     its (r, g, b, a) for stage i of n; the toggle rows take the tones below."""
     font = "C:/Windows/Fonts/georgia.ttf"
@@ -467,7 +491,7 @@ def _draw_sheet(lookup, tint, title, foot, out):
             for i, stem in enumerate(stems[:9]):
                 col = tint(folder, i, n)
                 if folder in ("pregnancymod", "slp", "defeatmod", "slove"):
-                    col = RAMP[[1, 2, 3, 2, 4, 6, 8, 3, 5, 6, 7, 5][i % 12]][:3] + (100,)
+                    col = (tone_ramp or RAMP)[[1, 2, 3, 2, 4, 6, 8, 3, 5, 6, 7, 5][i % 12]][:3] + (100,)
                 t = tinted(lookup(folder, stem), col).resize((ICON, ICON), Image.LANCZOS)
                 x = x0 + LABEL_W + i * CELL
                 sheet.alpha_composite(t, (int(x + (CELL - ICON) / 2), int(y)))
@@ -550,6 +574,9 @@ def main():
             b = badge[i] if isinstance(badge, list) else badge
             if fills is None:
                 icon = build(g, i / (n - 1), badge=b)
+            elif fills == "full":
+                # designed per stage: the glyph drawn full, the ring sweeps
+                icon = build(g, i / (n - 1), badge=b, glyph_frac=1.0)
             else:
                 icon = build(g, fills[i], badge=b, full_ring=True)
             save_dxt5(icon, os.path.join(dest, stem + ".dds"))
@@ -565,7 +592,7 @@ def main():
         n = len(stems)
         for i, stem in enumerate(stems):
             g = glyph[i] if isinstance(glyph, list) else glyph
-            icon = build(g, i / (n - 1), classic=True)
+            icon = build(g, i / (n - 1), classic=True, glyph_frac=1.0 if fills == "full" else None)
             save_dxt5(icon, os.path.join(dest, stem + ".dds"))
             classic_icons[(folder, stem)] = icon
     print("wrote", len(classic_icons), "classic icons")

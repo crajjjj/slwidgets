@@ -50,7 +50,7 @@ Pick a preset with **Color Preset** on the SKSE menu's [General](position-editor
 
 | Preset | Colours | Empty stage | Other stages |
 |--------|---------|-------------|--------------|
-| `Default` | white to gold to red as a value worsens | fully visible | fully visible |
+| `Default` | white to ice blue to violet to magenta to red as a value worsens | fully visible | fully visible |
 | `HideEmpty` | as `Default` | hidden | the first step faint, then fully visible |
 | `AllWhite` | all white | faint | the first step faint, then fully visible |
 | `AllWhite_HideEmpty` | all white | hidden | the first step faint, then fully visible |
@@ -97,7 +97,7 @@ A preset saved before 3.2 holds no bar or NPC cluster layout, and loading it lea
 
 ## Icon styles
 
-Since 3.0.0 the mod ships one icon set: every icon drawn in the same style, a progress ring around a glyph that fills from the bottom, tinted from white through gold and orange to red as the value worsens. Milk and lactacid keep one colour. The `Default` colour preset is that ramp, fully visible at every stage; `HideEmpty` is the same ramp with the empty stage hidden (see [Shipped presets](#shipped-presets)).
+Since 3.0.0 the mod ships one icon set: every icon drawn in the same style, a progress ring around a glyph that fills from the bottom, tinted from white through ice blue and violet to magenta and red as the value worsens (since 3.4.0; 3.0 used white through gold and orange to red). Milk and lactacid keep one colour. The `Default` colour preset is that ramp, fully visible at every stage; `HideEmpty` is the same ramp with the empty stage hidden (see [Shipped presets](#shipped-presets)).
 
 The icons SL Widgets shipped before 3.0.0 are the **Classic icons** option of the installer. Since 3.4.0 it covers every set: the hand-drawn art for the sets that existed before 3.0.0, and the newer sets drawn in the same manner (a big outline that fills from the bottom, no ring), together with the classic Default and HideEmpty colour presets, whose empty stages are faint. Reinstall the mod to switch styles; custom packs install on top of either.
 

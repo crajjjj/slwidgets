@@ -219,34 +219,44 @@ Function fillStageColors(Int[] r, Int[] g, Int[] b, Int[] a) Global
 		If n > 1
 			stop = ((i * 8 * 2 + (n - 1)) / (2 * (n - 1)))
 		EndIf
-		r[i] = 255
+		; palette A (3.4.0): white > ice blue > violet > magenta > red, the stops of
+		; build_icons.RAMP
 		If stop == 0
+			r[i] = 255
 			g[i] = 255
 			b[i] = 255
 		ElseIf stop == 1
-			g[i] = 240
-			b[i] = 200
+			r[i] = 205
+			g[i] = 232
+			b[i] = 255
 		ElseIf stop == 2
-			g[i] = 226
-			b[i] = 150
+			r[i] = 150
+			g[i] = 205
+			b[i] = 255
 		ElseIf stop == 3
-			g[i] = 206
-			b[i] = 100
+			r[i] = 140
+			g[i] = 165
+			b[i] = 255
 		ElseIf stop == 4
-			g[i] = 180
-			b[i] = 66
+			r[i] = 170
+			g[i] = 120
+			b[i] = 255
 		ElseIf stop == 5
-			g[i] = 140
-			b[i] = 44
+			r[i] = 215
+			g[i] = 90
+			b[i] = 235
 		ElseIf stop == 6
-			g[i] = 100
-			b[i] = 36
+			r[i] = 250
+			g[i] = 70
+			b[i] = 180
 		ElseIf stop == 7
-			g[i] = 66
-			b[i] = 40
+			r[i] = 255
+			g[i] = 50
+			b[i] = 115
 		Else
+			r[i] = 255
 			g[i] = 36
-			b[i] = 36
+			b[i] = 60
 		EndIf
 		If i == 0
 			a[i] = 33

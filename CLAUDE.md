@@ -52,14 +52,21 @@ separate overlay zip.
 
 `python build_icons.py` (Pillow 11.2+ and resvg-py) draws every set under
 `Interface/.../library/` from `art/ring/glyphs/*.svg` and writes the shipped
-`Default.json` / `HideEmpty.json` colour presets from its ramp (white -> gold
--> orange -> red; milk and lactacid keep one colour). Icons stay
+`Default.json` / `HideEmpty.json` colour presets from its ramp (palette A since
+3.4.0: white -> ice blue -> violet -> magenta -> red, chosen to stand apart from
+the gold-to-red and green-to-red ramps other HUD widget mods use; `CLASSIC_RAMP` is the 3.0 gold ramp,
+kept for the classic pack; milk and lactacid keep one colour). Icons stay
 white-on-transparent: every colour is an iWant per-stage tint, so a style is
 art plus a colour preset. The classic art lives in `art/classic/library` with
 its presets in `art/classic/presets`; the sets new in 3.0.0 get their classic
 art from the same script, drawn in the classic look (`build(..., classic=True)`:
 no ring, a big 6 px outline, bottom fill, nothing inside until it rises), so the
-classic library mirrors the ring one file for file. `fillStageColors` in `slw_util` is the same ramp as the code default of
+classic library mirrors the ring one file for file. The pubic and armpit sets
+are one hand-drawn glyph per stage (`pubic-0..5`, `armpit-0..6` in
+`draw_custom_glyphs.py`, weight B of the 2026-10-27 drafts, a razor on the
+shaved stage): their rows carry `fills = "full"`: the glyph is drawn full and only the
+ring sweeps (`build(..., glyph_frac=1.0)`; `sunhelm/cold` also has a glyph list
+but keeps the bottom-up fill). `fillStageColors` in `slw_util` is the same ramp as the code default of
 every 3.0.0 icon. `build_willpower_icon.py` now writes the classic brain into
 `art/classic`.
 
@@ -398,7 +405,7 @@ API calls use the `target` parameter, not the module's `PlayerRef` property. The
 
 ## Meter Stack (2.3.0)
 
-The things here that are NOT Status Bars icons: one stack of iWant Widgets **meters**, player only, at the right edge half way down, each with an icon to its left. Nine meters, numbered in stack order (`slw_config.getMeterPresetKey`): 0 SLO VE willpower (brain icon), 1 SLA arousal, 2-5 FHU total / vaginal / anal / oral, 6-8 Apropos2 W&T vaginal / anal / oral. One position and size for the whole group (`metersX` / `metersY` = the stack's CENTER, `metersScale`), as the user asked. Icon colours (3.0.0): only the shipped `Default` preset is fully visible at every stage (the user's call); `HideEmpty` keeps stage 0 at alpha 0 and the white / classic presets keep their alphas, so the module code defaults (33 / 75) stay as they were. iWant keeps the colours an icon was registered with, so `slw_widget_controller._reloadIconsOnce` (on iWant-ready) runs one `reloadWidgets` per `ICONS_VERSION` (30001, shipped in 3.0.1): bump it when the registered icons or their default colours change. Every meter starts switched off since 3.0.0 (the user's ask): `module_slove_willpower` defaults False and `_meter_use` is created all False; a save that already holds them keeps its values, so there is deliberately no migration.
+The things here that are NOT Status Bars icons: one stack of iWant Widgets **meters**, player only, at the right edge half way down, each with an icon to its left. Nine meters, numbered in stack order (`slw_config.getMeterPresetKey`): 0 SLO VE willpower (brain icon), 1 SLA arousal, 2-5 FHU total / vaginal / anal / oral, 6-8 Apropos2 W&T vaginal / anal / oral. One position and size for the whole group (`metersX` / `metersY` = the stack's CENTER, `metersScale`), as the user asked. Icon colours (3.0.0): only the shipped `Default` preset is fully visible at every stage (the user's call); `HideEmpty` keeps stage 0 at alpha 0 and the white / classic presets keep their alphas, so the module code defaults (33 / 75) stay as they were. iWant keeps the colours an icon was registered with, so `slw_widget_controller._reloadIconsOnce` (on iWant-ready) runs one `reloadWidgets` per `ICONS_VERSION` (30400 in 3.4.0 for palette A; 30001 in 3.0.1): bump it when the registered icons or their default colours change. Every meter starts switched off since 3.0.0 (the user's ask): `module_slove_willpower` defaults False and `_meter_use` is created all False; a save that already holds them keeps its values, so there is deliberately no migration.
 
 - **No module, no ESP change.** Raw Flash widgets like the NPC name labels, so the code lives in `slw_widget_controller` (the block at the end of the file): `_updateMeters` from `OnUpdate` / `reloadWidgets` / `toggleUpdateWidgets`, `_stopMeters` from `stopUpdates`, `_forgetMeters` from `OniWantStatusBarsReady`. A `slw_base_module` script would have needed a new script binding in `SLWidgets.esp`.
 - **Ids die with the game load.** `_forgetMeters` drops them WITHOUT touching the stage: after a load the same numbers may belong to another mod's widgets. Only `_destroyMeters` (in-session) destroys.

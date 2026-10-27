@@ -20,8 +20,8 @@
             <plugin name="Ring icons">
               <description>
 The set drawn for 3.0.0, the default: every icon in one style, a progress ring
-around a glyph that fills from the bottom, tinted from white through gold and
-orange to red as the value worsens (the Default colour preset; HideEmpty hides
+around a glyph that fills from the bottom, tinted from white through ice blue
+and violet to magenta and red as the value worsens (the Default colour preset; HideEmpty hides
 the empty stage). Custom icon packs install on top of either choice.
               </description>
               <image path="fomod\ring.png" />

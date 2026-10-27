@@ -41,8 +41,8 @@ background square at render time. The hand-drawn glyphs are part of SL Widgets.
 | `bed.svg` | Delapouite | [game-icons.net](https://game-icons.net/) (delapouite/bed.svg) |
 | `soap.svg` | Delapouite | [game-icons.net](https://game-icons.net/) (delapouite/soap.svg) |
 | `droplets.svg` | Lorc | [game-icons.net](https://game-icons.net/) (lorc/droplets.svg) |
-| `high-grass.svg` | Delapouite | [game-icons.net](https://game-icons.net/) (delapouite/high-grass.svg) |
-| `grass.svg` | Delapouite | [game-icons.net](https://game-icons.net/) (delapouite/grass.svg) |
+| `pubic-0.svg` .. `pubic-5.svg` | SL Widgets (hand-drawn, see draw_custom_glyphs.py) | GPLv3 with the mod |
+| `armpit-0.svg` .. `armpit-6.svg` | SL Widgets (hand-drawn, see draw_custom_glyphs.py) | GPLv3 with the mod |
 | `embryo.svg` | Lorc | [game-icons.net](https://game-icons.net/) (lorc/embryo.svg) |
 | `broken-heart.svg` | Lorc | [game-icons.net](https://game-icons.net/) (lorc/broken-heart.svg) |
 | `chained-heart.svg` | Lorc | [game-icons.net](https://game-icons.net/) (lorc/chained-heart.svg) |
