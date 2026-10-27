@@ -103,6 +103,10 @@ The icons SL Widgets shipped before 3.0.0 are the **Classic icons** option of th
 
 ![The icon set](assets/ring-style.png)
 
+The classic icons, the same sets:
+
+![The classic icon set](assets/classic-style.png)
+
 ---
 
 ## Custom icon packs

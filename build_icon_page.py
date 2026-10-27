@@ -195,10 +195,11 @@ toggle_grid([("defeatmod/raped.dds", "Weakened / raped")], "defeat")
 h(2, "The whole set")
 para(
     "Since 3.0.0 every icon is drawn in one style: a progress ring around a glyph, tinted white to red "
-    "as the value worsens (milk and lactacid keep one colour). The icons from before 3.0.0 are an optional "
-    "download. See [Icon styles](customization.md#icon-styles)."
+    "as the value worsens (milk and lactacid keep one colour). The icons from before 3.0.0 are the installer's "
+    "**Classic icons** option, and since 3.4.0 they cover every set. See [Icon styles](customization.md#icon-styles)."
 )
 md.append("![The ring icon set](assets/ring-style.png)\n")
+md.append("![The classic icon set](assets/classic-style.png)\n")
 
 with open(OUT_MD, "w", encoding="utf-8") as f:
     f.write("\n".join(md))

@@ -1,7 +1,8 @@
 """Draw the SL Widgets icon set (the "ring" style) and the presets that go with it.
 
     python build_icons.py            # writes every .dds, plus the colour presets
-    python build_icons.py --sheet    # also docs/assets/ring-style.png (the overview)
+    python build_icons.py --sheet    # also the overviews docs/assets/ring-style.png and
+                                     # classic-style.png, and the fomod/ preview images
 
 One icon = a progress ring around a glyph. The ring sweeps clockwise from
 12 o'clock as the stage rises and ends in an arrowhead; the glyph is an
@@ -371,8 +372,65 @@ def tinted(icon, rgba):
     return solid
 
 
+# stage set folder -> its preset key (the toggle sets are coloured by tone below)
+SHEET_KEYS = {
+    "sla/arousal": "Arousal", "sla/exposure": "Exposure", "apropos2/vaginal": "AP2Vaginal", "apropos2/anal": "AP2Anal",
+    "apropos2/oral": "AP2Oral", "fhu/total": "FHUCum", "fhu/vaginal": "FHUCumVaginal", "fhu/anal": "FHUCumAnal",
+    "fhu/oral": "FHUCumOral", "mme/milk": "MMEMilk", "mme/lactacid": "MMELactacid", "paf/pee": "PAF_PEE", "paf/poop": "PAF_POOP",
+    "sunhelm/food": "SH_Food", "sunhelm/thirst": "SH_Thirst", "sunhelm/cold": "SH_Cold", "sunhelm/fatigue": "SH_Fatigue",
+    "hygiene/dirt": "Dirtiness", "hygiene/wet": "Wetness", "sph/pubic": "SPH_Pubic", "sph/armpit": "SPH_Armpit",
+    "bf/babyhealth": "BF_BabyHealth", "stress/stress": "Stress", "stress/fear": "Fear", "health/injury": "Injuries",
+    "health/disease": "Diseases",
+}
+CLASSIC_SHEET = os.path.join(ROOT, "docs", "assets", "classic-style.png")
+
+
 def write_sheet(icons):
-    """icons: {(folder, stem): PIL image} as built by main()."""
+    """The ring overview: icons as built by main(), the Default preset's ramp."""
+    def tint(folder, i, n):
+        ri = ramp_index(i, n) if n > 1 else 8
+        col = RAMP[ri][:3] + (100,)  # the Default preset: fully visible
+        if folder in CONST_ROWS:
+            col = CONST_ROWS[folder] + (100,)
+        return col
+
+    _draw_sheet(lambda folder, stem: icons[(folder, stem)], tint,
+                "SL Widgets 3.0  -  the icon set, fine to worst",
+                "Stage counts are the mod's real ones. The ring sweeps with the stage, the glyph fills from the bottom, "
+                "the colour is the per-stage tint of the Default colour preset; milk and lactacid keep one colour. "
+                "Glyphs: game-icons.net (CC BY 3.0) and hand-drawn, see art/ring/glyphs/CREDITS.md.",
+                SHEET)
+
+
+def write_classic_sheet(classic_icons):
+    """The same overview for the classic icons: the sets drawn by main() in the
+    classic look from classic_icons, the hand-drawn ones from art/classic/library,
+    coloured by the classic Default preset. Its empty stages are faint in game
+    (33% alpha); the sheet shows every stage in full so the art can be seen."""
+    preset = json.load(open(os.path.join(CLASSIC_PRESETS, "Default.json"), encoding="utf-8"))
+
+    def lookup(folder, stem):
+        icon = classic_icons.get((folder, stem))
+        if icon is None:
+            icon = Image.open(os.path.join(CLASSIC_LIB, folder.replace("/", os.sep), stem + ".dds")).convert("RGBA")
+        return icon
+
+    def tint(folder, i, n):
+        p = preset.get(SHEET_KEYS.get(folder))
+        if p is None or i >= len(p["r"]):
+            return RAMP[ramp_index(i, n) if n > 1 else 8][:3] + (100,)
+        return (p["r"][i], p["g"][i], p["b"][i], 100)
+
+    _draw_sheet(lookup, tint,
+                "SL Widgets 3.4  -  the classic icons, fine to worst",
+                "Stage counts are the mod's real ones. Hand-drawn pre-3.0 art where it existed, the newer sets drawn to match; "
+                "the glyph fills from the bottom. Colours: the classic Default preset, shown in full (in game its empty stages are faint).",
+                CLASSIC_SHEET)
+
+
+def _draw_sheet(lookup, tint, title, foot, out):
+    """lookup(folder, stem) -> the white-on-transparent icon; tint(folder, i, n) ->
+    its (r, g, b, a) for stage i of n; the toggle rows take the tones below."""
     font = "C:/Windows/Fonts/georgia.ttf"
     f_title = ImageFont.truetype(font, 40)
     f_label = ImageFont.truetype(font, 26)
@@ -398,7 +456,6 @@ def write_sheet(icons):
     W = MARGIN * 2 + COL_W * 2 + 40
     sheet = Image.new("RGBA", (W, H), (6, 6, 8, 255))
     d = ImageDraw.Draw(sheet)
-    title = "SL Widgets 3.0  -  the icon set, fine to worst"
     d.text(((W - d.textlength(title, font=f_title)) / 2, 26), title, font=f_title, fill=(240, 240, 240, 255))
 
     def draw_rows(rws, x0):
@@ -408,13 +465,10 @@ def write_sheet(icons):
             d.text((x0 + LABEL_W - 16 - lw, y + ICON / 2 - 16), label, font=f_label, fill=(235, 235, 235, 255))
             n = len(stems)
             for i, stem in enumerate(stems[:9]):
-                ri = ramp_index(i, n) if n > 1 else 8
-                col = RAMP[ri][:3] + (100,)  # the Default preset: fully visible
-                if folder in CONST_ROWS:
-                    col = CONST_ROWS[folder] + (100,)
+                col = tint(folder, i, n)
                 if folder in ("pregnancymod", "slp", "defeatmod", "slove"):
                     col = RAMP[[1, 2, 3, 2, 4, 6, 8, 3, 5, 6, 7, 5][i % 12]][:3] + (100,)
-                t = tinted(icons[(folder, stem)], col).resize((ICON, ICON), Image.LANCZOS)
+                t = tinted(lookup(folder, stem), col).resize((ICON, ICON), Image.LANCZOS)
                 x = x0 + LABEL_W + i * CELL
                 sheet.alpha_composite(t, (int(x + (CELL - ICON) / 2), int(y)))
                 cap = caps[i] if i < len(caps) else stem
@@ -424,13 +478,10 @@ def write_sheet(icons):
 
     draw_rows(left, MARGIN)
     draw_rows(right, MARGIN + COL_W + 40)
-    foot = ("Stage counts are the mod's real ones. The ring sweeps with the stage, the glyph fills from the bottom, "
-            "the colour is the per-stage tint of the Default colour preset; milk and lactacid keep one colour. "
-            "Glyphs: game-icons.net (CC BY 3.0) and hand-drawn, see art/ring/glyphs/CREDITS.md.")
     d.text(((W - d.textlength(foot, font=f_foot)) / 2, H - 34), foot, font=f_foot, fill=(150, 150, 150, 255))
-    os.makedirs(os.path.dirname(SHEET), exist_ok=True)
-    sheet.convert("RGB").save(SHEET)
-    print("wrote", SHEET)
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    sheet.convert("RGB").save(out)
+    print("wrote", out)
 
 
 # ---- the installer's preview images (fomod/ring.png, fomod/classic.png) ---------
@@ -521,6 +572,7 @@ def main():
     write_presets()
     if args.sheet:
         write_sheet(icons)
+        write_classic_sheet(classic_icons)
         write_fomod_images(icons, classic_icons)
 
 
