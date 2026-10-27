@@ -145,7 +145,7 @@ Pre-release checklist. Each scenario should be verified in-game or by code inspe
 | 11a.16 | P1 | NPC page | All three slots show every option (slots 2 and 3 in the right column) | slw_menu |
 | 11a.17 | P1 | NPC slot with Dirtiness on, NPC not loaded | The NPC's icon goes to that slot's bar, not the player's, and takes preset colours | slw_util.loadStageIcon |
 | 11a.12 | P2 | Settings preset round trip | The 13 new keys and `npc.N.dirt/wet/baby` save and load | slw_config |
-| 11a.13 | P1 | Archives | The mod zip shows every icon in the ring style with the ramp Default preset; the Classic Icons zip installed on top puts the old art and the old Default / HideEmpty presets back for the pre-3.0.0 sets only. The MCM colour preset list shows the same four names either way | build_release.py |
+| 11a.13 | P1 | Archive | One FOMOD. The Ring option shows every icon in the ring style with the ramp Default preset; the Classic option the old art for the pre-3.0.0 sets and the generated classic look for the 13 newer ones, with the classic Default / HideEmpty presets (empty stages faint). Both options install the same file set (`build_release.py` refuses otherwise); reinstalling with the other option swaps every texture. The MCM colour preset list shows the four shipped presets either way | build_release.py, fomod/ |
 
 ## 12. Widget Controller Update Loop
 

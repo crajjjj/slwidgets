@@ -33,15 +33,21 @@ produces a `.pex` that mismatches at runtime with no compile-time warning:
   Mode source folder must be imported BEFORE `fmPlus`, or `hasFMSperm()` throws
   "Mismatched types" on every widget update for FM3 users.
 
-### Release archives (3.0.0+)
+### Release archive (3.4.0+: one FOMOD)
 
-The mod archive is still Pyro's `Build/SLWidgets.zip` (the ppj zips the repo
-tree, so the ring icons under `Interface/` ship as the mod). `python
-build_release.py` renames it to `Build/SLWidgets <version>.zip` and packs the
-optional `Build/SLWidgets Classic Icons <version>.zip` from `art/classic`
-(the pre-3.0.0 art + its Default / HideEmpty presets; installs over the mod
-like a custom icon pack). No FOMOD: the user turned one down.
-
+`python build_release.py` turns Pyro's `Build/SLWidgets.zip` (the whole mod as
+a flat tree; run the plugin build first, since the zip packs the DLL) into
+`Build/SLWidgets <version>.zip`, a FOMOD whose one choice is the icon style:
+`00 Core` (everything but the icon library and the Default / HideEmpty
+presets), `01 Ring Icons`, `02 Classic Icons` (`art/classic/library` +
+`art/classic/presets`). The installer XML and the two preview images live in
+`fomod/` (`build_icons.py --sheet` draws the images; the packager stamps the
+version into `info.xml`, the tracked file included). Either option installs a
+COMPLETE library, so the packager refuses a classic library that does not
+mirror the ring one file for file. It also checks the DLL version, every DDS
+header and the translation files. The user asked for the FOMOD on 2026-10-27
+(having turned one down for 3.0.0); until 3.3.0 the classic icons were a
+separate overlay zip.
 ### Icons (3.0.0+)
 
 `python build_icons.py` (Pillow 11.2+ and resvg-py) draws every set under
@@ -50,8 +56,10 @@ like a custom icon pack). No FOMOD: the user turned one down.
 -> orange -> red; milk and lactacid keep one colour). Icons stay
 white-on-transparent: every colour is an iWant per-stage tint, so a style is
 art plus a colour preset. The classic art lives in `art/classic/library` with
-its presets in `art/classic/presets`; the sets new in 3.0.0 have no classic
-art. `fillStageColors` in `slw_util` is the same ramp as the code default of
+its presets in `art/classic/presets`; the sets new in 3.0.0 get their classic
+art from the same script, drawn in the classic look (`build(..., classic=True)`:
+no ring, a big 6 px outline, bottom fill, nothing inside until it rises), so the
+classic library mirrors the ring one file for file. `fillStageColors` in `slw_util` is the same ramp as the code default of
 every 3.0.0 icon. `build_willpower_icon.py` now writes the classic brain into
 `art/classic`.
 
@@ -150,7 +158,7 @@ meter id clicked the 3.2.0 NPC page): `_forgetOptionIds` resets every id on
 
 A change is written into the game while the menu is open and the icons follow
 (the framework freezes time, Papyrus keeps running). Build from `plugin\`:
-`xmake f -m release && xmake` (VS 2022, xmake 3.0+, the CommonLibSSE-NG
+`xmake f -m release && xmake`; after a VERSION change `xmake f -c -m release -y && xmake`, since an unchanged configure keeps the old version resource (a 3.3.0 DLL came out of a 3.4.0 tree until the packager's check caught it) (VS 2022, xmake 3.0+, the CommonLibSSE-NG
 submodule at `plugin\lib\commonlibsse-ng`, shallow at v7.1.0: `git submodule
 update --init --recursive`). The DLL lands in `SKSE\Plugins`, which the ppj zips
 with the rest of `SKSE`, so a release build runs it before Pyro;
@@ -303,11 +311,12 @@ Script properties filled via the Creation Kit (CK) in the ESP/ESM must NOT be re
 | `Source/Scripts/slw_module_stress.psc` | 3.0.0: Stress and Fear stress global + phobia count, player only; its toggles are `module_saf_stress` / `module_saf_fear` because `module_stress` is the module object property |
 | `Source/Scripts/slw_module_health.psc` | 3.0.0: Blade and Blunt injury spells (4 stages) + worst disease stage over vanilla (Sanguinare included) and SunHelm Diseases spells, player only. `isInterfaceActive()` is always true (vanilla diseases), so the disease icon shows only while a disease is held, and its 50-spell scan is cached 20 s (the phobia count in `slw_module_stress` 15 s) |
 | `Source/ApiHeaders/*.psc` | Compile stubs for foreign script types that are cast at runtime (SGO4, SunHelm): only the members SL Widgets reads, `extends Quest`; the cast resolves by script name in game |
-| `build_icons.py` | 3.0.0: draws the whole icon set into `Interface/.../library/` from `art/ring/glyphs/*.svg` (needs `pip install pillow resvg-py`) and the shipped Default / HideEmpty presets from its ramp; adds the new keys to the white presets and to the classic pack's presets; `--sheet` renders `docs/assets/ring-style.png` |
+| `build_icons.py` | 3.0.0: draws the whole icon set into `Interface/.../library/` from `art/ring/glyphs/*.svg` (needs `pip install pillow resvg-py`), the classic look of the sets new in 3.0.0 into `art/classic/library` (3.4.0), the shipped Default / HideEmpty presets from its ramp; adds the new keys to the white presets and to the classic presets; `--sheet` renders `docs/assets/ring-style.png` and the `fomod/` preview images |
 | `art/ring/draw_custom_glyphs.py` | Writes the hand-drawn glyphs (vulva, anus, ovum, belly, sperm, sun, snowflake) into `art/ring/glyphs/`; the rest are game-icons.net files (CC BY 3.0, credits in `art/ring/glyphs/CREDITS.md`) |
 | `plugin/` | 3.1.0+: `SLWidgetsMenu.dll`, the SKSE menu pages (xmake + CommonLibSSE-NG, SKSE Menu Framework). `SettingsPage.cpp` (General, Meters, NPC Tracking) / `TogglesPage.cpp` / `PositionsPage.cpp` / `PresetsPage.cpp` the pages, `Layout.cpp` the layout string's model, `Translations.cpp` the MCM strings, `Bridge.cpp` the Papyrus calls, `Env.cpp` the export probe |
 | `Source/Scripts/slw_bridge.psc` | 3.1.0: the global functions the DLL calls; forwards to the `editor*` functions at the end of `slw_widget_controller`. Signatures are an interface |
-| `build_release.py` | 3.0.0: renames Pyro's zip to `Build/SLWidgets <version>.zip` and packs the optional `SLWidgets Classic Icons <version>.zip` from `art/classic`; run after the Papyrus build |
+| `build_release.py` | 3.4.0: builds the FOMOD `Build/SLWidgets <version>.zip` from Pyro's zip + `art/classic` + `fomod/`, after checking the DLL version, the DDS headers, the translation files and that the classic library mirrors the ring one; run after the plugin and Papyrus builds |
+| `fomod/` | 3.4.0: `info.xml` (version stamped by the packager), `ModuleConfig.xml` (Core + the icon style choice), `ring.png` / `classic.png` previews |
 | `tools/esp/SlwEsp/` | Mutagen (dotnet 9) tool that registers module scripts in `SLWidgets.esp` (script on the modules quest + object property on `slw_config`); idempotent, keeps a `.bak` |
 | `build_willpower_icon.py` | Draws the classic brain icon of the willpower bar into `art/classic/library/slove/`; the shipped one comes from `build_icons.py` |
 | `Interface/Translations/SLWidgets_*.txt` | MCM translation strings (10 languages) |

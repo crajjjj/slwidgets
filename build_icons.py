@@ -54,6 +54,13 @@ BADGE = 0.48 * GLYPH
 TRACK_A = 70       # alpha of the empty ring track
 GHOST_A = 60       # alpha of the unfilled glyph body
 OUTLINE_W = 0.030 * S
+# the classic look, for the sets whose classic art is generated (art/classic):
+# no progress ring, the glyph 0.86 of the icon with the classic heart's 6 px
+# outline (at 100 px) and nothing inside it until the fill rises
+CLASSIC_GLYPH = 0.86 * S
+CLASSIC_OUTLINE_W = 0.06 * S
+CLASSIC_LIB = os.path.join(ROOT, "art", "classic", "library")
+FOMOD = os.path.join(ROOT, "fomod")
 
 # the tint the set is drawn for, per stage 0..8: r, g, b, and iWant alpha 0-100
 RAMP = [
@@ -113,29 +120,33 @@ def ring_layer(frac, full_ring):
     return lay
 
 
-def glyph_layer(mask, frac):
-    eroded = mask.filter(ImageFilter.MinFilter(int(OUTLINE_W) | 1))
+def glyph_layer(mask, frac, outline_w=OUTLINE_W, ghost_a=GHOST_A):
+    eroded = mask.filter(ImageFilter.MinFilter(int(outline_w) | 1))
     outline = ImageChops.subtract(mask, eroded)
     h = mask.height
     fill_from = int(round(h * (1 - frac)))
-    body = Image.new("L", mask.size, GHOST_A)
+    body = Image.new("L", mask.size, ghost_a)
     if frac > 0:
         body.paste(Image.new("L", (mask.width, h - fill_from), 255), (0, fill_from))
     body = ImageChops.multiply(body, eroded)
     return ImageChops.lighter(outline, body)
 
 
-def build(glyph, frac, badge=None, full_ring=False):
+def build(glyph, frac, badge=None, full_ring=False, classic=False):
     """One icon as RGBA FINALxFINAL, white on transparent.
 
     glyph: glyph name. frac: 0..1 ring sweep and glyph fill. badge: a second
-    glyph in the bottom-right corner, or "<name" for bottom-left.
+    glyph in the bottom-right corner, or "<name" for bottom-left. classic: the
+    classic look (CLASSIC_GLYPH) instead of the ring.
     """
     left = bool(badge) and badge.startswith("<")
     if left:
         badge = badge[1:]
-    gsize = GLYPH * (0.92 if badge else 1.0)
-    g = glyph_layer(glyph_mask(glyph, gsize), frac)
+    gsize = (CLASSIC_GLYPH if classic else GLYPH) * (0.92 if badge else 1.0)
+    if classic:
+        g = glyph_layer(glyph_mask(glyph, gsize), frac, CLASSIC_OUTLINE_W, 0)
+    else:
+        g = glyph_layer(glyph_mask(glyph, gsize), frac)
     lay = Image.new("L", (S, S), 0)
     offx = offy = int((S - gsize) / 2)
     if badge:
@@ -152,7 +163,8 @@ def build(glyph, frac, badge=None, full_ring=False):
         bl = Image.new("L", (S, S), 0)
         bl.paste(bm, (bx, by))
         lay = ImageChops.lighter(lay, bl)
-    a = ImageChops.lighter(ring_layer(frac, full_ring), lay).resize((FINAL, FINAL), Image.LANCZOS)
+    ring = Image.new("L", (S, S), 0) if classic else ring_layer(frac, full_ring)
+    a = ImageChops.lighter(ring, lay).resize((FINAL, FINAL), Image.LANCZOS)
     icon = Image.new("RGBA", (FINAL, FINAL), (255, 255, 255, 0))
     icon.putalpha(a)
     return icon
@@ -170,9 +182,10 @@ def fracs(n):
 COLD = ["sun-simple"] * 3 + ["snowflake-simple"] * 6
 
 # (classic, folder, file stems, glyph or one glyph per file, badge, fills or None)
-# classic: whether the set also has classic art (art/classic/library), which is what
-# the Classic Icons pack replaces. fills None = a stage set: progress ring, fill
-# i/(n-1). A list = toggle icons: full ring, that fill per file.
+# classic: "ring" = the set's classic art is hand-drawn and lives in
+# art/classic/library; "lib" = this script draws its classic art there too, in
+# the classic look (build(..., classic=True)). fills None = a stage set: progress
+# ring, fill i/(n-1). A list = toggle icons: full ring, that fill per file.
 SETS = [
     # the sets that pre-date 3.0.0
     ("ring", "sla/arousal", stages("aroused", 9), "hearts", None, None),
@@ -198,7 +211,7 @@ SETS = [
     ("ring", "pregnancymod", ["gems", "gems2", "gems3", "gems4", "gems5", "gems6"], "crystal-growth", None, [i / 5 for i in range(6)]),
     ("ring", "defeatmod", ["raped"], "kneeling", None, [1]),
     ("ring", "slove", ["willpower"], "brain", None, [1]),
-    # the sets new in 3.0.0 (ring style only)
+    # the sets new in 3.0.0: their classic art is generated in the classic look (3.4.0)
     ("lib", "sunhelm/food", stages("food", 9), "meal", None, None),
     ("lib", "sunhelm/thirst", stages("thirst", 9), "waterskin", None, None),
     ("lib", "sunhelm/cold", stages("cold", 9), COLD, None, None),
@@ -420,10 +433,60 @@ def write_sheet(icons):
     print("wrote", SHEET)
 
 
+# ---- the installer's preview images (fomod/ring.png, fomod/classic.png) ---------
+# (folder, preset key): ten sets, each at its middle and its last stage, tinted
+# with the style's own Default preset
+FOMOD_SETS = [
+    ("sla/arousal", "Arousal"), ("apropos2/vaginal", "AP2Vaginal"), ("fhu/vaginal", "FHUCumVaginal"),
+    ("mme/milk", "MMEMilk"), ("paf/pee", "PAF_PEE"), ("sunhelm/food", "SH_Food"), ("sunhelm/cold", "SH_Cold"),
+    ("hygiene/wet", "Wetness"), ("stress/stress", "Stress"), ("health/injury", "Injuries"),
+]
+
+
+def write_fomod_images(icons, classic_icons):
+    """icons / classic_icons: {(folder, stem): image} as built by main(); the
+    hand-drawn classic sets are read from art/classic/library."""
+    stems = {}
+    for where, folder, s, glyph, badge, fills in SETS:
+        stems.setdefault(folder, s)
+    f_cap = ImageFont.truetype("C:/Windows/Fonts/georgia.ttf", 14)
+    ICON, CELL, MARGIN, CAP_H = 64, 92, 16, 20  # the cell fits "Cum Vaginal" in the caption font
+    W = MARGIN * 2 + len(FOMOD_SETS) * CELL
+    H = MARGIN * 2 + 2 * CELL + CAP_H
+
+    def classic_lookup(folder, stem):
+        icon = classic_icons.get((folder, stem))
+        if icon is None:
+            icon = Image.open(os.path.join(CLASSIC_LIB, folder.replace("/", os.sep), stem + ".dds")).convert("RGBA")
+        return icon
+
+    styles = (
+        ("ring", lambda folder, stem: icons[(folder, stem)], os.path.join(PRESETS, "Default.json")),
+        ("classic", classic_lookup, os.path.join(CLASSIC_PRESETS, "Default.json")),
+    )
+    os.makedirs(FOMOD, exist_ok=True)
+    for name, lookup, preset_path in styles:
+        preset = json.load(open(preset_path, encoding="utf-8"))
+        img = Image.new("RGBA", (W, H), (6, 6, 8, 255))
+        d = ImageDraw.Draw(img)
+        for col, (folder, key) in enumerate(FOMOD_SETS):
+            n = len(stems[folder])
+            x = MARGIN + col * CELL + (CELL - ICON) // 2
+            for row, i in enumerate((n // 2, n - 1)):
+                p = preset[key]
+                t = tinted(lookup(folder, stems[folder][i]), (p["r"][i], p["g"][i], p["b"][i], p["a"][i]))
+                img.alpha_composite(t.resize((ICON, ICON), Image.LANCZOS), (x, MARGIN + row * CELL))
+            cap = LABELS.get(folder, folder)
+            d.text((x + (ICON - d.textlength(cap, font=f_cap)) / 2, MARGIN + 2 * CELL - 8), cap, font=f_cap, fill=(200, 200, 200, 255))
+        out = os.path.join(FOMOD, name + ".png")
+        img.convert("RGB").save(out)
+        print("wrote", out)
+
+
 # ---- main ---------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--sheet", action="store_true", help="also write docs/assets/ring-style.png")
+    parser.add_argument("--sheet", action="store_true", help="also write docs/assets/ring-style.png and the fomod/ preview images")
     args = parser.parse_args()
     icons = {}
     count = 0
@@ -442,9 +505,23 @@ def main():
             icons[(folder, stem)] = icon
             count += 1
     print("wrote", count, "icons")
+    classic_icons = {}
+    for where, folder, stems, glyph, badge, fills in SETS:
+        if where != "lib":
+            continue
+        dest = os.path.join(CLASSIC_LIB, folder.replace("/", os.sep))
+        os.makedirs(dest, exist_ok=True)
+        n = len(stems)
+        for i, stem in enumerate(stems):
+            g = glyph[i] if isinstance(glyph, list) else glyph
+            icon = build(g, i / (n - 1), classic=True)
+            save_dxt5(icon, os.path.join(dest, stem + ".dds"))
+            classic_icons[(folder, stem)] = icon
+    print("wrote", len(classic_icons), "classic icons")
     write_presets()
     if args.sheet:
         write_sheet(icons)
+        write_fomod_images(icons, classic_icons)
 
 
 if __name__ == "__main__":

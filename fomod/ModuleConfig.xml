@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://qconsulting.ca/fo3/ModConfig5.0.xsd">
+
+  <moduleName>SL Widgets</moduleName>
+
+  <!-- The mod: plugin, scripts, the SKSE menu DLL, translations, the colour
+       presets an icon style does not own, and the placeholder texture.
+       build_release.py assembles this archive; the folder names are its. -->
+  <requiredInstallFiles>
+    <folder source="00 Core" destination="" priority="0" />
+  </requiredInstallFiles>
+
+  <installSteps order="Explicit">
+    <installStep name="Icon style">
+      <optionalFileGroups order="Explicit">
+        <group name="Which icons do you want on the HUD?" type="SelectExactlyOne">
+          <plugins order="Explicit">
+
+            <plugin name="Ring icons">
+              <description>
+The set drawn for 3.0.0, the default: every icon in one style, a progress ring
+around a glyph that fills from the bottom, tinted from white through gold and
+orange to red as the value worsens (the Default colour preset; HideEmpty hides
+the empty stage). Custom icon packs install on top of either choice.
+              </description>
+              <image path="fomod\ring.png" />
+              <files>
+                <folder source="01 Ring Icons" destination="" priority="1" />
+              </files>
+              <typeDescriptor>
+                <type name="Recommended" />
+              </typeDescriptor>
+            </plugin>
+
+            <plugin name="Classic icons">
+              <description>
+The icons SL Widgets shipped before 3.0.0 (hearts, bottles, organs: outlines
+that fill as the value rises), with every set added since then drawn in the
+same manner, so each icon has a classic version. Comes with the classic
+Default and HideEmpty colour presets, whose empty stages are faint rather than
+fully visible. Reinstall to switch styles.
+              </description>
+              <image path="fomod\classic.png" />
+              <files>
+                <folder source="02 Classic Icons" destination="" priority="1" />
+              </files>
+              <typeDescriptor>
+                <type name="Optional" />
+              </typeDescriptor>
+            </plugin>
+
+          </plugins>
+        </group>
+      </optionalFileGroups>
+    </installStep>
+  </installSteps>
+</config>

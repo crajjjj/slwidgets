@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<fomod>
+  <Name>SL Widgets</Name>
+  <Author>crajjjj</Author>
+  <Version MachineVersion="3.4.0">3.4.0</Version>
+  <Website>https://github.com/crajjjj/slwidgets</Website>
+  <Description>
+    Status icons for the player and up to three NPCs on iWant Status Bars:
+    arousal, wear and tear, cum, milk, pregnancy, parasites, needs, survival,
+    hygiene, hair, baby health, stress, injuries and diseases, plus a stack of
+    meters. The installer asks which icon style you want: the ring set drawn
+    for 3.0.0, or the classic icons, which now cover every set.
+  </Description>
+  <Groups>
+    <element>User Interface</element>
+  </Groups>
+</fomod>

@@ -35,7 +35,7 @@ Two display mechanics:
 | Supported mods | 27+ soft dependencies |
 | Icon count | 210+ |
 | Icon types | 9-stage fills + conditional toggles |
-| Icon styles | One drawn set (3.0.0); the classic icons are an optional download |
+| Icon styles | Ring (3.0.0) or classic, chosen in the installer |
 | Configuration | SKSE Menu Framework pages, with save/load presets; the MCM shows the state |
 | HUD framework | iWant Status Bars (Flash, or the optional [Prisma renderer](prisma.md)) |
 

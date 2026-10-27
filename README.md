@@ -25,7 +25,7 @@ A plugin for **iWant Status Bars** that shows SexLab-related status icons for th
 - **Track up to 3 NPCs** alongside the player, each with its own icon set and floating name label — see [NPC Tracking](https://crajjjj.github.io/slwidgets/npc-tracking/).
 - **Broad mod support** (SexLab Aroused, Apropos2, Fill Her Up, MME/SGO4/MAL, the major pregnancy frameworks, and more) — see [Supported Mods](https://crajjjj.github.io/slwidgets/supported-mods/).
 - **Survival and body status** (3.0): SunHelm food, thirst, cold and fatigue; Bathing in Skyrim Renewed dirtiness and Wet Function (Redux or NG) wetness; SPH hair; BeeingFemale baby health; Stress and Fear; Blade and Blunt injuries; diseases.
-- **One drawn icon set** (3.0): every icon in the same style, white to red as a value worsens; the classic icons remain available as an optional download. See [Icon styles](https://crajjjj.github.io/slwidgets/customization/#icon-styles).
+- **One drawn icon set** (3.0): every icon in the same style, white to red as a value worsens; the installer offers the classic icons instead, now covering every set. See [Icon styles](https://crajjjj.github.io/slwidgets/customization/#icon-styles).
 - **Custom icon packs** to restyle the look — see [Custom Icon Packs](https://crajjjj.github.io/slwidgets/custom-packs/).
 - **Every setting in the SKSE menu** (3.3): General, Toggles, Meters, NPC Tracking, Positions and Presets pages in the SKSE Menu Framework menu; icons appear, go and move on the HUD as you change them, and a preset carries the layout too. The MCM shows the state and the dependency check. See [SKSE Menu](https://crajjjj.github.io/slwidgets/position-editor/).
 
@@ -43,7 +43,7 @@ Every SexLab / pregnancy / needs integration is **optional** — install only th
 
 ## Installation
 
-Install with any mod manager (the SE build is ESL-flagged; the LE plugin also works on SE), keep the load order above, then enable and configure the mod in the SKSE Menu Framework menu, section SL Widgets. The icons from before 3.0 are an optional download that installs on top. Step-by-step instructions: [Getting Started](https://crajjjj.github.io/slwidgets/getting-started/).
+Install with any mod manager (the SE build is ESL-flagged; the LE plugin also works on SE), keep the load order above, then enable and configure the mod in the SKSE Menu Framework menu, section SL Widgets. The installer asks which icon style you want, the ring set or the classic icons; reinstall to switch. Step-by-step instructions: [Getting Started](https://crajjjj.github.io/slwidgets/getting-started/).
 
 Custom icon packs (optional `.dds`-only downloads) install the same way — see [Custom Icon Packs](https://crajjjj.github.io/slwidgets/custom-packs/).
 

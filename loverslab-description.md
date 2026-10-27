@@ -14,7 +14,7 @@ Full docs, icon previews, custom packs and guides: https://crajjjj.github.io/slw
 - Broad mod support: SexLab Aroused, Apropos2, Fill Her Up, MME / SGO4 / MAL, the major pregnancy frameworks, and more
 - Meters: SLO VE willpower, arousal, the Fill Her Up pools and Apropos2 wear & tear as one stack of bars at the right edge of the screen, each with its icon beside it, always shown or fading in when a value changes; each meter is switched on in the SKSE menu
 - Survival and body status (3.0): SunHelm food, thirst, cold and fatigue; Bathing in Skyrim Renewed dirtiness and Wet Function (Redux or NG) wetness; SPH pubic and armpit hair; BeeingFemale baby health; Stress and Fear; Blade and Blunt injuries; diseases (SunHelm Diseases stages)
-- One drawn icon set (3.0): every icon in the same style, white to red as a value worsens. Prefer the old icons? The Classic Icons optional file puts them back
+- One drawn icon set (3.0): every icon in the same style, white to red as a value worsens. Prefer the old icons? The installer offers them as the Classic icons option, now for every set
 - Custom icon packs: restyle any icon set; grab one from the download section
 - SKSE menu (3.1, 3.2): icon switches, positions and presets in the SKSE Menu Framework menu; icons move on the HUD as you change them
 - Settings presets: save and load your switches and layout, handy for new saves
@@ -27,7 +27,7 @@ Full docs, icon previews, custom packs and guides: https://crajjjj.github.io/slw
 - (Optional) Choose which icons are shown, and where, in the SKSE Menu Framework menu, section SL Widgets
 - (Optional) Save / load your SLWidgets settings on its Presets page, useful for new saves
 - (Optional) Set icon placement, colour and size in the iWant Status Bars MCM (multiple bars supported)
-- (Optional) Install the Classic Icons file (the icons from before 3.0) or a custom icon pack from the download section (DDS textures only)
+- (Optional) Pick the Classic icons in the installer (the icons from before 3.0, now for every set), or install a custom icon pack from the download section (DDS textures only)
 
 Notes:
 - Do not install both the ESL and ESP versions of iWant Widgets at once — they overlap and conflict

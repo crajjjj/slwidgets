@@ -6,7 +6,7 @@ Community-made alternative icons for SL Widgets. Each pack restyles one icon set
     All packs are **Optional Files** on the [SL Widgets Nexus page](https://www.nexusmods.com/skyrimspecialedition/mods/164162?tab=files). Download the file named in each heading below.
 
 !!! note "Built-in and classic icons"
-    Since 3.0.0 the built-in icons are one drawn ring set (see [Icon styles](customization.md#icon-styles)). The icons from before 3.0.0 are the **SLWidgets Classic Icons** download, shown below as the classic option of each set. A pack replaces the same files either way, so it lays over both.
+    Since 3.0.0 the built-in icons are one drawn ring set (see [Icon styles](customization.md#icon-styles)). The icons from before 3.0.0 are the **Classic icons** option of the installer, shown below as the classic option of each set. A pack replaces the same files either way, so it lays over both.
 
 !!! note "Installing a pack"
     Install the downloaded archive with your mod manager and let it **overwrite SL     Widgets'** files (or drop its `Interface/...` folder into `Data/`). Packs only     replace `.dds` textures — no plugin, no new requirements. To revert, reinstall SL     Widgets or remove the pack.
@@ -31,7 +31,7 @@ Community-made alternative icons for SL Widgets. Each pack restyles one icon set
 <figure class="icon-cell"><img src="../assets/packs/arousal_stock_8.png" alt="Ring heart stage 8"><figcaption>8</figcaption></figure>
 </div>
 
-### Classic heart: `SLWidgets Classic Icons`
+### Classic heart: the installer's Classic option
 
 *The icon from before 3.0.0. The heart alone is also the file SLW_Custom_Pack_Alternative_arousalHeart.*
 
@@ -80,7 +80,7 @@ Community-made alternative icons for SL Widgets. Each pack restyles one icon set
 <figure class="icon-cell"><img src="../assets/packs/fhu_stock_8.png" alt="Ring stage 8"><figcaption>8</figcaption></figure>
 </div>
 
-### Classic: `SLWidgets Classic Icons`
+### Classic: the installer's Classic option
 
 <div class="icon-grid" markdown>
 <figure class="icon-cell"><img src="../assets/packs/fhu_classic_0.png" alt="Classic stage 0"><figcaption>0</figcaption></figure>
@@ -130,7 +130,7 @@ Community-made alternative icons for SL Widgets. Each pack restyles one icon set
 <figure class="icon-cell"><img src="../assets/packs/preg_stock_spiderEggs.png" alt="Ring Spider eggs"><figcaption>Spider eggs</figcaption></figure>
 </div>
 
-### Classic: `SLWidgets Classic Icons`
+### Classic: the installer's Classic option
 
 <div class="icon-grid" markdown>
 <figure class="icon-cell"><img src="../assets/packs/preg_classic_cum.png" alt="Classic Cum inflation"><figcaption>Cum inflation</figcaption></figure>
