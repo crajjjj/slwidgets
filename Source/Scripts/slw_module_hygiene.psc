@@ -20,9 +20,10 @@ are loaded.
 
 Blood: Just Blood's four stages are the effects of one ability, conditioned
 on health below 75, 50, 40 and 25 percent (or dead), and off for ghosts,
-summons and while swimming. The stage is health against those thresholds,
-confirmed by the first stage's effect being on the actor, so an actor Just
-Blood does not cover reads clean.
+summons and while swimming. With the Papyrus Extender loaded the stage is the
+highest of them that is active (see Dirt and Blood below for why); without
+it, health against those thresholds, confirmed by the first stage's effect
+being on the actor, so an actor Just Blood does not cover reads clean.
 
 Dirt and Blood keeps the player in one state spell at a time: recently
 washed, dirt 1-4, or blood 1-4, which is that dirt level with blood on it.
@@ -54,7 +55,9 @@ Actor Property PlayerRef Auto
 
 GlobalVariable _playerDirt
 Quest _wfrConfig
-MagicEffect _bloodEffect
+; Just Blood's four stage effects
+MagicEffect[] _jbBlood
+Bool _po3 = false
 ; Dirt and Blood: the player's dirt and blood spells by level (index 0 = 1),
 ; the NPC blood effects by level
 Spell[] _dnbDirt
@@ -130,9 +133,15 @@ Function initInterface()
 	EndIf
 	If !Plugin_JustBlood && isJustBloodReady()
 		WriteLog("ModuleHygiene: JustBlood.esp found")
-		; Dirty_Effect_Blood1, the first stage of the ability
-		_bloodEffect = Game.GetFormFromFile(0x000885, "JustBlood.esp") as MagicEffect
-		Plugin_JustBlood = _bloodEffect != None
+		_jbBlood = new MagicEffect[4]
+		_jbBlood[0] = Game.GetFormFromFile(0x000885, "JustBlood.esp") as MagicEffect   ; Dirty_Effect_Blood1
+		_jbBlood[1] = Game.GetFormFromFile(0x000886, "JustBlood.esp") as MagicEffect
+		_jbBlood[2] = Game.GetFormFromFile(0x000887, "JustBlood.esp") as MagicEffect
+		_jbBlood[3] = Game.GetFormFromFile(0x000888, "JustBlood.esp") as MagicEffect   ; Dirty_Effect_Blood4
+		Plugin_JustBlood = _allEffects(_jbBlood)
+		If !Plugin_JustBlood
+			WriteLog("ModuleHygiene: a Just Blood effect was not found", 2)
+		EndIf
 	EndIf
 	If !Plugin_CombatWound && isCombatWoundReady()
 		WriteLog("ModuleHygiene: Combat Wound.esp and SlaveTats found")
@@ -141,6 +150,29 @@ Function initInterface()
 	If !Plugin_DirtAndBlood && isDirtAndBloodReady()
 		_initDirtAndBlood()
 	EndIf
+	_po3 = isPapyrusExtenderReady()
+EndFunction
+
+Bool Function _allSpells(Spell[] list)
+	Int i = list.Length
+	While i > 0
+		i -= 1
+		If !list[i]
+			Return false
+		EndIf
+	EndWhile
+	Return true
+EndFunction
+
+Bool Function _allEffects(MagicEffect[] list)
+	Int i = list.Length
+	While i > 0
+		i -= 1
+		If !list[i]
+			Return false
+		EndIf
+	EndWhile
+	Return true
 EndFunction
 
 Function _initDirtAndBlood()
@@ -161,7 +193,7 @@ Function _initDirtAndBlood()
 	_dnbNpcBlood[2] = Game.GetFormFromFile(0x00081D, p) as MagicEffect
 	_dnbNpcBlood[3] = Game.GetFormFromFile(0x00081E, p) as MagicEffect
 	_dnbNpcBlood[4] = Game.GetFormFromFile(0x00081F, p) as MagicEffect   ; Dirty_NPCEffect_Blood5
-	Plugin_DirtAndBlood = _dnbDirt[0] && _dnbDirt[3] && _dnbBlood[0] && _dnbBlood[3] && _dnbNpcBlood[0] && _dnbNpcBlood[4]
+	Plugin_DirtAndBlood = _allSpells(_dnbDirt) && _allSpells(_dnbBlood) && _allEffects(_dnbNpcBlood)
 	If Plugin_DirtAndBlood
 		WriteLog("ModuleHygiene: Dirt and Blood found")
 	Else
@@ -366,26 +398,37 @@ EndFunction
 ; An NPC's Dirt and Blood blood, 0-4: the highest of its blood effects that
 ; is active
 Int Function _dnbNpcBloodStage(Actor target)
+	Return clampInt(_highestActive(target, _dnbNpcBlood), 0, 4)
+EndFunction
+
+; 1 + the index of the last effect in the list that is active on the actor,
+; 0 for none
+Int Function _highestActive(Actor target, MagicEffect[] effects)
 	MagicEffect[] active = PO3_SKSEFunctions.GetActiveEffects(target, false)
 	If !active
 		Return 0
 	EndIf
-	Int i = 4
+	Int i = effects.Length - 1
 	While i >= 0
-		If active.Find(_dnbNpcBlood[i]) >= 0
-			Return clampInt(i + 1, 0, 4)
+		If active.Find(effects[i]) >= 0
+			Return i + 1
 		EndIf
 		i -= 1
 	EndWhile
 	Return 0
 EndFunction
 
-; 0 clean to 4 covered in blood, by Just Blood's own thresholds
+; 0 clean to 4 covered in blood, by Just Blood's own effects or thresholds
 Int Function getBloodStage(Actor target)
 	If !Plugin_JustBlood
 		Return 0
 	EndIf
 	Float hp = target.GetActorValuePercentage("Health")
+	If hp >= 0.75 && !target.IsDead()
+		Return 0
+	ElseIf _po3
+		Return _highestActive(target, _jbBlood)
+	EndIf
 	Int stage = 0
 	If hp < 0.25
 		stage = 4
@@ -396,7 +439,7 @@ Int Function getBloodStage(Actor target)
 	ElseIf hp < 0.75
 		stage = 1
 	EndIf
-	If stage > 0 && !target.HasMagicEffect(_bloodEffect)
+	If stage > 0 && !target.HasMagicEffect(_jbBlood[0])
 		Return 0
 	EndIf
 	Return stage

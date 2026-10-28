@@ -76,6 +76,13 @@ event OnVersionUpdate(int a_version)
 		; setting moved to the SKSE menu, which also moves icons between the
 		; player bars. Pages is rebuilt on open; nothing in the save changes.
 	EndIf
+	If a_version >= 30401 && CurrentVersion < 30401
+		Debug.Trace(self + ": Updating script to version 30401")
+		; 3.4.1: Survival Mode, Dirt and Blood, Just Blood and Combat Wound, and
+		; their Maintenance rows. The new switches are properties with defaults,
+		; the NPC switch arrays are made on first use and the widget controller
+		; reloads the icons once (ICONS_VERSION), so nothing is migrated here.
+	EndIf
 endEvent
 
 Function General()

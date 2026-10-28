@@ -8,11 +8,13 @@ namespace Natives
 		constexpr auto kIWantScript = "iWant_Status_Bars";
 		constexpr auto kStepVariable = "BAR_SPACING_PERCENTAGE";
 
-		std::atomic<bool> g_warned{ false };
+		// one flag per cause, so the first cause logged cannot hide another
+		std::atomic<bool> g_warnedNoScript{ false };
+		std::atomic<bool> g_warnedNoVariable{ false };
 
-		void WarnOnce(std::string_view a_why)
+		void WarnOnce(std::atomic<bool>& a_flag, std::string_view a_why)
 		{
-			if (!g_warned.exchange(true)) {
+			if (!a_flag.exchange(true)) {
 				logger::warn("iWant's icon step is out of reach: {}", a_why);
 			}
 		}
@@ -31,13 +33,13 @@ namespace Natives
 			}
 			const auto handle = policy->GetHandleForObject(a_bars->GetFormType(), a_bars);
 			if (handle == policy->EmptyHandle() || !vm->FindBoundObject(handle, kIWantScript, a_object) || !a_object) {
-				WarnOnce("no iWant_Status_Bars script on the quest");
+				WarnOnce(g_warnedNoScript, "no iWant_Status_Bars script on the quest");
 				return nullptr;
 			}
 			auto* variable = a_object->GetVariable(RE::BSFixedString{ kStepVariable });
 			if (!variable || !variable->IsFloat()) {
 				// another iWant build: the slider then says it cannot set the spacing
-				WarnOnce("iWant_Status_Bars has no Float BAR_SPACING_PERCENTAGE");
+				WarnOnce(g_warnedNoVariable, "iWant_Status_Bars has no Float BAR_SPACING_PERCENTAGE");
 				return nullptr;
 			}
 			return variable;

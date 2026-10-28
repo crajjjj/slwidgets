@@ -223,8 +223,11 @@ EndFunction
 ; native and returns 0.0 / False, so callers ask hasNatives() first.
 ; ---------------------------------------------------------------------------
 
+; The natives came with the 3.4.1 DLL, so an older one (scripts updated, the
+; DLL not) leaves them unbound. SKSE reports a plugin's version packed as
+; major << 24 | minor << 16 | patch << 4.
 Bool Function hasNatives() Global
-	Return SKSE.GetPluginVersion("SLWidgetsMenu") > 0
+	Return SKSE.GetPluginVersion("SLWidgetsMenu") >= 0x03040010
 EndFunction
 
 ; iWant's icon step: how far a line bar puts each icon from the one before, in

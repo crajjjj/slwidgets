@@ -57,9 +57,15 @@ Bool Function isInterfaceActive()
 	Return Module_Ready || Plugin_Survival
 EndFunction
 
-; A need this install can show at all: thirst only with SunHelm
+; A need this install can show now: thirst only with SunHelm, Survival Mode's
+; three only while the mode is on (its plugin comes with every Anniversary
+; install, used or not)
 Bool Function canShowNeed(Int need)
-	Return Module_Ready || (Plugin_Survival && need != 1)
+	Return Module_Ready || (Plugin_Survival && need != 1 && _survivalModeOn())
+EndFunction
+
+Bool Function _survivalModeOn()
+	Return _svEnabled.GetValue() >= 1.0 || (_svEnabledShared && _svEnabledShared.GetValue() >= 1.0)
 EndFunction
 
 Function _ensureArrays()
@@ -179,7 +185,7 @@ Bool Function _survivalRuns(Int need)
 	If !Plugin_Survival || need == 1 || !_svLevel
 		Return false
 	EndIf
-	If _svEnabled.GetValue() < 1.0 && (!_svEnabledShared || _svEnabledShared.GetValue() < 1.0)
+	If !_survivalModeOn()
 		Return false
 	EndIf
 	If Plugin_SurvivalImproved

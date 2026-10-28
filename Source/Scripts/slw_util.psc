@@ -225,6 +225,11 @@ Bool Function isJustBloodReady() Global
 	Return isDependencyReady("JustBlood.esp")
 EndFunction
 
+; powerofthree's Papyrus Extender, for its GetActiveEffects
+Bool Function isPapyrusExtenderReady() Global
+	Return SKSE.GetPluginVersion("powerofthree's Papyrus Extender") > 0
+EndFunction
+
 ; Dirt and Blood - Dynamic Visual Effects, Just Blood's full version
 Bool Function isDirtAndBloodReady() Global
 	Return isDependencyReady("Dirt and Blood - Dynamic Visuals.esp")
