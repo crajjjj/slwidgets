@@ -8,7 +8,7 @@ EndFunction
 
 ;SemVer support
 Int Function GetVersion() Global
-    Return 30500
+    Return 30401
     ; 1.0.0   -> 10000
     ; 1.1.0   -> 10100
     ; 1.1.1  -> 10101
@@ -17,7 +17,7 @@ Int Function GetVersion() Global
 EndFunction
 
 String Function GetVersionString() Global
-    Return "3.5.0"
+    Return "3.4.1"
 EndFunction
 
 String Function StringIfElse(Bool isTrue, String returnTrue, String returnFalse = "") Global
@@ -207,7 +207,7 @@ Bool Function isBladeBluntReady() Global
 	Return isDependencyReady("BladeAndBlunt.esp")
 EndFunction
 
-; --- 3.5.0 sources ---
+; --- 3.4.1 sources ---
 
 ; The Creation Club Survival Mode. Its plugin ships with the game on every
 ; Anniversary install, so being loaded says nothing: Survival_ModeEnabled does.

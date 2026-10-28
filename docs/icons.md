@@ -284,7 +284,7 @@ Also per NPC slot.
 
 #### Blood (Just Blood / Dirt and Blood)
 
-New in 3.5.0. Clean, then Just Blood's four stains; also per NPC slot.
+New in 3.4.1. Clean, then Just Blood's four stains; also per NPC slot.
 
 <div class="icon-grid" markdown>
 
@@ -380,7 +380,7 @@ Unhurt, Minor, Major, Critical.
 
 #### Wounds (Combat Wound)
 
-New in 3.5.0. None, then one stage per wound worn up to 4 or more; also per NPC slot.
+New in 3.4.1. None, then one stage per wound worn up to 4 or more; also per NPC slot.
 
 <div class="icon-grid" markdown>
 

@@ -117,7 +117,7 @@ namespace Layout
 				}
 				a_out.meters.always = always != 0;
 			} else if (key == "sp"sv) {
-				// added in 3.5.0 without a version bump: an older DLL skips the key
+				// added in 3.4.1 without a version bump: an older DLL skips the key
 				if (!Text::ToInt(value, a_out.iconSpacing)) {
 					a_error = "the icon spacing entry does not read";
 					return false;

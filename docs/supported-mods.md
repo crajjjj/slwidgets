@@ -100,7 +100,7 @@ NPC support: **No** — all needs mods use player-only APIs. These icons show on
 
 ## Survival, hygiene and health (3.0.0)
 
-Stage icons, all of them, drawn in both [icon styles](customization.md#icon-styles) since 3.4.0. Survival Mode, Dirt and Blood, Just Blood and Combat Wound joined in 3.5.0.
+Stage icons, all of them, drawn in both [icon styles](customization.md#icon-styles) since 3.4.0. Survival Mode, Dirt and Blood, Just Blood and Combat Wound joined in 3.4.1.
 
 ### SunHelm
 

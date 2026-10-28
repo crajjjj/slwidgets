@@ -47,7 +47,7 @@ Bool property module_paf_poo = True auto hidden
 Bool property module_defeat_enabled = True auto hidden
 ; 3.0.0 icons, player switches. Dirtiness, wetness and baby health are also
 ; per NPC slot (MOD_DIRT, MOD_WET, MOD_BABY); the rest are player only. The
-; food, cold and fatigue switches also cover Survival Mode (3.5.0).
+; food, cold and fatigue switches also cover Survival Mode (3.4.1).
 Bool property module_sh_food = True auto hidden
 Bool property module_sh_thirst = True auto hidden
 Bool property module_sh_cold = True auto hidden
@@ -61,7 +61,7 @@ Bool property module_saf_stress = True auto hidden
 Bool property module_saf_fear = True auto hidden
 Bool property module_injuries = True auto hidden
 Bool property module_diseases = True auto hidden
-; 3.5.0: Just Blood and Combat Wound, also per NPC slot (MOD_BLOOD, MOD_WOUNDS)
+; 3.4.1: Just Blood and Combat Wound, also per NPC slot (MOD_BLOOD, MOD_WOUNDS)
 Bool property module_blood = True auto hidden
 Bool property module_wounds = True auto hidden
 ; SLO VE willpower: a bar (iWant Widgets meter), not a status icon. Meter 0 of
@@ -196,7 +196,7 @@ Function _ensureSlotToggles()
 		_slot_use_baby = new Bool[4]
 		_slot_use_baby[0] = True
 	EndIf
-	; 3.5.0: off for NPCs by default, as the 3.0.0 ones
+	; 3.4.1: off for NPCs by default, as the 3.0.0 ones
 	If !_slot_use_blood
 		_slot_use_blood = new Bool[4]
 		_slot_use_blood[0] = True
@@ -1419,7 +1419,7 @@ Function _loadLayoutSettings(String path)
 		EndIf
 		bar += 1
 	EndWhile
-	; iWant's icon step, every line bar's (3.5.0); left alone when out of reach
+	; iWant's icon step, every line bar's (3.4.1); left alone when out of reach
 	Int spacing = wc.getIconSpacing()
 	If spacing > 0
 		Int nspacing = _presetInt(path, "bars.spacing", spacing, wc.ICON_SPACING_MIN, wc.ICON_SPACING_MAX)

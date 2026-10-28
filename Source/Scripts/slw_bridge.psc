@@ -218,7 +218,7 @@ Function SetIconSpacing(Int percent) Global
 EndFunction
 
 ; ---------------------------------------------------------------------------
-; Natives of SLWidgetsMenu.dll (3.5.0): the scripts calling into the DLL. They
+; Natives of SLWidgetsMenu.dll (3.4.1): the scripts calling into the DLL. They
 ; are bound only while the DLL is loaded; without it a call logs an unbound
 ; native and returns 0.0 / False, so callers ask hasNatives() first.
 ; ---------------------------------------------------------------------------

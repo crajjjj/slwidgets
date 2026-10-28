@@ -444,7 +444,7 @@ namespace Positions
 			Ui::Separator();
 
 			if (g_haveModel) {
-				if (g_model.iconSpacing >= 0) {  // -1: scripts from before 3.5.0
+				if (g_model.iconSpacing >= 0) {  // -1: scripts from before 3.4.1
 					DrawSpacing(now);
 					Ui::Separator();
 				}

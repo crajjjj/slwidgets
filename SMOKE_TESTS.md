@@ -147,7 +147,7 @@ Pre-release checklist. Each scenario should be verified in-game or by code inspe
 | 11a.12 | P2 | Settings preset round trip | The 13 new keys and `npc.N.dirt/wet/baby` save and load | slw_config |
 | 11a.13 | P1 | Archive | One FOMOD. The Ring option shows every icon in the ring style with the ramp Default preset; the Classic option the old art for the pre-3.0.0 sets and the generated classic look for the 13 newer ones, with the classic Default / HideEmpty presets (empty stages faint). Both options install the same file set (`build_release.py` refuses otherwise); reinstalling with the other option swaps every texture. The MCM colour preset list shows the four shipped presets either way | build_release.py, fomod/ |
 
-## 11b. 3.5.0 sources (Survival Mode, Just Blood, Combat Wound)
+## 11b. 3.4.1 sources (Survival Mode, Just Blood, Combat Wound)
 
 | # | P | Scenario | Expected | Scripts |
 |---|---|----------|----------|---------|
@@ -299,9 +299,9 @@ Added in 2.3.0, never run in game when written. Set the update interval to 60 s 
 | 20.13 | P0 | Bar 0 > Icons: to 1 | The icon leaves bar 0 and appears at the end of bar 1, sized to bar 1 | editorMoveIconToBar |
 | 20.14 | P1 | A target bar with ten icons | Its to N button is greyed; the script refuses a move there anyway | _nextFreeBarPosition |
 | 20.15 | P2 | Move an SL Widgets icon, switch it off and on | It returns to the first free place (expected: moves do not stick) | iWant loadIcon |
-| 20.16 | P0 | Icon spacing: slider to 100 and release (3.5.0) | Every line bar closes up to icons edge to edge (player bars, NPC bars, other mods' bars); circles unchanged; the slider reads 100 after the read-back | editorSetIconSpacing, slw_bridge.SetIWantIconStep |
+| 20.16 | P0 | Icon spacing: slider to 100 and release (3.4.1) | Every line bar closes up to icons edge to edge (player bars, NPC bars, other mods' bars); circles unchanged; the slider reads 100 after the read-back | editorSetIconSpacing, slw_bridge.SetIWantIconStep |
 | 20.17 | P0 | Save, load that save | The spacing is still 100 (iWant saved it); **iWant default** puts 150 back and greys itself | iWant's BAR_SPACING_PERCENTAGE |
-| 20.18 | P1 | Save a preset at 120, set 150, load the preset | The spacing returns to 120; a preset saved before 3.5.0 leaves the spacing alone | _saveLayoutSettings, _loadLayoutSettings (`bars.spacing`) |
+| 20.18 | P1 | Save a preset at 120, set 150, load the preset | The spacing returns to 120; a preset saved before 3.4.1 leaves the spacing alone | _saveLayoutSettings, _loadLayoutSettings (`bars.spacing`) |
 | 20.19 | P2 | Papyrus log after opening the page | No "unbound native" line for GetIWantIconStep / SetIWantIconStep | Natives.cpp, slw_bridge.hasNatives |
 
 ## 21. Icon textures

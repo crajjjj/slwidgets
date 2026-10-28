@@ -903,7 +903,7 @@ String[] Function _getOwnedIconBaseNames()
 	names[26] = "Dirtiness"
 	names[27] = "Wetness"
 	names[28] = "BF_BabyHealth"
-	; 3.5.0
+	; 3.4.1
 	names[29] = "Blood"
 	names[30] = "Wounds"
 	Return names
@@ -1657,7 +1657,7 @@ EndFunction
 ; The bars' icons come on their own (editorBarIcons), read only while the
 ; page shows them: they cost a call into iWant per seat.
 ; The version is the DLL's Layout::kVersion: bump both when a field changes.
-; A new key needs no bump, since the DLL skips keys it does not know (sp, 3.5.0).
+; A new key needs no bump, since the DLL skips keys it does not know (sp, 3.4.1).
 ; ---------------------------------------------------------------------------
 
 String Function editorLayout()

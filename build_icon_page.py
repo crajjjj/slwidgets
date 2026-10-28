@@ -129,14 +129,14 @@ stage_row("sh_cold", "sunhelm/cold", "cold", 9, "Cold (SunHelm / Survival Mode)"
 stage_row("sh_fatigue", "sunhelm/fatigue", "fatigue", 9, "Fatigue (SunHelm / Survival Mode)")
 stage_row("dirt", "hygiene/dirt", "dirt", 9, "Dirtiness (Bathing in Skyrim Renewed / Dirt and Blood)", "Also per NPC slot (Bathing in Skyrim Renewed).")
 stage_row("wet", "hygiene/wet", "wet", 9, "Wetness (WetFunction NG / Wet Function Redux)", "Also per NPC slot.")
-stage_row("blood", "hygiene/blood", "blood", 5, "Blood (Just Blood / Dirt and Blood)", "New in 3.5.0. Clean, then Just Blood's four stains; also per NPC slot.")
+stage_row("blood", "hygiene/blood", "blood", 5, "Blood (Just Blood / Dirt and Blood)", "New in 3.4.1. Clean, then Just Blood's four stains; also per NPC slot.")
 stage_row("sph_pubic", "sph/pubic", "pubic", 6, "Pubic hair (SPH)", "SPH's six stages.")
 stage_row("sph_armpit", "sph/armpit", "armpit", 7, "Armpit hair (SPH)", "SPH's seven stages.")
 stage_row("baby", "bf/babyhealth", "baby", 9, "Baby health (BeeingFemale)", "Only while pregnant; also per NPC slot. Full health is stage 0.")
 stage_row("stress", "stress/stress", "stress", 9, "Stress (Stress and Fear)")
 stage_row("fear", "stress/fear", "fear", 9, "Fear (Stress and Fear)", "One stage per phobia held.")
 stage_row("injury", "health/injury", "injury", 4, "Injuries (Blade and Blunt)", "Unhurt, Minor, Major, Critical.")
-stage_row("wound", "health/wound", "wound", 5, "Wounds (Combat Wound)", "New in 3.5.0. None, then one stage per wound worn up to 4 or more; also per NPC slot.")
+stage_row("wound", "health/wound", "wound", 5, "Wounds (Combat Wound)", "New in 3.4.1. None, then one stage per wound worn up to 4 or more; also per NPC slot.")
 stage_row("disease", "health/disease", "disease", 4, "Diseases", "Shown only while a disease is held: Infected, Worsening, Severe (stages 2 and 3 need SunHelm Diseases).")
 
 # ---- Toggle icons ----
