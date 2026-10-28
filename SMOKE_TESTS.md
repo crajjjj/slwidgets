@@ -147,6 +147,19 @@ Pre-release checklist. Each scenario should be verified in-game or by code inspe
 | 11a.12 | P2 | Settings preset round trip | The 13 new keys and `npc.N.dirt/wet/baby` save and load | slw_config |
 | 11a.13 | P1 | Archive | One FOMOD. The Ring option shows every icon in the ring style with the ramp Default preset; the Classic option the old art for the pre-3.0.0 sets and the generated classic look for the 13 newer ones, with the classic Default / HideEmpty presets (empty stages faint). Both options install the same file set (`build_release.py` refuses otherwise); reinstalling with the other option swaps every texture. The MCM colour preset list shows the four shipped presets either way | build_release.py, fomod/ |
 
+## 11b. 3.5.0 sources (Survival Mode, Just Blood, Combat Wound)
+
+| # | P | Scenario | Expected | Scripts |
+|---|---|----------|----------|---------|
+| 11b.1 | P1 | Survival Mode on, no SunHelm | Food, Cold and Fatigue toggles enabled, Thirst greyed; the three icons show and follow hunger, cold and exhaustion (eat: food drops; stand in snow: cold climbs; sleep: fatigue drops); the worst stage of the mode lands near stage 8 | slw_module_sunhelm |
+| 11b.2 | P1 | Survival Mode installed but off (`Survival_ModeEnabled` 0) | No food / cold / fatigue icons; switching the mode on brings them on the next tick | slw_module_sunhelm |
+| 11b.3 | P1 | Survival Mode Improved, one need disabled (`SMI_ColdShouldBeEnabled` 0) | That icon goes away, the other two stay | slw_module_sunhelm |
+| 11b.4 | P2 | SunHelm and Survival Mode both running | The icons show SunHelm's values; stopping a SunHelm need hands that icon to Survival Mode | slw_module_sunhelm |
+| 11b.5 | P1 | Just Blood | Blood icon Clean at full health, steps up at 75 / 50 / 40 / 25 % health and back down as health returns; matches the stains on the body; Clean while swimming if the stains go away | slw_module_hygiene |
+| 11b.6 | P1 | Combat Wound | A power attack that wounds adds one stage per wound (4 or more = last); the stage drops as Fade Tattoos removes them; a follower in an NPC slot with Wounds on shows its own | slw_module_hygiene |
+| 11b.7 | P1 | NPC Tracking page | Each slot lists Blood and Wounds, off by default; a settings preset round-trips `module_blood`, `module_wounds` and `npc.N.blood` / `npc.N.wounds` | slw_config |
+| 11b.8 | P2 | Maintenance page | Rows for Survival Mode, Survival Mode Improved, Just Blood and Combat Wound | slw_menu |
+
 ## 12. Widget Controller Update Loop
 
 | # | P | Scenario | Expected | Scripts |

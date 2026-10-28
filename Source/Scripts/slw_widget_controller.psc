@@ -872,7 +872,7 @@ EndFunction
 ; if future updates add icon types (a cached array from a previous version
 ; would silently miss new entries).
 String[] Function _getOwnedIconBaseNames()
-	String[] names = new String[29]
+	String[] names = new String[31]
 	names[0] = "Arousal"
 	names[1] = "Exposure"
 	names[2] = "AP2Oral"
@@ -903,6 +903,9 @@ String[] Function _getOwnedIconBaseNames()
 	names[26] = "Dirtiness"
 	names[27] = "Wetness"
 	names[28] = "BF_BabyHealth"
+	; 3.5.0
+	names[29] = "Blood"
+	names[30] = "Wounds"
 	Return names
 EndFunction
 

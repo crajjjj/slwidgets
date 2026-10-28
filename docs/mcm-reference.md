@@ -24,6 +24,6 @@ The version number heads the page, then the dependency check: **OK** or **Not Fo
 | Pregnancy | the nine pregnancy mods |
 | Needs | PAF, MiniNeeds, AlivePeeing, Private Needs |
 | Defeat | SexLab Defeat, SLO VE |
-| Survival | SunHelm, SunHelm Diseases, Bathing in Skyrim, Wet Function Redux, WetFunction NG, SPH, Stress and Fear, Blade and Blunt |
+| Survival | SunHelm, Survival Mode, Survival Mode Improved, SunHelm Diseases, Bathing in Skyrim, Wet Function Redux, WetFunction NG, Just Blood, SPH, Stress and Fear, Blade and Blunt, Combat Wound |
 
 The **Reset modules** and **Add icon placeholder** buttons moved to the SKSE menu's [General](position-editor.md#general) page in 3.3.

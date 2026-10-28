@@ -247,6 +247,8 @@ SETS = [
     ("lib", "stress/fear", stages("fear", 9), "chained-heart", None, None),
     ("lib", "health/injury", stages("injury", 4), "arm-bandage", None, None),
     ("lib", "health/disease", stages("disease", 4), "medicine-pills", None, None),
+    ("lib", "hygiene/blood", stages("blood", 5), "blood", None, None),
+    ("lib", "health/wound", stages("wound", 5), "wound", None, None),
 ]
 
 # ---- the presets --------------------------------------------------------------
@@ -274,6 +276,7 @@ NEW_KEYS = {
     "BF_BabyHealth": ("ramp", 9),
     "Stress": ("ramp", 9), "Fear": ("ramp", 9),
     "Injuries": ("ramp", 4), "Diseases": ("ramp", 4),
+    "Blood": ("ramp", 5), "Wounds": ("ramp", 5),
 }
 RING_PRESET.update(NEW_KEYS)
 
@@ -404,7 +407,7 @@ SHEET_KEYS = {
     "sunhelm/food": "SH_Food", "sunhelm/thirst": "SH_Thirst", "sunhelm/cold": "SH_Cold", "sunhelm/fatigue": "SH_Fatigue",
     "hygiene/dirt": "Dirtiness", "hygiene/wet": "Wetness", "sph/pubic": "SPH_Pubic", "sph/armpit": "SPH_Armpit",
     "bf/babyhealth": "BF_BabyHealth", "stress/stress": "Stress", "stress/fear": "Fear", "health/injury": "Injuries",
-    "health/disease": "Diseases",
+    "health/disease": "Diseases", "hygiene/blood": "Blood", "health/wound": "Wounds",
 }
 CLASSIC_SHEET = os.path.join(ROOT, "docs", "assets", "classic-style.png")
 

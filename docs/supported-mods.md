@@ -100,7 +100,7 @@ NPC support: **No** — all needs mods use player-only APIs. These icons show on
 
 ## Survival, hygiene and health (3.0.0)
 
-Stage icons, all of them. They are drawn in the ring style only (the classic set has no art for them), so they look the same with either [icon style](customization.md#icon-styles).
+Stage icons, all of them, drawn in both [icon styles](customization.md#icon-styles) since 3.4.0. Survival Mode, Just Blood and Combat Wound joined in 3.5.0.
 
 ### SunHelm
 
@@ -115,6 +115,14 @@ Stage icons, all of them. They are drawn in the ring style only (the classic set
 
 A need you switch off in SunHelm's own MCM drops its icon. NPC support: **No** - SunHelm tracks the player only.
 
+### Survival Mode
+
+*Requires:* the Creation Club Survival Mode (`ccQDRSSE001-SurvivalMode.esl`, part of the Anniversary upgrade), switched on in game. Survival Mode Improved (`SurvivalModeImproved.esp`, the SKSE rewrite) works too.
+
+Survival Mode's hunger, cold and exhaustion show on the SunHelm **Food**, **Cold** and **Fatigue** icons, under the same switches; it has no thirst. Each is the need's level as a share of where its worst stage starts, as SunHelm's are: 770 hunger, 800 cold and 800 exhaustion with the stock scripts, Survival Mode Improved's own stage 5 values with it. An icon shows while the mode is on and runs that need: with the stock scripts while the need's quest runs, with Survival Mode Improved while its `SMI_<need>ShouldBeEnabled` setting is on. If SunHelm runs a need too, the icon shows SunHelm's.
+
+NPC support: **No** - Survival Mode tracks the player only.
+
 ### Bathing in Skyrim Renewed and Wet Function
 
 *Requires:* `Bathing in Skyrim.esp` (the Renewed version, 2.7 or newer; the 2018 original is not supported) and/or Wet Function: `WetFunctionNG.esp` (WetFunction NG) or `WetFunction.esp` (Wet Function Redux)
@@ -125,6 +133,16 @@ A need you switch off in SunHelm's own MCM drops its icon. NPC support: **No** -
 | **Wetness** | 9 stages from Dry to Dripping: Wet Function's wetness above its dry level, as a share of the rest up to its cap (the strength the mod drives the wet look with) |
 
 NPC support: **Yes** for both, off by default per slot. Renewed only writes a value for the actors it tracks; everyone else reads as clean.
+
+### Just Blood
+
+*Requires:* `JustBlood.esp` (Just Blood - Dirt and Blood Lite)
+
+| Icon | Description |
+|------|-------------|
+| **Blood** | 5 stages from Clean to Covered in Blood, Just Blood's own four stains. They follow health, as in the mod: the first below 75%, then 50%, 40% and 25%. An actor Just Blood leaves out (ghosts, summons) reads clean |
+
+NPC support: **Yes**, off by default per slot.
 
 ### SPH - Skyrim Pubic Hair
 
@@ -167,6 +185,16 @@ NPC support: **No**.
 | **Injuries** | Unhurt, Minor, Major or Critical Injury: the spell Blade and Blunt's DLL applies |
 
 NPC support: **No**.
+
+### Combat Wound
+
+*Requires:* `Combat Wound.esp` and SlaveTats (classic or NG), plus Fade Tattoos, which Combat Wound itself needs
+
+| Icon | Description |
+|------|-------------|
+| **Wounds** | The wounds the actor wears, none to 4 or more. Combat Wound puts each one on as a SlaveTats tattoo when a power attack lands, and Fade Tattoos takes it off once it has faded (6 game hours by default, set in Combat Wound's MCM) |
+
+NPC support: **Yes**, off by default per slot. Combat Wound itself wounds the player and followers.
 
 ### Diseases
 

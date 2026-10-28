@@ -204,7 +204,7 @@ MME only.
 *New in 3.0.0. Player only unless noted.*
 
 
-#### Food (SunHelm)
+#### Food (SunHelm / Survival Mode)
 
 <div class="icon-grid" markdown>
 
@@ -228,7 +228,7 @@ MME only.
 </div>
 
 
-#### Cold (SunHelm)
+#### Cold (SunHelm / Survival Mode)
 
 A sun while warm, a snowflake from Chilly on.
 
@@ -242,7 +242,7 @@ A sun while warm, a snowflake from Chilly on.
 </div>
 
 
-#### Fatigue (SunHelm)
+#### Fatigue (SunHelm / Survival Mode)
 
 <div class="icon-grid" markdown>
 
@@ -278,6 +278,20 @@ Also per NPC slot.
 <figure class="icon-cell"><img src="../assets/icons/wet_3.png" alt="wet stage 3"><figcaption>3</figcaption></figure>
 <figure class="icon-cell"><img src="../assets/icons/wet_5.png" alt="wet stage 5"><figcaption>5</figcaption></figure>
 <figure class="icon-cell"><img src="../assets/icons/wet_8.png" alt="wet stage 8"><figcaption>8</figcaption></figure>
+
+</div>
+
+
+#### Blood (Just Blood)
+
+New in 3.5.0. Clean, then Just Blood's four stains; also per NPC slot.
+
+<div class="icon-grid" markdown>
+
+<figure class="icon-cell"><img src="../assets/icons/blood_0.png" alt="blood stage 0"><figcaption>0</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/blood_1.png" alt="blood stage 1"><figcaption>1</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/blood_3.png" alt="blood stage 3"><figcaption>3</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/blood_4.png" alt="blood stage 4"><figcaption>4</figcaption></figure>
 
 </div>
 
@@ -360,6 +374,20 @@ Unhurt, Minor, Major, Critical.
 <figure class="icon-cell"><img src="../assets/icons/injury_1.png" alt="injury stage 1"><figcaption>1</figcaption></figure>
 <figure class="icon-cell"><img src="../assets/icons/injury_2.png" alt="injury stage 2"><figcaption>2</figcaption></figure>
 <figure class="icon-cell"><img src="../assets/icons/injury_3.png" alt="injury stage 3"><figcaption>3</figcaption></figure>
+
+</div>
+
+
+#### Wounds (Combat Wound)
+
+New in 3.5.0. None, then one stage per wound worn up to 4 or more; also per NPC slot.
+
+<div class="icon-grid" markdown>
+
+<figure class="icon-cell"><img src="../assets/icons/wound_0.png" alt="wound stage 0"><figcaption>0</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/wound_1.png" alt="wound stage 1"><figcaption>1</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/wound_3.png" alt="wound stage 3"><figcaption>3</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/icons/wound_4.png" alt="wound stage 4"><figcaption>4</figcaption></figure>
 
 </div>
 

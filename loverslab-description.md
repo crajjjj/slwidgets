@@ -13,7 +13,7 @@ Full docs, icon previews, custom packs and guides: https://crajjjj.github.io/slw
 - NPC tracking: watch up to 3 NPCs alongside the player: aim at an NPC, press a hotkey, and they get their own icon set and a floating name label
 - Broad mod support: SexLab Aroused, Apropos2, Fill Her Up, MME / SGO4 / MAL, the major pregnancy frameworks, and more
 - Meters: SLO VE willpower, arousal, the Fill Her Up pools and Apropos2 wear & tear as one stack of bars at the right edge of the screen, each with its icon beside it, always shown or fading in when a value changes; each meter is switched on in the SKSE menu
-- Survival and body status (3.0): SunHelm food, thirst, cold and fatigue; Bathing in Skyrim Renewed dirtiness and Wet Function (Redux or NG) wetness; SPH pubic and armpit hair; BeeingFemale baby health; Stress and Fear; Blade and Blunt injuries; diseases (SunHelm Diseases stages)
+- Survival and body status (3.0): SunHelm food, thirst, cold and fatigue, or Survival Mode hunger, cold and exhaustion (stock or Survival Mode Improved, 3.5); Bathing in Skyrim Renewed dirtiness and Wet Function (Redux or NG) wetness; Just Blood bloodstains (3.5); SPH pubic and armpit hair; BeeingFemale baby health; Stress and Fear; Blade and Blunt injuries; Combat Wound wounds (3.5); diseases (SunHelm Diseases stages)
 - One drawn icon set (3.0): every icon in the same style, white to red as a value worsens. Prefer the old icons? The installer offers them as the Classic icons option, now for every set
 - Custom icon packs: restyle any icon set; grab one from the download section
 - SKSE menu (3.1, 3.2): icon switches, positions and presets in the SKSE Menu Framework menu; icons move on the HUD as you change them
@@ -73,11 +73,14 @@ Soft dependencies — install only the ones you use
 - Curse of Life (1.13.2+)
 - SLO VE 0.7.2+ (willpower shown as a bar with a brain icon, player only)
 - SunHelm Survival and SunHelm Diseases
+- Survival Mode (Creation Club), stock or Survival Mode Improved
 - Bathing in Skyrim Renewed 2.7+
 - Wet Function Redux or WetFunction NG
 - SPH - Skyrim Pubic Hair 2.0+
 - Stress and Fear
 - Blade and Blunt 4.0+
+- Just Blood - Dirt and Blood Lite
+- Combat Wound (with SlaveTats and Fade Tattoos)
 
 
 🔧 Troubleshooting

@@ -8,7 +8,7 @@ EndFunction
 
 ;SemVer support
 Int Function GetVersion() Global
-    Return 30400
+    Return 30500
     ; 1.0.0   -> 10000
     ; 1.1.0   -> 10100
     ; 1.1.1  -> 10101
@@ -17,7 +17,7 @@ Int Function GetVersion() Global
 EndFunction
 
 String Function GetVersionString() Global
-    Return "3.4.0"
+    Return "3.5.0"
 EndFunction
 
 String Function StringIfElse(Bool isTrue, String returnTrue, String returnFalse = "") Global
@@ -205,6 +205,29 @@ EndFunction
 
 Bool Function isBladeBluntReady() Global
 	Return isDependencyReady("BladeAndBlunt.esp")
+EndFunction
+
+; --- 3.5.0 sources ---
+
+; The Creation Club Survival Mode. Its plugin ships with the game on every
+; Anniversary install, so being loaded says nothing: Survival_ModeEnabled does.
+Bool Function isSurvivalModeReady() Global
+	Return isDependencyReady("ccQDRSSE001-SurvivalMode.esl")
+EndFunction
+
+; Survival Mode Improved, the SKSE rewrite: the same need globals, its own
+; stage thresholds and per-need switches
+Bool Function isSurvivalModeImprovedReady() Global
+	Return isDependencyReady("SurvivalModeImproved.esp")
+EndFunction
+
+Bool Function isJustBloodReady() Global
+	Return isDependencyReady("JustBlood.esp")
+EndFunction
+
+; Combat Wound puts its wounds on as SlaveTats tattoos, so it needs SlaveTats
+Bool Function isCombatWoundReady() Global
+	Return isDependencyReady("Combat Wound.esp") && isDependencyReady("SlaveTats.esp")
 EndFunction
 
 ; The colours a stage icon starts with: the fine-to-worst ramp the ring icon

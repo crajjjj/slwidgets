@@ -46,7 +46,8 @@ Bool property module_paf_pee = True auto hidden
 Bool property module_paf_poo = True auto hidden
 Bool property module_defeat_enabled = True auto hidden
 ; 3.0.0 icons, player switches. Dirtiness, wetness and baby health are also
-; per NPC slot (MOD_DIRT, MOD_WET, MOD_BABY); the rest are player only.
+; per NPC slot (MOD_DIRT, MOD_WET, MOD_BABY); the rest are player only. The
+; food, cold and fatigue switches also cover Survival Mode (3.5.0).
 Bool property module_sh_food = True auto hidden
 Bool property module_sh_thirst = True auto hidden
 Bool property module_sh_cold = True auto hidden
@@ -60,6 +61,9 @@ Bool property module_saf_stress = True auto hidden
 Bool property module_saf_fear = True auto hidden
 Bool property module_injuries = True auto hidden
 Bool property module_diseases = True auto hidden
+; 3.5.0: Just Blood and Combat Wound, also per NPC slot (MOD_BLOOD, MOD_WOUNDS)
+Bool property module_blood = True auto hidden
+Bool property module_wounds = True auto hidden
 ; SLO VE willpower: a bar (iWant Widgets meter), not a status icon. Meter 0 of
 ; the meter stack, and its switch (isMeterOn(0)), player only.
 ; Off by default since 3.0.0, like every meter. A save keeps the value it has.
@@ -105,6 +109,8 @@ Bool[] _slot_use_preg
 Bool[] _slot_use_dirt
 Bool[] _slot_use_wet
 Bool[] _slot_use_baby
+Bool[] _slot_use_blood
+Bool[] _slot_use_wounds
 
 ; Sub-toggle codes for isOnForSlot lookup
 Int Property MOD_SLA_AROUSAL = 1 AutoReadOnly
@@ -121,6 +127,8 @@ Int Property MOD_PREG = 11 AutoReadOnly
 Int Property MOD_DIRT = 12 AutoReadOnly
 Int Property MOD_WET = 13 AutoReadOnly
 Int Property MOD_BABY = 14 AutoReadOnly
+Int Property MOD_BLOOD = 15 AutoReadOnly
+Int Property MOD_WOUNDS = 16 AutoReadOnly
 
 Event OnInit()
 	_ensureSlotToggles()
@@ -188,6 +196,15 @@ Function _ensureSlotToggles()
 		_slot_use_baby = new Bool[4]
 		_slot_use_baby[0] = True
 	EndIf
+	; 3.5.0: off for NPCs by default, as the 3.0.0 ones
+	If !_slot_use_blood
+		_slot_use_blood = new Bool[4]
+		_slot_use_blood[0] = True
+	EndIf
+	If !_slot_use_wounds
+		_slot_use_wounds = new Bool[4]
+		_slot_use_wounds[0] = True
+	EndIf
 EndFunction
 
 ; Per-slot sub-toggles are independent of each other. The only global gate is
@@ -235,6 +252,10 @@ Bool Function getSlotModuleEnable(Int slot, Int subCode)
 		Return _slot_use_wet[slot]
 	ElseIf subCode == MOD_BABY
 		Return _slot_use_baby[slot]
+	ElseIf subCode == MOD_BLOOD
+		Return _slot_use_blood[slot]
+	ElseIf subCode == MOD_WOUNDS
+		Return _slot_use_wounds[slot]
 	EndIf
 	Return True
 EndFunction
@@ -269,6 +290,10 @@ Function setSlotModuleEnable(Int slot, Int subCode, Bool enabled)
 		_slot_use_wet[slot] = enabled
 	ElseIf subCode == MOD_BABY
 		_slot_use_baby[slot] = enabled
+	ElseIf subCode == MOD_BLOOD
+		_slot_use_blood[slot] = enabled
+	ElseIf subCode == MOD_WOUNDS
+		_slot_use_wounds[slot] = enabled
 	EndIf
 EndFunction
 
@@ -701,6 +726,8 @@ Function SetDefaults()
 	module_saf_fear = True
 	module_injuries = True
 	module_diseases = True
+	module_blood = True
+	module_wounds = True
 EndFunction
 
 Function DisableWidgets()
@@ -735,6 +762,8 @@ Function DisableWidgets()
 	module_saf_fear = false
 	module_injuries = false
 	module_diseases = false
+	module_blood = false
+	module_wounds = false
 EndFunction
 
 Bool function isOn(bool prop)
@@ -882,6 +911,8 @@ Bool Function loadSettingsPreset(String presetName)
 	module_saf_fear = jsonutil.GetPathBoolValue(path, "module_saf_fear", module_saf_fear)
 	module_injuries = jsonutil.GetPathBoolValue(path, "module_injuries", module_injuries)
 	module_diseases = jsonutil.GetPathBoolValue(path, "module_diseases", module_diseases)
+	module_blood = jsonutil.GetPathBoolValue(path, "module_blood", module_blood)
+	module_wounds = jsonutil.GetPathBoolValue(path, "module_wounds", module_wounds)
 	_loadMeterSettings(path)
 	_loadLayoutSettings(path)
 	_loadNpcSlotToggles(path)
@@ -937,7 +968,7 @@ Function _saveMeterSettings(String path)
 	jsonutil.SetPathIntValue(path, "meters.scale", wc.metersScale)
 EndFunction
 
-; The preset key of a 3.0.0 NPC toggle, as one whole literal per slot: the
+; The preset key of a 3.0.0+ NPC toggle, as one whole literal per slot: the
 ; parts "dirt" / "wet" / "baby" are common words, and a string built from
 ; parts can take another script's casing from Papyrus' string pool and then
 ; miss the file's key (JsonUtil path functions are case-sensitive).
@@ -956,6 +987,20 @@ String Function _npcPresetKey(Int slot, Int subCode)
 			Return "npc.2.wet"
 		EndIf
 		Return "npc.3.wet"
+	ElseIf subCode == MOD_BLOOD
+		If slot == 1
+			Return "npc.1.blood"
+		ElseIf slot == 2
+			Return "npc.2.blood"
+		EndIf
+		Return "npc.3.blood"
+	ElseIf subCode == MOD_WOUNDS
+		If slot == 1
+			Return "npc.1.wounds"
+		ElseIf slot == 2
+			Return "npc.2.wounds"
+		EndIf
+		Return "npc.3.wounds"
 	EndIf
 	If slot == 1
 		Return "npc.1.baby"
@@ -984,6 +1029,8 @@ Function _loadNpcSlotToggles(String path)
 		_slot_use_dirt[slot] = jsonutil.GetPathBoolValue(path, _npcPresetKey(slot, MOD_DIRT), _slot_use_dirt[slot])
 		_slot_use_wet[slot] = jsonutil.GetPathBoolValue(path, _npcPresetKey(slot, MOD_WET), _slot_use_wet[slot])
 		_slot_use_baby[slot] = jsonutil.GetPathBoolValue(path, _npcPresetKey(slot, MOD_BABY), _slot_use_baby[slot])
+		_slot_use_blood[slot] = jsonutil.GetPathBoolValue(path, _npcPresetKey(slot, MOD_BLOOD), _slot_use_blood[slot])
+		_slot_use_wounds[slot] = jsonutil.GetPathBoolValue(path, _npcPresetKey(slot, MOD_WOUNDS), _slot_use_wounds[slot])
 		slot += 1
 	EndWhile
 EndFunction
@@ -1020,6 +1067,8 @@ Bool Function saveSettingsPreset(String presetName)
 	jsonutil.SetPathIntValue(path, "module_saf_fear", module_saf_fear as Int)
 	jsonutil.SetPathIntValue(path, "module_injuries", module_injuries as Int)
 	jsonutil.SetPathIntValue(path, "module_diseases", module_diseases as Int)
+	jsonutil.SetPathIntValue(path, "module_blood", module_blood as Int)
+	jsonutil.SetPathIntValue(path, "module_wounds", module_wounds as Int)
 	_saveMeterSettings(path)
 	_saveLayoutSettings(path)
 	_saveNpcSlotToggles(path)
@@ -1049,6 +1098,8 @@ Function _saveNpcSlotToggles(String path)
 		jsonutil.SetPathIntValue(path, _npcPresetKey(slot, MOD_DIRT), _slot_use_dirt[slot] as Int)
 		jsonutil.SetPathIntValue(path, _npcPresetKey(slot, MOD_WET), _slot_use_wet[slot] as Int)
 		jsonutil.SetPathIntValue(path, _npcPresetKey(slot, MOD_BABY), _slot_use_baby[slot] as Int)
+		jsonutil.SetPathIntValue(path, _npcPresetKey(slot, MOD_BLOOD), _slot_use_blood[slot] as Int)
+		jsonutil.SetPathIntValue(path, _npcPresetKey(slot, MOD_WOUNDS), _slot_use_wounds[slot] as Int)
 		slot += 1
 	EndWhile
 EndFunction
@@ -1094,15 +1145,15 @@ String Function editorToggles()
 	s += _editorToggle("module_paf_poo", "$SLW_Needs_Poop", "$SLW_PAF_Poo_Info", module_paf_poo, paf)
 
 	s += "|h=$SLW_SunHelm"
-	Bool sh = module_sunhelm.isInterfaceActive()
-	s += _editorToggle("module_sh_food", "$SLW_SH_Food", "$SLW_SH_Food_Info", module_sh_food, sh)
-	s += _editorToggle("module_sh_thirst", "$SLW_SH_Thirst", "$SLW_SH_Thirst_Info", module_sh_thirst, sh)
-	s += _editorToggle("module_sh_cold", "$SLW_SH_Cold", "$SLW_SH_Cold_Info", module_sh_cold, sh)
-	s += _editorToggle("module_sh_fatigue", "$SLW_SH_Fatigue", "$SLW_SH_Fatigue_Info", module_sh_fatigue, sh)
+	s += _editorToggle("module_sh_food", "$SLW_SH_Food", "$SLW_SH_Food_Info", module_sh_food, module_sunhelm.canShowNeed(0))
+	s += _editorToggle("module_sh_thirst", "$SLW_SH_Thirst", "$SLW_SH_Thirst_Info", module_sh_thirst, module_sunhelm.canShowNeed(1))
+	s += _editorToggle("module_sh_cold", "$SLW_SH_Cold", "$SLW_SH_Cold_Info", module_sh_cold, module_sunhelm.canShowNeed(2))
+	s += _editorToggle("module_sh_fatigue", "$SLW_SH_Fatigue", "$SLW_SH_Fatigue_Info", module_sh_fatigue, module_sunhelm.canShowNeed(3))
 
 	s += "|h=$SLW_Hygiene"
 	s += _editorToggle("module_dirtiness", "$SLW_Dirtiness_Icon", "$SLW_Dirtiness_Info", module_dirtiness, module_hygiene.Plugin_Bathing)
 	s += _editorToggle("module_wetness", "$SLW_Wetness_Icon", "$SLW_Wetness_Info", module_wetness, module_hygiene.Plugin_WetFunction)
+	s += _editorToggle("module_blood", "$SLW_Blood_Icon", "$SLW_Blood_Info", module_blood, module_hygiene.Plugin_JustBlood)
 
 	s += "|h=$SLW_SPH"
 	Bool sph = module_sph.isInterfaceActive()
@@ -1119,6 +1170,8 @@ String Function editorToggles()
 
 	s += "|h=$SLW_Health"
 	s += _editorToggle("module_injuries", "$SLW_Injuries_Icon", "$SLW_Injuries_Info", module_injuries, module_health.Plugin_BladeBlunt)
+	; read by the hygiene module, which tracks NPCs
+	s += _editorToggle("module_wounds", "$SLW_Wounds_Icon", "$SLW_Wounds_Info", module_wounds, module_hygiene.Plugin_CombatWound)
 	s += _editorToggle("module_diseases", "$SLW_Diseases_Icon", "$SLW_Diseases_Info", module_diseases, module_health.isInterfaceActive())
 
 	s += "|s=$SLW_Conditional"
@@ -1189,6 +1242,10 @@ Bool Function setToggleByKey(String toggleKey, Bool value)
 		module_injuries = value
 	ElseIf toggleKey == "module_diseases"
 		module_diseases = value
+	ElseIf toggleKey == "module_blood"
+		module_blood = value
+	ElseIf toggleKey == "module_wounds"
+		module_wounds = value
 	ElseIf toggleKey == "module_parasites_enabled"
 		module_parasites_enabled = value
 	ElseIf toggleKey == "module_pregnancy_enabled"
@@ -1527,6 +1584,8 @@ String Function editorNpc()
 		s += _editorNpcModule(slot, MOD_DIRT, "$SLW_Dirtiness_Icon", on)
 		s += _editorNpcModule(slot, MOD_WET, "$SLW_Wetness_Icon", on)
 		s += _editorNpcModule(slot, MOD_BABY, "$SLW_BabyHealth_Icon", on)
+		s += _editorNpcModule(slot, MOD_BLOOD, "$SLW_Blood_Icon", on)
+		s += _editorNpcModule(slot, MOD_WOUNDS, "$SLW_Wounds_Icon", on)
 		s += "|i=npc." + slot + ".labelx," + on + "," + wc.getNpcLabelOffsetX(slot) + ",-200,200,$SLW_NPC_Label_OffsetX,"
 		s += "|i=npc." + slot + ".labely," + on + "," + wc.getNpcLabelOffsetY(slot) + ",-200,200,$SLW_NPC_Label_OffsetY,"
 		s += "|s=npc." + slot + ".label," + on + ",$SLW_NPC_Custom_Label,$SLW_NPC_Custom_Label_Info," + getNpcCustomLabel(slot)
@@ -1647,7 +1706,7 @@ Function _editorSetNpc(Int slot, String field, String value)
 		wc.requestLabelRebuild()
 	Else
 		Int code = field As Int
-		If code >= MOD_SLA_AROUSAL && code <= MOD_BABY
+		If code >= MOD_SLA_AROUSAL && code <= MOD_WOUNDS
 			setSlotModuleEnable(slot, code, n != 0)
 			wc.requestTogglePass()
 		EndIf

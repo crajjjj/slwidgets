@@ -5,8 +5,9 @@
 Each file has the shape of a game-icons file (512 viewBox, background square
 first, white glyph after) so build_icons.py loads them like any other glyph.
 Evenodd fill makes the inner shapes holes. The glyphs: vulva, anus, ovum,
-belly (pregnant torso), sperm, sun-simple, snowflake-simple, and the hair
-stages pubic-0..5 and armpit-0..6.
+belly (pregnant torso), sperm, sun-simple, snowflake-simple, the hair
+stages pubic-0..5 and armpit-0..6, blood (a splatter) and wound (three claw
+slashes).
 """
 import math
 import os
@@ -255,3 +256,72 @@ ARMPIT_STAGES = [
 ]
 for i, make in enumerate(ARMPIT_STAGES):
     write_raw(f"armpit-{i}", raised_arm() + make())
+
+
+# --- blood: a splatter, an uneven blot of overlapping discs with tapered spikes
+# of uneven length and a few loose drops, so it reads apart from the wetness
+# droplets and the pee splash (ball-tipped arms around a disc read as a germ).
+# Every shape is its own path: the pieces overlap, and one path of mixed
+# windings would punch holes where they do.
+def spike(cx, cy, ang_deg, r0, r1, half_w, tip_r=7):
+    a = math.radians(ang_deg)
+    dx, dy = math.cos(a), math.sin(a)
+    nx, ny = -dy, dx
+    bx, by = cx + dx * r0, cy + dy * r0
+    tx, ty = cx + dx * r1, cy + dy * r1
+    tri = (f"M{bx + nx * half_w:.1f},{by + ny * half_w:.1f} L{tx + nx * tip_r:.1f},{ty + ny * tip_r:.1f} "
+           f"L{tx - nx * tip_r:.1f},{ty - ny * tip_r:.1f} L{bx - nx * half_w:.1f},{by - ny * half_w:.1f} Z ")
+    return [tri, circle(round(tx), round(ty), tip_r)]
+
+
+def blood():
+    cx, cy = 256, 256
+    parts = [circle(250, 266, 96), circle(212, 222, 70), circle(300, 300, 78), circle(310, 214, 52),
+             circle(196, 314, 50), circle(262, 196, 48)]
+    # (angle, tip distance, base half-width)
+    for ang, reach, w in [(-112, 196, 30), (-74, 150, 18), (-34, 226, 34), (4, 160, 20), (58, 214, 32),
+                          (96, 146, 18), (134, 192, 26), (176, 222, 34), (226, 150, 20)]:
+        parts += spike(cx, cy, ang, 70, reach, w)
+    # (angle, distance, radius): the loose drops
+    for ang, dist, r in [(-92, 222, 14), (-56, 196, 20), (24, 210, 11), (34, 186, 16), (80, 206, 22),
+                         (112, 222, 10), (156, 210, 15), (204, 196, 19), (248, 214, 12)]:
+        a = math.radians(ang)
+        parts.append(circle(round(cx + math.cos(a) * dist), round(cy + math.sin(a) * dist), r))
+    return [(d, False) for d in parts]
+
+
+write("blood", blood())
+
+
+# --- wound: three claw slashes, upper right to lower left, each a curved
+# stroke that tapers to a point at both ends; the middle one is the longest
+def slash(cx, cy, length, half_w, angle_deg, bend, n=32):
+    a = math.radians(angle_deg)
+    dx, dy = math.cos(a), math.sin(a)
+    nx, ny = -dy, dx
+    x0, y0 = cx - dx * length / 2, cy - dy * length / 2
+    x1, y1 = cx + dx * length / 2, cy + dy * length / 2
+    qx, qy = cx + nx * bend, cy + ny * bend
+    left, right = [], []
+    for i in range(n + 1):
+        t = i / n
+        # quadratic bezier point and its tangent
+        px = (1 - t) ** 2 * x0 + 2 * (1 - t) * t * qx + t * t * x1
+        py = (1 - t) ** 2 * y0 + 2 * (1 - t) * t * qy + t * t * y1
+        tx = 2 * (1 - t) * (qx - x0) + 2 * t * (x1 - qx)
+        ty = 2 * (1 - t) * (qy - y0) + 2 * t * (y1 - qy)
+        tl = math.hypot(tx, ty) or 1.0
+        ox, oy = -ty / tl, tx / tl
+        hw = half_w * math.sin(math.pi * t) ** 0.6
+        left.append((px + ox * hw, py + oy * hw))
+        right.append((px - ox * hw, py - oy * hw))
+    pts = left + right[::-1]
+    return "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in pts) + " Z "
+
+
+WOUND_ANGLE = 115
+_perp = math.radians(WOUND_ANGLE + 90)
+wound = []
+for off, length in [(-112, 330), (0, 410), (112, 330)]:
+    wound.append((slash(256 + math.cos(_perp) * off, 256 + math.sin(_perp) * off, length, 36, WOUND_ANGLE, 26), False))
+write("wound", wound)
