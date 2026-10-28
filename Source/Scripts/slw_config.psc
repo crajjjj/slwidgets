@@ -1151,9 +1151,9 @@ String Function editorToggles()
 	s += _editorToggle("module_sh_fatigue", "$SLW_SH_Fatigue", "$SLW_SH_Fatigue_Info", module_sh_fatigue, module_sunhelm.canShowNeed(3))
 
 	s += "|h=$SLW_Hygiene"
-	s += _editorToggle("module_dirtiness", "$SLW_Dirtiness_Icon", "$SLW_Dirtiness_Info", module_dirtiness, module_hygiene.Plugin_Bathing)
+	s += _editorToggle("module_dirtiness", "$SLW_Dirtiness_Icon", "$SLW_Dirtiness_Info", module_dirtiness, module_hygiene.Plugin_Bathing || module_hygiene.Plugin_DirtAndBlood)
 	s += _editorToggle("module_wetness", "$SLW_Wetness_Icon", "$SLW_Wetness_Info", module_wetness, module_hygiene.Plugin_WetFunction)
-	s += _editorToggle("module_blood", "$SLW_Blood_Icon", "$SLW_Blood_Info", module_blood, module_hygiene.Plugin_JustBlood)
+	s += _editorToggle("module_blood", "$SLW_Blood_Icon", "$SLW_Blood_Info", module_blood, module_hygiene.Plugin_JustBlood || module_hygiene.Plugin_DirtAndBlood)
 
 	s += "|h=$SLW_SPH"
 	Bool sph = module_sph.isInterfaceActive()

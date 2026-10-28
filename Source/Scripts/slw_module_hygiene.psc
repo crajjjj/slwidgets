@@ -1,7 +1,9 @@
 Scriptname slw_module_hygiene extends slw_base_module
 {The state of an actor's body, for the player and the tracked NPCs:
-dirtiness from Bathing in Skyrim Renewed, wetness from Wet Function (Redux or
-NG), blood from Just Blood and wounds from Combat Wound. The wound switch sits
+dirtiness from Bathing in Skyrim Renewed or Dirt and Blood, wetness from Wet
+Function (Redux or NG), blood from Just Blood or Dirt and Blood and wounds
+from Combat Wound. Where two mods show one icon, the worse of the two counts.
+The wound switch sits
 with the health icons on the Toggles page; it lives here because this module
 already tracks NPCs.
 
@@ -22,6 +24,17 @@ summons and while swimming. The stage is health against those thresholds,
 confirmed by the first stage's effect being on the actor, so an actor Just
 Blood does not cover reads clean.
 
+Dirt and Blood keeps the player in one state spell at a time: recently
+washed, dirt 1-4, or blood 1-4, which is that dirt level with blood on it.
+Its dirt goes on the dirtiness icon at every other stage (player only: NPCs
+get dirt as random decoration by trade, not as a state), its blood on the
+blood icon. NPC blood is five ability effects by health (85, 65, 45, 25, 10
+percent), and a follower's the same effects from a potion it has them drink
+below 60 percent. An ability keeps its condition-failed effects on the actor
+flagged inactive, so those are read from the active ones only, through po3's
+GetActiveEffects (Dirt and Blood needs the Papyrus Extender anyway); the
+fifth level shares the icon's last stage.
+
 Wounds: Combat Wound puts each wound on as a SlaveTats tattoo of its own
 section and has Fade Tattoos take it off once faded (6 game hours by
 default). The stage is how many the actor wears, 4 or more the last.}
@@ -34,6 +47,7 @@ Bool Property Plugin_WetFunction = false auto hidden
 Bool Property Plugin_WetFunctionNG = false auto hidden
 Bool Property Plugin_JustBlood = false auto hidden
 Bool Property Plugin_CombatWound = false auto hidden
+Bool Property Plugin_DirtAndBlood = false auto hidden
 
 slw_config Property config Auto
 Actor Property PlayerRef Auto
@@ -41,6 +55,11 @@ Actor Property PlayerRef Auto
 GlobalVariable _playerDirt
 Quest _wfrConfig
 MagicEffect _bloodEffect
+; Dirt and Blood: the player's dirt and blood spells by level (index 0 = 1),
+; the NPC blood effects by level
+Spell[] _dnbDirt
+Spell[] _dnbBlood
+MagicEffect[] _dnbNpcBlood
 
 String DIRT_STATE = "Dirtiness"
 String WET_STATE = "Wetness"
@@ -57,7 +76,7 @@ int[] wound_state_prv
 
 ;override
 Bool Function isInterfaceActive()
-	Return Plugin_Bathing || Plugin_WetFunction || Plugin_JustBlood || Plugin_CombatWound
+	Return Plugin_Bathing || Plugin_WetFunction || Plugin_JustBlood || Plugin_CombatWound || Plugin_DirtAndBlood
 EndFunction
 
 Function _ensurePrvArrays()
@@ -86,6 +105,7 @@ Function resetInterface()
 	Plugin_WetFunctionNG = false
 	Plugin_JustBlood = false
 	Plugin_CombatWound = false
+	Plugin_DirtAndBlood = false
 EndFunction
 
 ;override
@@ -118,10 +138,39 @@ Function initInterface()
 		WriteLog("ModuleHygiene: Combat Wound.esp and SlaveTats found")
 		Plugin_CombatWound = true
 	EndIf
+	If !Plugin_DirtAndBlood && isDirtAndBloodReady()
+		_initDirtAndBlood()
+	EndIf
+EndFunction
+
+Function _initDirtAndBlood()
+	String p = "Dirt and Blood - Dynamic Visuals.esp"
+	_dnbDirt = new Spell[4]
+	_dnbDirt[0] = Game.GetFormFromFile(0x000806, p) as Spell   ; Dirty_Spell_Dirt1
+	_dnbDirt[1] = Game.GetFormFromFile(0x000807, p) as Spell
+	_dnbDirt[2] = Game.GetFormFromFile(0x000808, p) as Spell
+	_dnbDirt[3] = Game.GetFormFromFile(0x000838, p) as Spell   ; Dirty_Spell_Dirt4
+	_dnbBlood = new Spell[4]
+	_dnbBlood[0] = Game.GetFormFromFile(0x000809, p) as Spell  ; Dirty_Spell_Blood1
+	_dnbBlood[1] = Game.GetFormFromFile(0x00080A, p) as Spell
+	_dnbBlood[2] = Game.GetFormFromFile(0x00080B, p) as Spell
+	_dnbBlood[3] = Game.GetFormFromFile(0x000839, p) as Spell  ; Dirty_Spell_Blood4
+	_dnbNpcBlood = new MagicEffect[5]
+	_dnbNpcBlood[0] = Game.GetFormFromFile(0x000840, p) as MagicEffect   ; Dirty_NPCEffect_Blood1
+	_dnbNpcBlood[1] = Game.GetFormFromFile(0x00083F, p) as MagicEffect
+	_dnbNpcBlood[2] = Game.GetFormFromFile(0x00081D, p) as MagicEffect
+	_dnbNpcBlood[3] = Game.GetFormFromFile(0x00081E, p) as MagicEffect
+	_dnbNpcBlood[4] = Game.GetFormFromFile(0x00081F, p) as MagicEffect   ; Dirty_NPCEffect_Blood5
+	Plugin_DirtAndBlood = _dnbDirt[0] && _dnbDirt[3] && _dnbBlood[0] && _dnbBlood[3] && _dnbNpcBlood[0] && _dnbNpcBlood[4]
+	If Plugin_DirtAndBlood
+		WriteLog("ModuleHygiene: Dirt and Blood found")
+	Else
+		WriteLog("ModuleHygiene: a Dirt and Blood spell or effect was not found", 2)
+	EndIf
 EndFunction
 
 Bool Function _dirtOn(Int slot)
-	Return Plugin_Bathing && config.isOnForSlot(config.module_dirtiness, slot, config.MOD_DIRT)
+	Return (Plugin_Bathing || (Plugin_DirtAndBlood && slot == 0)) && config.isOnForSlot(config.module_dirtiness, slot, config.MOD_DIRT)
 EndFunction
 
 Bool Function _wetOn(Int slot)
@@ -129,7 +178,7 @@ Bool Function _wetOn(Int slot)
 EndFunction
 
 Bool Function _bloodOn(Int slot)
-	Return Plugin_JustBlood && config.isOnForSlot(config.module_blood, slot, config.MOD_BLOOD)
+	Return (Plugin_JustBlood || Plugin_DirtAndBlood) && config.isOnForSlot(config.module_blood, slot, config.MOD_BLOOD)
 EndFunction
 
 Bool Function _woundsOn(Int slot)
@@ -199,8 +248,18 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	If !target
 		Return
 	EndIf
-	If _dirtOn(slot)
+	Bool dirtOn = _dirtOn(slot)
+	Bool bloodOn = _bloodOn(slot)
+	; the player's Dirt and Blood state, read once for both icons
+	Int dnb = 0
+	If slot == 0 && Plugin_DirtAndBlood && (dirtOn || bloodOn)
+		dnb = _dnbPlayerState()
+	EndIf
+	If dirtOn
 		Int dirtCurr = percentToState9NotStrict(getDirtPercentFor(target))
+		If (dnb % 10) * 2 > dirtCurr
+			dirtCurr = (dnb % 10) * 2
+		EndIf
 		If dirt_state_prv[slot] == EMPTY || dirt_state_prv[slot] != dirtCurr
 			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(DIRT_STATE, slot), dirtCurr)
 			dirt_state_prv[slot] = dirtCurr
@@ -213,8 +272,19 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 			wet_state_prv[slot] = wetCurr
 		EndIf
 	EndIf
-	If _bloodOn(slot)
+	If bloodOn
 		Int bloodCurr = getBloodStage(target)
+		Int dnbBlood = 0
+		If slot == 0
+			If dnb > 10
+				dnbBlood = dnb - 10
+			EndIf
+		ElseIf Plugin_DirtAndBlood
+			dnbBlood = _dnbNpcBloodStage(target)
+		EndIf
+		If dnbBlood > bloodCurr
+			bloodCurr = dnbBlood
+		EndIf
 		If blood_state_prv[slot] == EMPTY || blood_state_prv[slot] != bloodCurr
 			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(BLOOD_STATE, slot), bloodCurr)
 			blood_state_prv[slot] = bloodCurr
@@ -276,6 +346,38 @@ Int Function getWetPercentFor(Actor target)
 		Return 0
 	EndIf
 	Return clampInt((((wet - dry) / (cap - dry)) * 100.0) as Int, 0, 100)
+EndFunction
+
+; The player's Dirt and Blood state: 0 clean (or recently washed), 1-4 the
+; dirt level, plus 10 when that level carries blood
+Int Function _dnbPlayerState()
+	Int i = 3
+	While i >= 0
+		If PlayerRef.HasSpell(_dnbBlood[i])
+			Return i + 11
+		ElseIf PlayerRef.HasSpell(_dnbDirt[i])
+			Return i + 1
+		EndIf
+		i -= 1
+	EndWhile
+	Return 0
+EndFunction
+
+; An NPC's Dirt and Blood blood, 0-4: the highest of its blood effects that
+; is active
+Int Function _dnbNpcBloodStage(Actor target)
+	MagicEffect[] active = PO3_SKSEFunctions.GetActiveEffects(target, false)
+	If !active
+		Return 0
+	EndIf
+	Int i = 4
+	While i >= 0
+		If active.Find(_dnbNpcBlood[i]) >= 0
+			Return clampInt(i + 1, 0, 4)
+		EndIf
+		i -= 1
+	EndWhile
+	Return 0
 EndFunction
 
 ; 0 clean to 4 covered in blood, by Just Blood's own thresholds

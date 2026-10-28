@@ -254,9 +254,9 @@ A sun while warm, a snowflake from Chilly on.
 </div>
 
 
-#### Dirtiness (Bathing in Skyrim Renewed)
+#### Dirtiness (Bathing in Skyrim Renewed / Dirt and Blood)
 
-Also per NPC slot.
+Also per NPC slot (Bathing in Skyrim Renewed).
 
 <div class="icon-grid" markdown>
 
@@ -282,7 +282,7 @@ Also per NPC slot.
 </div>
 
 
-#### Blood (Just Blood)
+#### Blood (Just Blood / Dirt and Blood)
 
 New in 3.5.0. Clean, then Just Blood's four stains; also per NPC slot.
 

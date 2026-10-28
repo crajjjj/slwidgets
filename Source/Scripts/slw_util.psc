@@ -225,6 +225,11 @@ Bool Function isJustBloodReady() Global
 	Return isDependencyReady("JustBlood.esp")
 EndFunction
 
+; Dirt and Blood - Dynamic Visual Effects, Just Blood's full version
+Bool Function isDirtAndBloodReady() Global
+	Return isDependencyReady("Dirt and Blood - Dynamic Visuals.esp")
+EndFunction
+
 ; Combat Wound puts its wounds on as SlaveTats tattoos, so it needs SlaveTats
 Bool Function isCombatWoundReady() Global
 	Return isDependencyReady("Combat Wound.esp") && isDependencyReady("SlaveTats.esp")

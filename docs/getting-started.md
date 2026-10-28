@@ -75,6 +75,7 @@ None of these are required. SL Widgets detects them at runtime and silently skip
 - SunHelm Survival and SunHelm Diseases
 - Survival Mode (Creation Club), stock or Survival Mode Improved
 - Bathing in Skyrim Renewed 2.7+
+- Dirt and Blood - Dynamic Visual Effects 2.2+
 - Wet Function Redux or WetFunction NG
 - SPH - Skyrim Pubic Hair 2.0+
 - Stress and Fear

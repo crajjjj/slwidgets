@@ -157,8 +157,10 @@ Pre-release checklist. Each scenario should be verified in-game or by code inspe
 | 11b.4 | P2 | SunHelm and Survival Mode both running | The icons show SunHelm's values; stopping a SunHelm need hands that icon to Survival Mode | slw_module_sunhelm |
 | 11b.5 | P1 | Just Blood | Blood icon Clean at full health, steps up at 75 / 50 / 40 / 25 % health and back down as health returns; matches the stains on the body; Clean while swimming if the stains go away | slw_module_hygiene |
 | 11b.6 | P1 | Combat Wound | A power attack that wounds adds one stage per wound (4 or more = last); the stage drops as Fade Tattoos removes them; a follower in an NPC slot with Wounds on shows its own | slw_module_hygiene |
+| 11b.9 | P1 | Dirt and Blood, player | Dirtiness steps 0 / 2 / 4 / 6 / 8 with Clean and Dirt 1-4, Blood with Blood 1-4 (dirtiness stays at that level); a swim or a wash drops both; with Bathing in Skyrim also running, Dirtiness shows the dirtier | slw_module_hygiene |
+| 11b.10 | P1 | Dirt and Blood, NPC slot with Blood on | Rises as the NPC loses health (85 / 65 / 45 / 25 %); a follower shows blood for about five minutes after dropping below 60 %; Dirtiness never shows for an NPC with Dirt and Blood alone | slw_module_hygiene |
 | 11b.7 | P1 | NPC Tracking page | Each slot lists Blood and Wounds, off by default; a settings preset round-trips `module_blood`, `module_wounds` and `npc.N.blood` / `npc.N.wounds` | slw_config |
-| 11b.8 | P2 | Maintenance page | Rows for Survival Mode, Survival Mode Improved, Just Blood and Combat Wound | slw_menu |
+| 11b.8 | P2 | Maintenance page | Rows for Survival Mode, Survival Mode Improved, Dirt and Blood, Just Blood and Combat Wound | slw_menu |
 
 ## 12. Widget Controller Update Loop
 

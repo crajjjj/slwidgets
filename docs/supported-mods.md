@@ -100,7 +100,7 @@ NPC support: **No** — all needs mods use player-only APIs. These icons show on
 
 ## Survival, hygiene and health (3.0.0)
 
-Stage icons, all of them, drawn in both [icon styles](customization.md#icon-styles) since 3.4.0. Survival Mode, Just Blood and Combat Wound joined in 3.5.0.
+Stage icons, all of them, drawn in both [icon styles](customization.md#icon-styles) since 3.4.0. Survival Mode, Dirt and Blood, Just Blood and Combat Wound joined in 3.5.0.
 
 ### SunHelm
 
@@ -143,6 +143,19 @@ NPC support: **Yes** for both, off by default per slot. Renewed only writes a va
 | **Blood** | 5 stages from Clean to Covered in Blood, Just Blood's own four stains. They follow health, as in the mod: the first below 75%, then 50%, 40% and 25%. An actor Just Blood leaves out (ghosts, summons) reads clean |
 
 NPC support: **Yes**, off by default per slot.
+
+### Dirt and Blood
+
+*Requires:* `Dirt and Blood - Dynamic Visuals.esp` (Dirt and Blood - Dynamic Visual Effects, 2.2 or newer, which brings the Papyrus Extender SL Widgets reads it through)
+
+Dirt and Blood shows on the same two icons as the mods above: where two mods run one icon, the worse of the two counts.
+
+| Icon | Description |
+|------|-------------|
+| **Dirtiness** | The player's four dirt levels, Slightly Dirty to Covered in Dirt, on stages 2, 4, 6 and 8 of the nine; Clean and Recently washed are stage 0 |
+| **Blood** | The player's four blood levels (a dirt level with blood on it), Bloodstains to Covered in Blood. An NPC's blood follows its health as Dirt and Blood sets it (five steps, the last two sharing the icon's last stage), a follower's comes from the blood Dirt and Blood gives it when hurt |
+
+NPC support: **Blood only**, off by default per slot. Dirt and Blood gives NPCs dirt at random by trade (bandits, miners and the like) as decoration, not as a level that changes, so an NPC's dirtiness comes from Bathing in Skyrim Renewed alone.
 
 ### SPH - Skyrim Pubic Hair
 
