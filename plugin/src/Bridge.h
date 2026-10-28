@@ -41,6 +41,7 @@ namespace Bridge
 	void SetBarPos(int a_bar, int a_x, int a_y);
 	void SetBarSize(int a_bar, int a_size);
 	void SetBarType(int a_bar, int a_type);
+	void SetIconSpacing(int a_percent);
 	void MoveIconInBar(int a_bar, int a_seat, int a_icon, int a_dir);
 	void MoveIconToBar(int a_bar, int a_seat, int a_icon, int a_target);
 	void SetNpcGroup(int a_x, int a_y);

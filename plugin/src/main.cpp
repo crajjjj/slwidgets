@@ -1,6 +1,7 @@
 #include "Bridge.h"
 #include "Env.h"
 #include "Menu.h"
+#include "Natives.h"
 #include "PositionsPage.h"
 #include "PresetsPage.h"
 #include "SettingsPage.h"
@@ -95,6 +96,10 @@ SKSEPluginLoad(const LoadInterface* a_skse)
 
 	if (const auto* messaging = GetMessagingInterface()) {
 		messaging->RegisterListener(OnMessage);
+	}
+
+	if (const auto* papyrus = GetPapyrusInterface(); !papyrus || !papyrus->Register(Natives::Register)) {
+		log::warn("the slw_bridge natives are not registered: the icon spacing cannot be set");
 	}
 
 	log::info("{} loaded.", plugin->GetName());

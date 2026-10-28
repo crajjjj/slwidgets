@@ -124,6 +124,7 @@ Per slot (NPC 1 to 3, named after the actor tracked there; greyed out while the 
 
 | Group | Sliders | Applies |
 |-------|---------|---------|
+| Icon spacing | Spacing % (80-300), **iWant default** | when you release the slider |
 | Bar 0 to Bar 3 | X, Y, Size, Orientation (iWant's ten shapes) | X and Y follow the slider as you drag; size and orientation when you release it |
 | NPC slots | X, Y, Spacing | when you release the slider; the three rows and their name labels move as one cluster |
 | Meter stack | X, Y, Scale | when you release the slider; the stack rebuilds a moment later and shows itself for 30 seconds |
@@ -132,6 +133,7 @@ Per slot (NPC 1 to 3, named after the actor tracked there; greyed out while the 
 
 What a change writes:
 
+- **Icon spacing** (*since 3.5*) is how far a line bar (left, right, up, down) puts each icon from the one before, in % of the icon size. iWant's own step is 150, which leaves a gap of about half an icon; 100 puts the icons edge to edge. It is a single iWant value for every line bar, so it changes the NPC bars and other mods' bars too. Circles and half circles keep their shape. iWant saves it with the game; **iWant default** puts back 150.
 - **Bars 0 to 3** are iWant's shared bars: the page writes iWant's own X, Y, size and type, the same values its MCM sliders hold, so every mod's icons in that bar move with it.
 - **The NPC cluster** writes the anchor of the [NPC Tracking](npc-tracking.md#bar-layout) cluster and its spacing.
 - **The meter stack** writes the stack's center and size.
@@ -148,7 +150,7 @@ A move lasts until iWant loads that icon again, which puts it back in the first 
 
 ## Presets
 
-*Since 3.2.* The [settings presets](customization.md#settings-presets): the list, with the active one marked; **Load** the one picked; **Save over** it (after a confirmation); or save the current settings under a new name with **Save as new**. A preset holds the icon switches, the meters, the NPC slot switches and, since 3.2, the layout: the player bars, the NPC cluster and the meter stack.
+*Since 3.2.* The [settings presets](customization.md#settings-presets): the list, with the active one marked; **Load** the one picked; **Save over** it (after a confirmation); or save the current settings under a new name with **Save as new**. A preset holds the icon switches, the meters, the NPC slot switches and, since 3.2, the layout: the player bars, the NPC cluster and the meter stack (since 3.5 the icon spacing too; an older preset leaves the spacing as it is).
 
 Loading a preset reloads every icon, which takes a second or two.
 

@@ -76,6 +76,7 @@ namespace Layout
 	bool Parse(std::string_view a_text, Model& a_out, std::string& a_error)
 	{
 		a_error.clear();
+		a_out.iconSpacing = -1;  // only an answer that carries it shows the slider
 		bool sawVersion = false;
 		for (const auto item : Text::Split(a_text, '|')) {
 			const auto eq = item.find('=');
@@ -115,6 +116,12 @@ namespace Layout
 					return false;
 				}
 				a_out.meters.always = always != 0;
+			} else if (key == "sp"sv) {
+				// added in 3.5.0 without a version bump: an older DLL skips the key
+				if (!Text::ToInt(value, a_out.iconSpacing)) {
+					a_error = "the icon spacing entry does not read";
+					return false;
+				}
 			}
 		}
 		if (!sawVersion) {

@@ -48,6 +48,7 @@ namespace Positions
 		std::array<std::array<Row, 3>, Layout::kBars> g_barRows;  // x, y, size
 		std::array<Row, 3>                            g_npcRows;  // x, y, spacing
 		std::array<Row, 3>                            g_metersRows;  // x, y, scale
+		Row                                           g_spacingRow;  // iWant's icon step
 
 		// After a read nothing is owed: every slider's last written value is the one shown
 		void SyncRows()
@@ -65,6 +66,7 @@ namespace Positions
 			g_metersRows[0].pushed = g_model.meters.x;
 			g_metersRows[1].pushed = g_model.meters.y;
 			g_metersRows[2].pushed = g_model.meters.scale;
+			g_spacingRow.pushed = g_model.iconSpacing;
 		}
 
 		void TakeAnswer(double a_now)
@@ -252,6 +254,34 @@ namespace Positions
 			}
 		}
 
+		// iWant's icon step: one value for every line bar, every mod's. It is iWant's
+		// own state, saved with its script, like the bars' positions.
+		void DrawSpacing(double a_now)
+		{
+			auto&               spacing = g_model.iconSpacing;
+			PageCommon::IdScope id{ 300 };
+			Ui::TextUnformatted("Icon spacing");
+			if (spacing == 0) {
+				Colored(kHint, "This iWant Status Bars build keeps its icon step where SL Widgets cannot reach it.");
+				return;
+			}
+			if (Slider("Spacing %", spacing, Layout::kMinIconSpacing, Layout::kMaxIconSpacing, g_spacingRow, false, a_now)) {
+				Bridge::SetIconSpacing(spacing);
+			}
+			Ui::SameLine();
+			{
+				PageCommon::DisabledScope same{ spacing == Layout::kDefaultIconSpacing };
+				if (Ui::SmallButton("iWant default")) {
+					spacing = Layout::kDefaultIconSpacing;
+					g_spacingRow.pushed = spacing;
+					Bridge::SetIconSpacing(spacing);
+					g_page.ConfirmAt(a_now + kConfirmAfter);
+				}
+			}
+			Colored(kHint, "From one icon to the next, in % of the icon size: 150 is iWant's own, 100 puts the icons edge to edge.");
+			Colored(kHint, "It is iWant's one value for every line bar, every mod's and the NPC bars too. Circles and half circles keep their shape.");
+		}
+
 		void DrawBars(double a_now)
 		{
 			Colored(kHint, "Player bars: iWant's shared bars, so every mod's icons in a bar move with it");
@@ -374,6 +404,11 @@ namespace Positions
 				g_metersRows[1].pushed = m.y;
 				g_metersRows[2].pushed = m.scale;
 			}
+			if (g_model.iconSpacing > 0 && Owed(g_spacingRow, g_model.iconSpacing)) {
+				Bridge::SetIconSpacing(g_model.iconSpacing);
+				g_spacingRow.pushed = g_model.iconSpacing;
+			}
+			g_spacingRow.wasActive = false;
 			for (auto& rows : g_barRows) {
 				for (auto& row : rows) {
 					row.wasActive = false;
@@ -409,6 +444,10 @@ namespace Positions
 			Ui::Separator();
 
 			if (g_haveModel) {
+				if (g_model.iconSpacing >= 0) {  // -1: scripts from before 3.5.0
+					DrawSpacing(now);
+					Ui::Separator();
+				}
 				DrawBars(now);
 				Ui::Separator();
 				DrawNpc(now);
@@ -418,7 +457,7 @@ namespace Positions
 			}
 
 			Colored(kHint, "Values are iWant's 1280 x 720 stage units, written into the game at once: the icons move while this menu is open.");
-			Colored(kHint, "X and Y of a bar follow the slider. Size, orientation, the NPC cluster and the meters apply when the slider is released.");
+			Colored(kHint, "X and Y of a bar follow the slider. Size, orientation, icon spacing, the NPC cluster and the meters apply when the slider is released.");
 
 			ServeIcons(now);
 			g_iconsOpen = false;

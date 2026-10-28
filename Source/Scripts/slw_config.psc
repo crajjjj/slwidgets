@@ -1291,8 +1291,9 @@ String Function _barPresetKey(Int bar, Int field)
 	Return "bars.3.type"
 EndFunction
 
-; iWant's player bars 0-3 (position, icon size, line-up) and the NPC cluster
-; (anchor, spacing). The meter stack travels in _saveMeterSettings. Without
+; iWant's player bars 0-3 (position, icon size, line-up), iWant's icon spacing
+; (bars.spacing, one value for every line bar) and the NPC cluster (anchor,
+; spacing). The meter stack travels in _saveMeterSettings. Without
 ; iWant up the bars cannot be read, and a preset saved then keeps whatever bar
 ; keys the file already held.
 Function _saveLayoutSettings(String path)
@@ -1315,6 +1316,10 @@ Function _saveLayoutSettings(String path)
 		jsonutil.SetPathIntValue(path, _barPresetKey(bar, 3), bars._getBarType(bar))
 		bar += 1
 	EndWhile
+	Int spacing = wc.getIconSpacing()
+	If spacing > 0
+		jsonutil.SetPathIntValue(path, "bars.spacing", spacing)
+	EndIf
 EndFunction
 
 ; Only a key the file holds changes anything: a missing key (a preset from
@@ -1357,6 +1362,14 @@ Function _loadLayoutSettings(String path)
 		EndIf
 		bar += 1
 	EndWhile
+	; iWant's icon step, every line bar's (3.5.0); left alone when out of reach
+	Int spacing = wc.getIconSpacing()
+	If spacing > 0
+		Int nspacing = _presetInt(path, "bars.spacing", spacing, wc.ICON_SPACING_MIN, wc.ICON_SPACING_MAX)
+		If nspacing != spacing
+			wc.setIconSpacing(nspacing)
+		EndIf
+	EndIf
 EndFunction
 
 ; A preset value: the file's, held to [low, high], or the current one untouched

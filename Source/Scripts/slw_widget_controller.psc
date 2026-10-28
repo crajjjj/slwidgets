@@ -1649,10 +1649,12 @@ EndFunction
 ; which is why the DLL moves those as a group and never bar by bar.
 ;
 ; Layout string: "v=2|b0=x,y,type,size,visible|...|b9=...
-;   |npc=x,y,stride|n1=name|n2=name|n3=name|meters=x,y,scale,rows,always"
+;   |npc=x,y,stride|n1=name|n2=name|n3=name|meters=x,y,scale,rows,always
+;   |sp=icon spacing percent (0: out of reach)"
 ; The bars' icons come on their own (editorBarIcons), read only while the
 ; page shows them: they cost a call into iWant per seat.
 ; The version is the DLL's Layout::kVersion: bump both when a field changes.
+; A new key needs no bump, since the DLL skips keys it does not know (sp, 3.5.0).
 ; ---------------------------------------------------------------------------
 
 String Function editorLayout()
@@ -1668,6 +1670,7 @@ String Function editorLayout()
 	s += "|npc=" + npcGroupX + "," + npcGroupY + "," + npcVerticalSpacing
 	s += "|n1=" + _editorSlotName(1) + "|n2=" + _editorSlotName(2) + "|n3=" + _editorSlotName(3)
 	s += "|meters=" + metersX + "," + metersY + "," + metersScale + "," + _editorMeterRows() + "," + (metersAlwaysShow As Int)
+	s += "|sp=" + getIconSpacing()
 	Return s
 EndFunction
 
@@ -1825,6 +1828,43 @@ EndFunction
 
 Function editorSetNpcSpacing(Int v)
 	setNpcVerticalSpacing(v)
+EndFunction
+
+; iWant's icon step, as a percent of the icon size (150 is iWant's own): how
+; far a line bar puts each icon from the one before. iWant keeps it in a
+; private variable, ONE value for every bar of every mod, which only the DLL's
+; natives reach (slw_bridge.GetIWantIconStep). It stays iWant's state, saved
+; with its script like the bars' positions; SL Widgets keeps no copy.
+Int Property ICON_SPACING_MIN = 80 AutoReadOnly Hidden  ; Layout::kMinIconSpacing in the DLL
+Int Property ICON_SPACING_MAX = 300 AutoReadOnly Hidden
+
+; 0 when it cannot be read: no DLL, iWant not up, or an iWant build without it
+Int Function getIconSpacing()
+	If !iBars || !iBars.isReady() || !slw_bridge.hasNatives()
+		Return 0
+	EndIf
+	Float step = slw_bridge.GetIWantIconStep(iBars)
+	If step <= 0.0
+		Return 0
+	EndIf
+	Return (step * 100.0 + 0.5) As Int
+EndFunction
+
+; Sets it and redraws every bar; False when it cannot be set
+Bool Function setIconSpacing(Int percent)
+	If !iBars || !iBars.isReady() || !slw_bridge.hasNatives()
+		Return False
+	EndIf
+	Float step = clampInt(percent, ICON_SPACING_MIN, ICON_SPACING_MAX) As Float / 100.0
+	If !slw_bridge.SetIWantIconStep(iBars, step)
+		Return False
+	EndIf
+	iBars._drawAllBars()
+	Return True
+EndFunction
+
+Function editorSetIconSpacing(Int percent)
+	setIconSpacing(percent)
 EndFunction
 
 ; The stack rebuilds on the next pass; ask for one now rather than waiting out

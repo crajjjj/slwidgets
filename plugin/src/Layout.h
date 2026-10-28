@@ -20,6 +20,8 @@ namespace Layout
 	constexpr int kMinNpcSpacing = 50, kMaxNpcSpacing = 200;
 	constexpr int kMaxMetersY = 719;  // the MCM's slider must still be able to show the value
 	constexpr int kMinMetersScale = 20, kMaxMetersScale = 200;
+	constexpr int kMinIconSpacing = 80, kMaxIconSpacing = 300;  // percent; Natives::kMin/kMaxIconStep, slw_widget_controller.setIconSpacing
+	constexpr int kDefaultIconSpacing = 150;  // iWant's own step
 
 	// An icon seated in a player bar, as iWant labels it ("name - mod")
 	struct Icon
@@ -61,6 +63,9 @@ namespace Layout
 		std::array<Bar, kBars> bars;
 		Npc                    npc;
 		Meters                 meters;
+		// iWant's icon step of every line bar, percent of the icon size: -1 the
+		// scripts do not report it, 0 iWant's step could not be read
+		int                    iconSpacing = -1;
 	};
 
 	// Parses editorLayout's string. False, with a_error, on a version the parser

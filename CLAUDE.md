@@ -139,6 +139,22 @@ so a changed page list needs no save migration. Pages, in menu order:
   user asked for exactly this and turned down a drag editor with boxes over
   the HUD (built first, then replaced): "I need just x y z and orientation.
   No boxes."
+- **Icon spacing** (3.5.0, top of the Positions page, asked by a player: big
+  icons left big gaps): iWant's line bars step `size * BAR_SPACING_PERCENTAGE`
+  per icon, a private script `Float` (1.5), ONE value for every bar of every
+  mod; circles use inline literals and cannot change. No script can reach a
+  non-property variable, and SL Widgets redrawing its own bars is undone,
+  since iWant runs `_drawAllBars` on every icon status change. So the DLL's
+  natives `slw_bridge.GetIWantIconStep` / `SetIWantIconStep` (`Natives.cpp`,
+  registered at load, framework or not) find the quest's bound
+  `iWant_Status_Bars` object and read / write the variable by name; the
+  scripts then `_drawAllBars`. It stays iWant's state, saved with its script
+  like the bars (SL Widgets keeps no copy, nothing re-applied at load).
+  Percent 80-300 (`Layout::kMin/kMaxIconSpacing`, `Natives::kMin/kMaxIconStep`,
+  `slw_widget_controller.ICON_SPACING_MIN/MAX`: keep the three in step);
+  layout key `sp=` (0 = out of reach: no DLL per `slw_bridge.hasNatives`, or
+  an iWant build without the variable, and the page then says so); preset key
+  `bars.spacing`.
 - **Icon moves** (3.3.0, on the Positions page): each player bar's icons with
   ^ / v and "to bar N", the one-off moves iWant's own MCM makes
   (`editorMoveIconInBar` swaps with the next seated icon, `editorMoveIconToBar`
@@ -233,8 +249,11 @@ with the rest of `SKSE`, so a release build runs it before Pyro;
   thread. Its signatures are an interface: the VM rejects a call whose argument
   count differs, silently, so never change one, add a function. Each string
   carries `v=1`; `Layout::kVersion` / `Toggles::kVersion` must match (bump
-  both sides). Never name a Papyrus parameter `key`: `Key` is a vanilla type,
-  and the compiler reads the name as the type.
+  both sides); a NEW key needs no bump, since `Layout::Parse` skips keys it
+  does not know. Never name a Papyrus parameter `key`: `Key` is a vanilla type,
+  and the compiler reads the name as the type. Since 3.5.0 the bridge also
+  carries the DLL's natives (the other direction); without the DLL they are
+  unbound, so callers check `hasNatives()` (`SKSE.GetPluginVersion`) first.
 - **Framework facts** (SKSE-Menu-Framework-3 source, 2026-10): registration
   lists are unlocked and the loading screen renders at kDataLoaded, so
   everything registers at `kPostPostLoad`. A blocking window sets

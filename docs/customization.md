@@ -88,8 +88,9 @@ A saved preset includes:
 - All per-NPC sub-toggles for slots 1–3
 - The meter switches, how the meters show, and the stack's position and size
 - The layout (since 3.2): position, icon size and shape of iWant's player bars 0-3, and the NPC cluster's position and spacing
+- The icon spacing of iWant's line bars (since 3.5)
 
-A preset saved before 3.2 holds no bar or NPC cluster layout, and loading it leaves those where they are. Bars 0-3 are iWant's shared bars, so a preset's layout moves every mod's icons in them.
+A preset saved before 3.2 holds no bar or NPC cluster layout, and loading it leaves those where they are; one saved before 3.5 leaves the icon spacing alone. Bars 0-3 are iWant's shared bars, so a preset's layout moves every mod's icons in them.
 
 **To save or load:** the SKSE menu's [Presets](position-editor.md#presets) page: load one, save over one, or save under a new name.
 

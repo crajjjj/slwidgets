@@ -180,6 +180,11 @@ namespace Bridge
 		Call("SetBarType"sv, std::nullopt, a_bar, a_type);
 	}
 
+	void SetIconSpacing(int a_percent)
+	{
+		Call("SetIconSpacing"sv, std::nullopt, a_percent);
+	}
+
 	void MoveIconInBar(int a_bar, int a_seat, int a_icon, int a_dir)
 	{
 		Call("MoveIconInBar"sv, std::nullopt, a_bar, a_seat, a_icon, a_dir);

@@ -7,7 +7,7 @@ is rejected by the VM without a trace, and the editor then shows nothing.
 Everything here forwards to slw_widget_controller, where iWant is in scope.}
 
 Int Function GetVersion() Global
-	Return 5
+	Return 6
 EndFunction
 
 slw_config Function _config() Global
@@ -207,3 +207,32 @@ Function ResetNpcLayout() Global
 		w.applyDefaultNpcBarLayout()
 	EndIf
 EndFunction
+
+; iWant's icon step in percent of the icon size (150 is iWant's own), for every
+; line bar at once
+Function SetIconSpacing(Int percent) Global
+	slw_widget_controller w = _controller()
+	If w
+		w.editorSetIconSpacing(percent)
+	EndIf
+EndFunction
+
+; ---------------------------------------------------------------------------
+; Natives of SLWidgetsMenu.dll (3.5.0): the scripts calling into the DLL. They
+; are bound only while the DLL is loaded; without it a call logs an unbound
+; native and returns 0.0 / False, so callers ask hasNatives() first.
+; ---------------------------------------------------------------------------
+
+Bool Function hasNatives() Global
+	Return SKSE.GetPluginVersion("SLWidgetsMenu") > 0
+EndFunction
+
+; iWant's icon step: how far a line bar puts each icon from the one before, in
+; icon sizes. It is BAR_SPACING_PERCENTAGE, a private Float of the
+; iWant_Status_Bars script (1.5, one value for every bar of every mod), which no
+; other script can reach. 0.0 when the DLL cannot find it on the quest.
+Float Function GetIWantIconStep(Quest bars) Global Native
+
+; Writes it, held to 0.8 - 3.0 (False outside, or when it cannot be found).
+; iWant uses it from its next draw, and saves it with its own script.
+Bool Function SetIWantIconStep(Quest bars, Float step) Global Native
