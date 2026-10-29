@@ -168,6 +168,20 @@ so a changed page list needs no save migration. Pages, in menu order:
   iWant re-seats an icon in the first free place whenever it is loaded again
   (switch off/on, preset, enable, state icons), and the user accepted that over
   a stored placement re-applied every pass ("its fine they don't stick").
+- **Idle stages parked after a layout edit** (3.4.2, a player's report: an
+  "up" bar's icon came back as a line to the left after bathing). Each stage
+  of an iWant icon is its own widget, `_drawBar` places only the shown one,
+  and a draw passes over a widget at alpha 0, so a stage faded out earlier
+  stays where it was last drawn and fades in there on its next turn, in the
+  bar's old place and shape. iWant's own MCM has the same gap; a game load
+  hides it (iWant loads every widget again). Every layout edit (bar X / Y /
+  size / orientation, icon moves, spacing, a preset's bars, the NPC layout)
+  owes a park per bar, `_serveIdleStageParks` at the top of the next update
+  pass: every stage but the shown one goes offscreen at alpha 1 (0 for a
+  hidden stage), what `_loadIconWidgets` gives a fresh icon, so iWant's own
+  draw places it when it comes up. The shown stage is iWant's private
+  `iconActiveStatus`, read by the DLL native `slw_bridge.GetIWantIconState`
+  (gated by `hasIconStateNative`, 3.4.2 DLL: unbound it would answer 0).
 - **Presets** (3.2.0, `PresetsPage.cpp`): the settings presets, load, save over,
   save as new.
 

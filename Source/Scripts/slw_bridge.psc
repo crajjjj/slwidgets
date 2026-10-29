@@ -239,3 +239,13 @@ Float Function GetIWantIconStep(Quest bars) Global Native
 ; Writes it, held to 0.8 - 3.0 (False outside, or when it cannot be found).
 ; iWant uses it from its next draw, and saves it with its own script.
 Bool Function SetIWantIconStep(Quest bars, Float step) Global Native
+
+; The stage native came with the 3.4.2 DLL: under a 3.4.1 one it is unbound and
+; would answer 0, a real stage, so callers ask this first.
+Bool Function hasIconStateNative() Global
+	Return SKSE.GetPluginVersion("SLWidgetsMenu") >= 0x03040020
+EndFunction
+
+; The stage iWant shows for an icon: iconActiveStatus, a private Int[] of the
+; iWant_Status_Bars script. -1 when the DLL cannot read it.
+Int Function GetIWantIconState(Quest bars, Int icon) Global Native

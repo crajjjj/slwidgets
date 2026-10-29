@@ -7,21 +7,23 @@ namespace Natives
 		constexpr auto kScript = "slw_bridge"sv;
 		constexpr auto kIWantScript = "iWant_Status_Bars";
 		constexpr auto kStepVariable = "BAR_SPACING_PERCENTAGE";
+		constexpr auto kStateVariable = "iconActiveStatus";
 
 		// one flag per cause, so the first cause logged cannot hide another
 		std::atomic<bool> g_warnedNoScript{ false };
 		std::atomic<bool> g_warnedNoVariable{ false };
+		std::atomic<bool> g_warnedNoStates{ false };
 
 		void WarnOnce(std::atomic<bool>& a_flag, std::string_view a_why)
 		{
 			if (!a_flag.exchange(true)) {
-				logger::warn("iWant's icon step is out of reach: {}", a_why);
+				logger::warn("iWant Status Bars is out of reach: {}", a_why);
 			}
 		}
 
-		// The step variable of the iWant_Status_Bars script on a_bars, or null. The
+		// The named variable of the iWant_Status_Bars script on a_bars, or null. The
 		// object pointer keeps the script object alive while the variable is used.
-		RE::BSScript::Variable* StepVariable(RE::TESQuest* a_bars, RE::BSTSmartPointer<RE::BSScript::Object>& a_object)
+		RE::BSScript::Variable* IWantVariable(RE::TESQuest* a_bars, std::string_view a_name, RE::BSTSmartPointer<RE::BSScript::Object>& a_object)
 		{
 			if (!a_bars) {
 				return nullptr;
@@ -36,8 +38,13 @@ namespace Natives
 				WarnOnce(g_warnedNoScript, "no iWant_Status_Bars script on the quest");
 				return nullptr;
 			}
-			auto* variable = a_object->GetVariable(RE::BSFixedString{ kStepVariable });
-			if (!variable || !variable->IsFloat()) {
+			return a_object->GetVariable(RE::BSFixedString{ a_name });
+		}
+
+		RE::BSScript::Variable* StepVariable(RE::TESQuest* a_bars, RE::BSTSmartPointer<RE::BSScript::Object>& a_object)
+		{
+			auto* variable = IWantVariable(a_bars, kStepVariable, a_object);
+			if (a_object && (!variable || !variable->IsFloat())) {
 				// another iWant build: the slider then says it cannot set the spacing
 				WarnOnce(g_warnedNoVariable, "iWant_Status_Bars has no Float BAR_SPACING_PERCENTAGE");
 				return nullptr;
@@ -68,6 +75,34 @@ namespace Natives
 			variable->SetFloat(a_step);
 			return true;
 		}
+
+		// The stage iWant shows for an icon, or -1 when it cannot be read. A read of
+		// an Int iWant writes on its own thread: the answer is the stage before a
+		// change running at that moment or the one after.
+		std::int32_t GetIWantIconState(RE::StaticFunctionTag*, RE::TESQuest* a_bars, std::int32_t a_icon)
+		{
+			if (a_icon < 0) {
+				return -1;
+			}
+			RE::BSTSmartPointer<RE::BSScript::Object> object;
+			const auto*                               variable = IWantVariable(a_bars, kStateVariable, object);
+			if (!object) {
+				return -1;
+			}
+			RE::BSTSmartPointer<RE::BSScript::Array> states;
+			if (variable && variable->IsArray()) {
+				states = variable->GetArray();
+			}
+			if (!states) {
+				WarnOnce(g_warnedNoStates, "iWant_Status_Bars has no Int[] iconActiveStatus");
+				return -1;
+			}
+			if (static_cast<std::uint32_t>(a_icon) >= states->size()) {
+				return -1;
+			}
+			const auto& state = (*states)[static_cast<std::uint32_t>(a_icon)];
+			return state.IsInt() ? state.GetSInt() : -1;
+		}
 	}
 
 	bool Register(RE::BSScript::IVirtualMachine* a_vm)
@@ -77,6 +112,7 @@ namespace Natives
 		}
 		a_vm->RegisterFunction("GetIWantIconStep"sv, kScript, GetIWantIconStep);
 		a_vm->RegisterFunction("SetIWantIconStep"sv, kScript, SetIWantIconStep);
+		a_vm->RegisterFunction("GetIWantIconState"sv, kScript, GetIWantIconState);
 		return true;
 	}
 }

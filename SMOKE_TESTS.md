@@ -306,6 +306,9 @@ Added in 2.3.0, never run in game when written. Set the update interval to 60 s 
 | 20.17 | P0 | Save, load that save | The spacing is still 100 (iWant saved it); **iWant default** puts 150 back and greys itself | iWant's BAR_SPACING_PERCENTAGE |
 | 20.18 | P1 | Save a preset at 120, set 150, load the preset | The spacing returns to 120; a preset saved before 3.4.1 leaves the spacing alone | _saveLayoutSettings, _loadLayoutSettings (`bars.spacing`) |
 | 20.19 | P2 | Papyrus log after opening the page | No "unbound native" line for GetIWantIconStep / SetIWantIconStep | Natives.cpp, slw_bridge.hasNatives |
+| 20.20 | P0 | Dirty with Bathing in Skyrim (icon past stage 0); set bar 0 to Line extending up, close the menu, bathe (3.4.2) | The dirt icon fades to Clean in its place in the up line, never at the bar's old left-line spot | _parkIdleStages, slw_bridge.GetIWantIconState |
+| 20.21 | P1 | Same with X / Y of the bar, an icon moved to another bar, the spacing slider and the NPC cluster | A stage that comes up after the edit appears at the new place | _oweIdleStagePark |
+| 20.22 | P2 | Scripts 3.4.2 under a 3.4.1 DLL | No park, no "unbound native" line for GetIWantIconState; the old behaviour | slw_bridge.hasIconStateNative |
 
 ## 21. Icon textures
 
