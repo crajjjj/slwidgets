@@ -28,6 +28,9 @@ Bool property slw_stopped = True auto hidden
 ; SLWidgetsMenu.dll's report at each game load: 1 its pages are up, 2 the
 ; installed SKSE Menu Framework lacks what they need; 0 no report (yet)
 Int property skseMenuReport = 0 auto hidden
+; OMania with its DLL, detected once per load in moduleSetup: the check calls
+; a native, which logs an unbound-native error each time the DLL is missing
+Bool property OManiaReady = false auto hidden
 
 Int _iconColors = 0
 
@@ -553,6 +556,7 @@ Function clearNpcSlot(Int slot)
 EndFunction
 
 Function moduleSetup()
+	OManiaReady = isOManiaReady()
 	module_sla.moduleSetup()
 	module_apropos_two.moduleSetup()
 	module_fhu.moduleSetup()

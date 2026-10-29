@@ -111,7 +111,7 @@ stage_row("fhu_vag", "fhu/vaginal", "cum", 9, "Cum — vaginal pool")
 stage_row("fhu_anal", "fhu/anal", "cum", 9, "Cum — anal pool")
 stage_row("fhu_oral", "fhu/oral", "cum", 9, "Cum — oral pool")
 
-h(3, "Milk — MME / SGO4 / MAL")
+h(3, "Milk: MME / SGO4 / MAL / OMania")
 para("*Requires MilkModNEW.esp, SGO4IF.esp, Mammaries And Lactation.esp, or OMania.esp.*")
 stage_row("mme_milk", "mme/milk", "milk", 9, "Milk")
 stage_row("mme_lact", "mme/lactacid", "lact", 9, "Lactacid", "MME only.")

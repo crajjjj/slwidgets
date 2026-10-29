@@ -59,7 +59,7 @@ Updates: on the update interval; for the player also within about a second of ev
 
 ---
 
-### Milk — MME / SGO4 / MAL
+### Milk: MME / SGO4 / MAL / OMania
 
 At least one of the milk mods below must be installed for milk icons to appear.
 

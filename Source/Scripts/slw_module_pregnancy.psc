@@ -64,8 +64,19 @@ Quest _sgo4_db
 Form _OManiaChaurusEggs
 Form _OManiaSpiderEgg
 Form _OManiaDwarvenOil
-; per slot, the icons OMania shows this pass (_omClaimBit)
-Int[] _om_claim
+; The icons more than one mod can drive, one bit each. Per slot,
+; _pass_want collects what any handler wants this pass and _shared_shown
+; what the last pass left loaded (255 = not known, as on a save from before)
+Int Property ICON_TRIMESTER1 = 1 AutoReadOnly
+Int Property ICON_TRIMESTER2 = 2 AutoReadOnly
+Int Property ICON_TRIMESTER3 = 4 AutoReadOnly
+Int Property ICON_CUM = 8 AutoReadOnly
+Int Property ICON_EGGS = 16 AutoReadOnly
+Int Property ICON_CHAURUS = 32 AutoReadOnly
+Int Property ICON_SPIDER = 64 AutoReadOnly
+Int Property ICON_SPHERES = 128 AutoReadOnly
+Int[] _pass_want
+Int[] _shared_shown
 
 ;Pregnancy
 String Pregnancy_Basic = "Pregnancy_Basic"
@@ -274,11 +285,11 @@ Function initInterface()
 		Plugin_CurseOfLife = true
 	endif
 
-	; every load, so a save that kept the plugin but lost the DLL stops
-	; calling unbound natives
-	Bool om = isOManiaReady()
+	; slw_config detects it once per load, so a save that kept the plugin but
+	; lost the DLL stops calling unbound natives
+	Bool om = config.OManiaReady
 	If om && !Plugin_OMania
-		WriteLog("ModulePregnancy: OMania found, OMania.dll " + OMania.GetVersion())
+		WriteLog("ModulePregnancy: OMania found")
 	ElseIf !om && Plugin_OMania
 		WriteLog("ModulePregnancy: OMania no longer installed")
 	EndIf
@@ -324,8 +335,11 @@ Function _ensurePrvArrays()
 	If !_hp_rank_prv
 		_hp_rank_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
 	EndIf
-	If !_om_claim
-		_om_claim = Utility.CreateIntArray(getSlotCount(), 0)
+	If !_pass_want
+		_pass_want = Utility.CreateIntArray(getSlotCount(), 0)
+	EndIf
+	If !_shared_shown
+		_shared_shown = Utility.CreateIntArray(getSlotCount(), 255)
 	EndIf
 EndFunction
 
@@ -354,7 +368,8 @@ Function resetInterface()
 	_fmr_rank_prv = Utility.CreateIntArray(getSlotCount(), FMR_EMPTY)
 	_bf_state_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
 	_hp_rank_prv = Utility.CreateIntArray(getSlotCount(), EMPTY)
-	_om_claim = Utility.CreateIntArray(getSlotCount(), 0)
+	_pass_want = Utility.CreateIntArray(getSlotCount(), 0)
+	_shared_shown = Utility.CreateIntArray(getSlotCount(), 255)
 EndFunction
 
 ;override
@@ -405,16 +420,20 @@ Function _releasePregnancyIcons(iWant_Status_Bars iBars, Int slot)
 	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester1, slot))
 	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester2, slot))
 	iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester3, slot))
+	_shared_shown[slot] = 0
 EndFunction
 
 
  Function _reloadPregnancyIcons(iWant_Status_Bars iBars, Actor target, Int slot)
-	; OMania goes first: what it shows is claimed for the pass, so a handler
-	; below whose mod reads "not pregnant" leaves those icons alone
+	; The icons more than one mod can drive are collected and applied once at
+	; the end. A handler that loaded and released them itself let a mod
+	; reading "not pregnant" drop an icon a later handler then loaded again,
+	; every pass (BF and Estrus Unified on the chaurus eggs, EggFactory and
+	; Curse of Life on the eggs)
+	_pass_want[slot] = 0
+
 	if Plugin_OMania
-		handleOMania(iBars, target, slot)
-	else
-		_om_claim[slot] = 0
+		handleOMania(target, slot)
 	endif
 
 	if Plugin_FMReloaded
@@ -438,9 +457,7 @@ EndFunction
 	;EggFactory
 	If Plugin_EggFactory
 		if isEggFactPregnant(EggFactoryMasterTimerQuest, target) ;EggFactoryPregCheck Faction
-			_loadEggsIcon(iBars, slot)
-		else
-			_releaseUnclaimed(iBars, Pregnancy_Eggs, slot)
+			_want(slot, ICON_EGGS)
 		endif
 	endif
 
@@ -449,54 +466,43 @@ EndFunction
 	if Plugin_EstrusUnified
 		Int euKind = EstrusUnifiedAPI.GetPregnancyType(target)
 		if euKind == 1
-			_loadChaurusEggsIcon(iBars, slot)
-		else
-			_releaseUnclaimed(iBars, Pregnancy_Chaurus_Eggs, slot)
+			_want(slot, ICON_CHAURUS)
 		endif
 		if euKind == 2
-			_loadSpiderEggsIcon(iBars, slot)
-		else
-			_releaseUnclaimed(iBars, Pregnancy_Spider_Eggs, slot)
+			_want(slot, ICON_SPIDER)
 		endif
 		if euKind == 3
-			_loadSphereIcon(iBars, slot)
-		else
-			_releaseUnclaimed(iBars, Pregnancy_Dwemer_Spheres, slot)
+			_want(slot, ICON_SPHERES)
 		endif
 	endif
 
 	;Estrus Chaurus+
 	if Plugin_EstrusChaurus
 		if target.HasSpell(_ChaurusBreederSpell) || target.WornHasKeyword(_zzEstrusParasiteKeyword)
-			_loadChaurusEggsIcon(iBars, slot)
-		Else
-			_releaseUnclaimed(iBars, Pregnancy_Chaurus_Eggs, slot)
+			_want(slot, ICON_CHAURUS)
 		endif
 	endif
 
 	;Estrus Spider+
 	if Plugin_EstrusSpider
 		if target.HasSpell( _SpiderBreederSpell) || target.WornHasKeyword(_zzEstrusSpiderParasiteKWD) ;SpiderBreeder spell
-			_loadSpiderEggsIcon(iBars, slot)
-		else
-			_releaseUnclaimed(iBars, Pregnancy_Spider_Eggs, slot)
+			_want(slot, ICON_SPIDER)
 		endif
 	endif
 
 	;Estrus Dwemer+
 	if Plugin_EstrusDwemer
 		if target.HasSpell(_DwemerBreederSpell) || target.WornHasKeyword(_zzEstrusDwemerParasiteKWD)  ;DwemerBreeder spell
-			_loadSphereIcon(iBars, slot)
-		else
-			_releaseUnclaimed(iBars, Pregnancy_Dwemer_Spheres, slot)
+			_want(slot, ICON_SPHERES)
 		endif
 	endif
 
 	;Curse Of Life — global state, only meaningful for player
 	if Plugin_CurseOfLife && slot == 0
-		handleCOF(iBars, slot)
+		handleCOF(slot)
 	endif
 
+	_applySharedIcons(iBars, slot)
 EndFunction
 
 ;BeeingFemale
@@ -536,9 +542,7 @@ Function handleBeeingFemale(iWant_Status_Bars iBars, Actor target, Int slot)
 	endif
 
 	if showCumInflation
-		_loadCumInflationIcon(iBars, slot)
-	else
-		_releaseUnclaimed(iBars, Pregnancy_CumInflation, slot)
+		_want(slot, ICON_CUM)
 	endif
 
 	if showBasic
@@ -548,27 +552,19 @@ Function handleBeeingFemale(iWant_Status_Bars iBars, Actor target, Int slot)
 	endif
 
 	if showTrimester1
-		_loadTrimester1Icon(iBars, slot)
-	else
-		_releaseUnclaimed(iBars, Pregnancy_Trimester1, slot)
+		_want(slot, ICON_TRIMESTER1)
 	endif
 
 	if showTrimester2
-		_loadTrimester2Icon(iBars, slot)
-	else
-		_releaseUnclaimed(iBars, Pregnancy_Trimester2, slot)
+		_want(slot, ICON_TRIMESTER2)
 	endif
 
 	if showTrimester3
-		_loadTrimester3Icon(iBars, slot)
-	else
-		_releaseUnclaimed(iBars, Pregnancy_Trimester3, slot)
+		_want(slot, ICON_TRIMESTER3)
 	endif
 
 	if showChaurusEggs
-		_loadChaurusEggsIcon(iBars, slot)
-	else
-		_releaseUnclaimed(iBars, Pregnancy_Chaurus_Eggs, slot)
+		_want(slot, ICON_CHAURUS)
 	endif
 
 EndFunction
@@ -586,11 +582,7 @@ Function handleFertilityMode3(iWant_Status_Bars iBars, Actor target, Int slot)
 	endif
 	if (actorIndex == -1)
 		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Ovulation, slot))
-		_releaseUnclaimed(iBars, Pregnancy_Trimester1, slot)
-		_releaseUnclaimed(iBars, Pregnancy_Trimester2, slot)
-		_releaseUnclaimed(iBars, Pregnancy_Trimester3, slot)
 		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Fetus, slot))
-		_releaseUnclaimed(iBars, Pregnancy_CumInflation, slot)
 		return
 	endIf
 
@@ -601,29 +593,21 @@ Function handleFertilityMode3(iWant_Status_Bars iBars, Actor target, Int slot)
 	endif
 
 	if target.HasSpell(_JSW_BB_Trimester1)
-		_loadTrimester1Icon(iBars, slot)
-	else
-		_releaseUnclaimed(iBars, Pregnancy_Trimester1, slot)
+		_want(slot, ICON_TRIMESTER1)
 	endif
 
 	if target.HasSpell(_JSW_BB_Trimester2)
-		_loadTrimester2Icon(iBars, slot)
-	else
-		_releaseUnclaimed(iBars, Pregnancy_Trimester2, slot)
+		_want(slot, ICON_TRIMESTER2)
 	endif
 
 	if target.HasSpell(_JSW_BB_Trimester3)
-		_loadTrimester3Icon(iBars, slot)
-	else
-		_releaseUnclaimed(iBars, Pregnancy_Trimester3, slot)
+		_want(slot, ICON_TRIMESTER3)
 	endif
 
-  	If hasFMSperm(_FMStorage, actorIndex)
 	; Fired for inflated actors
-		_loadCumInflationIcon(iBars, slot)
-    else
-		_releaseUnclaimed(iBars, Pregnancy_CumInflation, slot)
-    endIf
+	If hasFMSperm(_FMStorage, actorIndex)
+		_want(slot, ICON_CUM)
+	EndIf
 
 EndFunction
 
@@ -657,21 +641,15 @@ Function handleFM3Tweaks(iWant_Status_Bars iBars, Actor target, Int slot)
 	endif
 
 	if showTrimester1
-		_loadTrimester1Icon(iBars, slot)
-	else
-		_releaseUnclaimed(iBars, Pregnancy_Trimester1, slot)
+		_want(slot, ICON_TRIMESTER1)
 	endif
 
 	if showTrimester2
-		_loadTrimester2Icon(iBars, slot)
-	else
-		_releaseUnclaimed(iBars, Pregnancy_Trimester2, slot)
+		_want(slot, ICON_TRIMESTER2)
 	endif
 
 	if showTrimester3
-		_loadTrimester3Icon(iBars, slot)
-	else
-		_releaseUnclaimed(iBars, Pregnancy_Trimester3, slot)
+		_want(slot, ICON_TRIMESTER3)
 	endif
 EndFunction
 
@@ -708,21 +686,15 @@ Function handleFMReloaded(iWant_Status_Bars iBars, Actor target, Int slot)
 	endif
 
 	if showTrimester1
-		_loadTrimester1Icon(iBars, slot)
-	else
-		_releaseUnclaimed(iBars, Pregnancy_Trimester1, slot)
+		_want(slot, ICON_TRIMESTER1)
 	endif
 
 	if showTrimester2
-		_loadTrimester2Icon(iBars, slot)
-	else
-		_releaseUnclaimed(iBars, Pregnancy_Trimester2, slot)
+		_want(slot, ICON_TRIMESTER2)
 	endif
 
 	if showTrimester3
-		_loadTrimester3Icon(iBars, slot)
-	else
-		_releaseUnclaimed(iBars, Pregnancy_Trimester3, slot)
+		_want(slot, ICON_TRIMESTER3)
 	endif
 EndFunction
 
@@ -749,7 +721,7 @@ Function handleSGO4(iWant_Status_Bars iBars, Actor target, Int slot)
 	endif
 EndFunction
 
-Function handleCOF(iWant_Status_Bars iBars, Int slot)
+Function handleCOF(Int slot)
 	; Overall Status
 	float CharusCurrentSize = StorageUtil.GetFloatValue(none, "CurseOfLife_CharusCurrentSize", 0.0)
 	float SpiderCurrentSize = StorageUtil.GetFloatValue(none, "CurseOfLife_SpiderCurrentSize", 0.0)
@@ -757,21 +729,15 @@ Function handleCOF(iWant_Status_Bars iBars, Int slot)
 	float BlessingCurrentSize = StorageUtil.GetFloatValue(none, "CurseOfLife_BlessingCurrentSize", 0.0)
 
 	if (CharusCurrentSize > 0)
-		_loadChaurusEggsIcon(iBars, slot)
-	Else
-		_releaseUnclaimed(iBars, Pregnancy_Chaurus_Eggs, slot)
+		_want(slot, ICON_CHAURUS)
 	endif
 
 	if (SpiderCurrentSize > 0)
-		_loadSpiderEggsIcon(iBars, slot)
-	else
-		_releaseUnclaimed(iBars, Pregnancy_Spider_Eggs, slot)
+		_want(slot, ICON_SPIDER)
 	endif
 
 	if (DragonCurrentSize > 0 || BlessingCurrentSize > 0)
-		_loadEggsIcon(iBars, slot)
-	else
-		_releaseUnclaimed(iBars, Pregnancy_Eggs, slot)
+		_want(slot, ICON_EGGS)
 	endif
 
 EndFunction
@@ -787,20 +753,18 @@ Function handleHentaiPregnancy(iWant_Status_Bars iBars, Actor target, Int slot)
 		_hp_rank_prv[slot] = _HentaiPregnantFactionRank
 	endif
 	if _HentaiPregnantFactionRank == 1
-			_loadCumInflationIcon(iBars, slot)
+			_want(slot, ICON_CUM)
 			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Fetus, slot))
 			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Ovulation, slot))
 	Elseif _HentaiPregnantFactionRank == 2
-			_loadCumInflationIcon(iBars, slot)
+			_want(slot, ICON_CUM)
 			_loadOvulationIcon(iBars, slot)
 			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Fetus, slot))
 	ElseIf _HentaiPregnantFactionRank == 3
 			_loadFetusIcon(iBars, slot)
-			_releaseUnclaimed(iBars, Pregnancy_CumInflation, slot)
 			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Ovulation, slot))
 	Else
 			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Ovulation, slot))
-			_releaseUnclaimed(iBars, Pregnancy_CumInflation, slot)
 			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Fetus, slot))
 	endif
 EndFunction
@@ -809,148 +773,99 @@ EndFunction
 ; IsPregnant turns true only once a pregnancy has implanted (OMania's own
 ; readout waits for the same), and a male carrier holds an egg without
 ; gestating, so neither shows a pregnancy icon. A baby splits into trimesters
-; at thirds of its progress; an egg clutch shows the icon of its kind, keyed
-; on the egg item OMania reports. Its egg list is user-editable, so only the
-; vanilla chaurus eggs, spider egg and dwarven oil (a construct's clutch) are
-; told apart and every other gestation is "eggs".
-Function handleOMania(iWant_Status_Bars iBars, Actor target, Int slot)
-	Int want = 0
+; at thirds of its progress (-1 = not measured: no trimester); an egg clutch
+; shows the icon of its kind, keyed on the egg item OMania reports. Its egg
+; list is user-editable, so only the vanilla chaurus eggs, spider egg and
+; dwarven oil (a construct's clutch) are told apart and every other gestation
+; is "eggs".
+Function handleOMania(Actor target, Int slot)
 	If OMania.IsPregnant(target) && !OMania.IsCarrier(target)
 		If OMania.IsGestatingBaby(target)
-			Int pct = (OMania.GetProgress(target) * 100.0) as Int
-			If pct < 34
-				want = 1
-			ElseIf pct < 67
-				want = 2
-			Else
-				want = 4
+			Float progress = OMania.GetProgress(target)
+			If progress >= 0.0
+				Int pct = (progress * 100.0) as Int
+				If pct < 34
+					_want(slot, ICON_TRIMESTER1)
+				ElseIf pct < 67
+					_want(slot, ICON_TRIMESTER2)
+				Else
+					_want(slot, ICON_TRIMESTER3)
+				EndIf
 			EndIf
 		Else
 			Form egg = OMania.GetGestationForm(target)
 			If egg && egg == _OManiaChaurusEggs
-				want = 32
+				_want(slot, ICON_CHAURUS)
 			ElseIf egg && egg == _OManiaSpiderEgg
-				want = 64
+				_want(slot, ICON_SPIDER)
 			ElseIf egg && egg == _OManiaDwarvenOil
-				want = 128
+				_want(slot, ICON_SPHERES)
 			Else
-				want = 16
+				_want(slot, ICON_EGGS)
 			EndIf
 		EndIf
 	EndIf
 	If OMania.IsInflated(target)
-		want = Math.LogicalOr(want, 8)
-	EndIf
-
-	If want != _om_claim[slot]
-		WriteLog("ModulePregnancy: OMania icons changed " + _om_claim[slot] + " -> " + want)
-	EndIf
-	_om_claim[slot] = want
-
-	Int others = _otherPregnancyIcons(slot)
-	_omIcon(iBars, Pregnancy_Trimester1, want, others, slot)
-	_omIcon(iBars, Pregnancy_Trimester2, want, others, slot)
-	_omIcon(iBars, Pregnancy_Trimester3, want, others, slot)
-	_omIcon(iBars, Pregnancy_CumInflation, want, others, slot)
-	_omIcon(iBars, Pregnancy_Eggs, want, others, slot)
-	_omIcon(iBars, Pregnancy_Chaurus_Eggs, want, others, slot)
-	_omIcon(iBars, Pregnancy_Spider_Eggs, want, others, slot)
-	_omIcon(iBars, Pregnancy_Dwemer_Spheres, want, others, slot)
-EndFunction
-
-; An icon OMania does not want is released here only when no handler later in
-; the pass drives it: one that does releases it itself (the claim is gone by
-; then), and releasing it here too would drop and reload an icon that mod
-; shows, every pass
-Function _omIcon(iWant_Status_Bars iBars, String base, Int want, Int others, Int slot)
-	Int bit = _omClaimBit(base)
-	If Math.LogicalAnd(want, bit) != 0
-		If base == Pregnancy_Trimester1
-			_loadTrimester1Icon(iBars, slot)
-		ElseIf base == Pregnancy_Trimester2
-			_loadTrimester2Icon(iBars, slot)
-		ElseIf base == Pregnancy_Trimester3
-			_loadTrimester3Icon(iBars, slot)
-		ElseIf base == Pregnancy_CumInflation
-			_loadCumInflationIcon(iBars, slot)
-		ElseIf base == Pregnancy_Eggs
-			_loadEggsIcon(iBars, slot)
-		ElseIf base == Pregnancy_Chaurus_Eggs
-			_loadChaurusEggsIcon(iBars, slot)
-		ElseIf base == Pregnancy_Spider_Eggs
-			_loadSpiderEggsIcon(iBars, slot)
-		ElseIf base == Pregnancy_Dwemer_Spheres
-			_loadSphereIcon(iBars, slot)
-		EndIf
-	ElseIf Math.LogicalAnd(others, bit) == 0
-		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(base, slot))
+		_want(slot, ICON_CUM)
 	EndIf
 EndFunction
 
-; The icons OMania can claim, one bit each
-Int Function _omClaimBit(String base)
-	If base == Pregnancy_Trimester1
-		Return 1
-	ElseIf base == Pregnancy_Trimester2
-		Return 2
-	ElseIf base == Pregnancy_Trimester3
-		Return 4
-	ElseIf base == Pregnancy_CumInflation
-		Return 8
-	ElseIf base == Pregnancy_Eggs
-		Return 16
-	ElseIf base == Pregnancy_Chaurus_Eggs
-		Return 32
-	ElseIf base == Pregnancy_Spider_Eggs
-		Return 64
-	ElseIf base == Pregnancy_Dwemer_Spheres
-		Return 128
-	EndIf
-	Return 0
+Function _want(Int slot, Int icon)
+	_pass_want[slot] = Math.LogicalOr(_pass_want[slot], icon)
 EndFunction
 
-; The claimable icons the handlers after OMania's load and release this pass,
-; mirroring _reloadPregnancyIcons: the one cycle mod its elseif chain picks
-; (FMR / FM3 Tweaks: trimesters; FM3: + cum inflation; HP: cum inflation;
-; BF: trimesters, cum inflation, chaurus eggs), then the additive ones
-Int Function _otherPregnancyIcons(Int slot)
-	Int m = 0
-	If Plugin_FMReloaded || Plugin_FM3Tweaks
-		m = 7
-	ElseIf Plugin_FertilityMode3
-		m = 15
-	ElseIf Plugin_HentaiPregnancy
-		m = 8
-	ElseIf Plugin_BeeingFemale
-		m = 47
+; Each shared icon is loaded while any mod wants it (every pass, as the
+; handlers always did, so an icon dropped elsewhere comes back) and released
+; once no mod does. A release only follows a pass that left the icon loaded,
+; or a save where that is not known
+Function _applySharedIcons(iWant_Status_Bars iBars, Int slot)
+	Int want = _pass_want[slot]
+	Int shown = _shared_shown[slot]
+	If want != shown
+		WriteLog("ModulePregnancy: shared icons on slot " + slot + " " + shown + " -> " + want)
 	EndIf
-	If Plugin_EggFactory
-		m = Math.LogicalOr(m, 16)
-	EndIf
-	If Plugin_EstrusUnified
-		m = Math.LogicalOr(m, 224)
-	EndIf
-	If Plugin_EstrusChaurus
-		m = Math.LogicalOr(m, 32)
-	EndIf
-	If Plugin_EstrusSpider
-		m = Math.LogicalOr(m, 64)
-	EndIf
-	If Plugin_EstrusDwemer
-		m = Math.LogicalOr(m, 128)
-	EndIf
-	If Plugin_CurseOfLife && slot == 0
-		m = Math.LogicalOr(m, 112)
-	EndIf
-	Return m
-EndFunction
 
-; A release by another mod's handler: skipped while OMania shows the icon for
-; this slot, since that mod reading "not pregnant" says nothing about OMania's
-Function _releaseUnclaimed(iWant_Status_Bars iBars, String base, Int slot)
-	If Math.LogicalAnd(_om_claim[slot], _omClaimBit(base)) == 0
-		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(base, slot))
+	If Math.LogicalAnd(want, ICON_TRIMESTER1) != 0
+		_loadTrimester1Icon(iBars, slot)
+	ElseIf Math.LogicalAnd(shown, ICON_TRIMESTER1) != 0
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester1, slot))
 	EndIf
+	If Math.LogicalAnd(want, ICON_TRIMESTER2) != 0
+		_loadTrimester2Icon(iBars, slot)
+	ElseIf Math.LogicalAnd(shown, ICON_TRIMESTER2) != 0
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester2, slot))
+	EndIf
+	If Math.LogicalAnd(want, ICON_TRIMESTER3) != 0
+		_loadTrimester3Icon(iBars, slot)
+	ElseIf Math.LogicalAnd(shown, ICON_TRIMESTER3) != 0
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Trimester3, slot))
+	EndIf
+	If Math.LogicalAnd(want, ICON_CUM) != 0
+		_loadCumInflationIcon(iBars, slot)
+	ElseIf Math.LogicalAnd(shown, ICON_CUM) != 0
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_CumInflation, slot))
+	EndIf
+	If Math.LogicalAnd(want, ICON_EGGS) != 0
+		_loadEggsIcon(iBars, slot)
+	ElseIf Math.LogicalAnd(shown, ICON_EGGS) != 0
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Eggs, slot))
+	EndIf
+	If Math.LogicalAnd(want, ICON_CHAURUS) != 0
+		_loadChaurusEggsIcon(iBars, slot)
+	ElseIf Math.LogicalAnd(shown, ICON_CHAURUS) != 0
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Chaurus_Eggs, slot))
+	EndIf
+	If Math.LogicalAnd(want, ICON_SPIDER) != 0
+		_loadSpiderEggsIcon(iBars, slot)
+	ElseIf Math.LogicalAnd(shown, ICON_SPIDER) != 0
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Spider_Eggs, slot))
+	EndIf
+	If Math.LogicalAnd(want, ICON_SPHERES) != 0
+		_loadSphereIcon(iBars, slot)
+	ElseIf Math.LogicalAnd(shown, ICON_SPHERES) != 0
+		iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Dwemer_Spheres, slot))
+	EndIf
+	_shared_shown[slot] = want
 EndFunction
 
 Function _loadBasicIcon(iWant_Status_Bars iBars, Int slot)

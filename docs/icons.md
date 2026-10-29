@@ -139,7 +139,7 @@ Eye icon that fills as exposure / nudity rises.
 </div>
 
 
-### Milk — MME / SGO4 / MAL
+### Milk: MME / SGO4 / MAL / OMania
 
 *Requires MilkModNEW.esp, SGO4IF.esp, Mammaries And Lactation.esp, or OMania.esp.*
 

@@ -79,12 +79,16 @@ Function initInterface()
 	If (!Plugin_MAL && isMALReady())
 		WriteLog("ModuleMilk: Mammaries And Lactation found")
 		Plugin_MAL = true
+	endif
+	; a mod event registration does not survive a game load, so it is renewed
+	; on every load, not only when MAL is first found
+	If Plugin_MAL
 		RegisterForModEvent("MAL_ReturnPlayerStoredMilk", "OnMALReturnPlayerStoredMilk")
 		RegisterForModEvent("MAL_ReturnPlayerMilkLimit", "OnMALReturnPlayerMilkLimit")
-	endif
-	; every load, so a save that kept the plugin but lost the DLL stops
-	; calling unbound natives
-	Bool om = isOManiaReady()
+	EndIf
+	; slw_config detects it once per load, so a save that kept the plugin but
+	; lost the DLL stops calling unbound natives
+	Bool om = config.OManiaReady
 	If om && !Plugin_OMania
 		WriteLog("ModuleMilk: OMania found")
 	ElseIf !om && Plugin_OMania

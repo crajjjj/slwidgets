@@ -53,7 +53,7 @@ The game freezes while the menu is open, but the widgets keep updating, so a cha
 | **FHU Vaginal Pool Icon Enabled** | `sr_FillHerUp.esp` | Vaginal cum pool (9 stages) |
 | **FHU Anal Pool Icon Enabled** | `sr_FillHerUp.esp` | Anal cum pool (9 stages) |
 | **FHU Oral Pool Icon Enabled** | `sr_FillHerUp.esp` | Oral cum pool (9 stages) |
-| **MME/SGO Milk Icon Enabled** | MME, SGO4, or MAL | Milk level (9 stages) |
+| **Milk Icon Enabled** | MME, SGO4, MAL, or OMania | Milk level (9 stages) |
 | **MME Lactacid Icon Enabled** | `MilkModNEW.esp` | Lactacid level (9 stages) |
 | **Pee Icon Enabled** | PAF, MiniNeeds, AlivePeeing, or Private Needs | Bladder fill (5 stages) |
 | **Poop Icon Enabled** | PAF, MiniNeeds, or Private Needs | Bowel fill (5 stages) |

@@ -88,7 +88,9 @@ EndFunction
 
 ; OMania (pregnancy and lactation) answers through OMania.dll, read by the
 ; pregnancy and milk modules. With the plugin but not the DLL every native is
-; unbound, which GetVersion's empty answer tells
+; unbound, which GetVersion's empty answer tells. Its version is not checked:
+; OMania 4.0.3's DLL reports "0.1.0". Calls a native: slw_config runs it once
+; per load (OManiaReady) and everything else reads that
 Bool Function isOManiaReady() Global
 	Return isDependencyReady("OMania.esp") && OMania.GetVersion() != ""
 EndFunction

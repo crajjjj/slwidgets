@@ -94,7 +94,7 @@ Each NPC slot has 14 independent sub-toggles matching the player's options:
 | FHU Vaginal pool | Off |
 | FHU Anal pool | Off |
 | FHU Oral pool | Off |
-| MME/SGO Milk | On |
+| Milk | On |
 | MME Lactacid | Off |
 | SLP Parasites | Off |
 | Pregnancy | On |
@@ -136,7 +136,7 @@ NPC slot assignments (which actor is in which slot) persist across saves. On gam
 | SLA Exposure | Yes | Yes |
 | Apropos2 W&T | Yes | Yes |
 | FHU Cum | Yes | Yes |
-| MME/SGO4 Milk | Yes | Yes |
+| MME / SGO4 / OMania Milk | Yes | Yes |
 | MAL Milk | Yes | No |
 | Needs (PAF/MiniNeeds/AlivePeeing/Private Needs) | Yes | No |
 | SexLab-Parasites | Yes | Yes |

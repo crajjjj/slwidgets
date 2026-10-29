@@ -79,6 +79,7 @@ Pre-release checklist. Each scenario should be verified in-game or by code inspe
 | 7.7 | P1 | SGO4 milk | `getMilkCur`/`getMilkMax` via interface, summed with other sources | slw_module_mme |
 | 7.8 | P2 | Division by zero guard | `milkMax <= 0` sets `milkMax = 1`, same for lactacid | slw_module_mme |
 | 7.9 | P1 | OMania milk | While `OMania.IsLactating`, `GetPressure` x 100 drives the milk icon (past 1.0 = the top stage), player and NPC slots; beside MME/SGO4/MAL the fuller of the two shows, never a sum; lactacid stays MME-only | slw_module_mme |
+| 7.10 | P1 | MAL after a reload | Save, reload: the MAL return events are registered again in `initInterface` (SKSE drops mod event registrations on load), so the player's milk icon follows MAL instead of sitting at Empty | slw_module_mme |
 
 ## 8. Module: Pregnancy
 
@@ -96,10 +97,10 @@ Pre-release checklist. Each scenario should be verified in-game or by code inspe
 | 8.10 | P1 | Curse of Life | StorageUtil float checks for Chaurus/Spider/Dragon/Blessing sizes | slw_module_pregnancy |
 | 8.11 | P1 | FM3 SpermCount type mismatch | Tweaks mod changes SpermCount to int — verify no crash (known issue, logged) | slw_module_pregnancy |
 | 8.12 | P2 | Pregnancy toggle off | `module_pregnancy_enabled = false` releases all pregnancy icons | slw_module_pregnancy |
-| 8.13 | P2 | Multiple pregnancy mods | FM3/HP/BF are mutually exclusive (`elseif` chain), Estrus/EggFactory/SGO4/COF are additive | slw_module_pregnancy |
+| 8.13 | P2 | Multiple pregnancy mods | FM3/HP/BF are mutually exclusive (`elseif` chain), Estrus/EggFactory/SGO4/COF/OMania are additive; an icon two of them drive (BF + Estrus Unified chaurus eggs, EggFactory + COF eggs) shows while either wants it and is not dropped and reloaded every pass (`_want` + `_applySharedIcons`) | slw_module_pregnancy |
 | 8.14 | P1 | Estrus Unified | `EstrusUnifiedAPI.GetPregnancyType` 1/2/3 shows chaurus eggs / spider eggs / spheres and 0 releases them, player and NPC slots; the legacy Estrus blocks stay off; `OnEstrusUnifiedPregnancyChanged` pulls the next pass forward; the Debug page lists it | slw_module_pregnancy, slw_menu |
-| 8.15 | P1 | OMania | Detected only with `OMania.dll` (`GetVersion` not empty; plugin without DLL = Not found, no per-pass unbound-native errors); a baby shows trimester 1/2/3 at progress thirds, a chaurus / spider / dwarven-oil clutch its own icon, any other clutch eggs, `IsInflated` cum inflation; nothing before implantation or for a male carrier; player and NPC slots; the Debug page lists it | slw_module_pregnancy, slw_menu |
-| 8.16 | P2 | OMania beside another pregnancy mod | With BF / FM / HP / Estrus / EggFactory / COF also installed, an icon OMania shows is not released by the other mod's "not pregnant" (`_releaseUnclaimed`), and OMania leaves the icons that mod drives to it, so no icon is dropped and reloaded every pass | slw_module_pregnancy |
+| 8.15 | P1 | OMania | Detected only with `OMania.dll` (`GetVersion` not empty, once per load into `slw_config.OManiaReady`; plugin without DLL = Not found on the Debug page, one unbound-native line per load, none per pass); a baby shows trimester 1/2/3 at progress thirds, a chaurus / spider / dwarven-oil clutch its own icon, any other clutch eggs, `IsInflated` cum inflation; nothing before implantation or for a male carrier; player and NPC slots | slw_module_pregnancy, slw_config, slw_menu |
+| 8.16 | P1 | Save from 3.4.2 with a pregnancy icon up | First pass releases every shared icon no mod wants (`_shared_shown` starts at 255), then only what a pass left loaded; uninstalling one of two pregnancy mods drops its icons on the next pass | slw_module_pregnancy |
 
 ## 9. Module: SexLab Parasites (SLP)
 
