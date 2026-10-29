@@ -482,8 +482,6 @@ Function _updatePass()
 	If !PlayerRef
 		PlayerRef = Game.GetPlayer()
 	EndIf
-	; before the modules set any stage, so none comes up at an old place
-	_serveIdleStageParks()
 	If _npcReleaseOwed
 		Int slot = 1
 		While slot < _npcReleaseOwed.Length
@@ -503,6 +501,9 @@ Function _updatePass()
 		_togglePassOwed = False
 		toggleUpdateWidgets()
 	EndIf
+	; after the releases and the toggle pass above, which close bars up, and
+	; before the modules set any stage, so none comes up at an old place
+	_placeAfterLayoutChanges()
 	; Slot 0 - player, always updates
 	config.moduleWidgetStateUpdate(iBars, PlayerRef, 0)
 	_updateMeters()
@@ -1002,8 +1003,6 @@ Function _layoutNpcBars()
 		iBars._setBarY(secondary, baseY + NPC_BAR_VSPACING)
 		iBars._setBarType(secondary, NPC_DEFAULT_SHAPE)
 		iBars._setBarIconSize(secondary, NPC_DEFAULT_ICON_SIZE)
-		_oweIdleStagePark(primary)
-		_oweIdleStagePark(secondary)
 		; Destroy + recreate the label after a bar move. setPos has been seen
 		; to leave a ghost widget at the old position when called on a stale
 		; ID — recreating guarantees exactly one label at the new bar anchor.
@@ -1745,98 +1744,210 @@ Int Function _editorMeterRows()
 	Return rows
 EndFunction
 
-; iWant draws only the stage an icon shows, and a draw passes over a widget
-; faded out to alpha 0. So a stage shown earlier and faded out stays where it
-; was last drawn, and after its bar is moved, turned, resized or respaced the
+; Each stage of an iWant icon is a widget of its own. iWant's draw places only
+; the stage an icon shows, and with Skip Hidden Icons on (iWant's default) it
+; passes over a widget at alpha 0, which every stage is once it faded out. So a
+; stage shown earlier keeps the place it was last drawn at: after its bar is
+; moved, turned, resized, respaced or closes up around a released icon, the
 ; next change back to that stage fades it in at the old place, in the old
-; shape, until a later draw moves it. A game load clears it, as iWant then
-; loads every widget again. Each layout edit parks the stages an
-; icon does not show offscreen at alpha 1 (0 for a hidden stage), the state
-; iWant's _loadIconWidgets gives a freshly loaded icon, so iWant's own draw
-; places a stage when it comes up. Owed per bar and served at the top of the
-; next update pass: X and Y are written every 150 ms while a slider is held,
-; and a parked stage stays parked until it is shown again. Not reset on a
-; game load: one owed while the mod was off is served once it runs, and a
-; stale one costs one park.
-Bool[] _parkOwed
+; shape, until a later draw moves it. A game load clears it (iWant makes every
+; widget again); iWant's own MCM edits leave the same gap.
+; So each pass compares a signature of every bar (the DLL reads iWant's private
+; arrays) with the last one seen and, for a bar that changed, puts every stage
+; its icons do not show where it would come up, at alpha 0, before the modules
+; set any stage. The last signatures stay in the save: a change made while the
+; mod was off is placed on its first pass, and one seen after a load costs one
+; placement of widgets iWant just made.
+Int[] _barSig
 
-; bar -1 = every bar
-Function _oweIdleStagePark(Int bar)
-	If !iBars
+Function _placeAfterLayoutChanges()
+	If !slw_bridge.hasLayoutNatives()
 		Return
 	EndIf
-	Int total = iBars.TOTAL_STATUS_BARS
-	If !_parkOwed || _parkOwed.Length < total
-		_parkOwed = Utility.CreateBoolArray(total, False)
-	EndIf
-	If bar < 0
-		Int b = 0
-		While b < total
-			_parkOwed[b] = True
-			b += 1
-		EndWhile
-	ElseIf bar < total
-		_parkOwed[bar] = True
-	EndIf
-EndFunction
-
-Function _serveIdleStageParks()
-	If !_parkOwed
+	Int[] sig = slw_bridge.GetIWantBarSignatures(iBars)
+	If !sig
 		Return
 	EndIf
+	If !_barSig || _barSig.Length != sig.Length
+		; nothing to compare with yet: the widgets are where iWant last drew them
+		_barSig = sig
+		Return
+	EndIf
+	Int gen = _passGen
 	Int bar = 0
-	While bar < _parkOwed.Length
-		If _parkOwed[bar]
-			_parkOwed[bar] = False
-			_parkIdleStages(bar)
+	While bar < sig.Length
+		If sig[bar] != _barSig[bar]
+			Int result = _placeIdleStages(bar, gen)
+			If result < 0
+				; a game load came in the middle, and iWant made every widget again
+				Return
+			EndIf
+			_barSig[bar] = sig[bar]
+			If result == 0
+				; an icon changed stage meanwhile: place the bar again next pass
+				_barSig[bar] = sig[bar] + 1
+			EndIf
 		EndIf
 		bar += 1
 	EndWhile
 EndFunction
 
-Function _parkIdleStages(Int bar)
-	If !iBars || !iBars.iWidgets || !slw_bridge.hasIconStateNative()
-		Return
+; Puts every stage of the bar's icons that is not shown where iWant's draw
+; would put it once shown, at alpha 0. A line steps (size * step) As Int from
+; the anchor; a circle (radius size * 2) or half circle (size * 3) spreads its
+; icons evenly over the arc; an orbit has seat 0 at the center and the rest on
+; a circle. A seat counts when its shown stage is visible, since the draw skips
+; the rest; a seat that does not count gets the place it takes once a stage of
+; it shows. In an auto-hide bar that has faded out the shown stages are placed
+; too, since the draw skipped those as well.
+; 1 = done, 0 = done but an icon changed stage meanwhile, -1 = a game load.
+Int Function _placeIdleStages(Int bar, Int gen)
+	If !iBars.isReady()
+		Return -1
 	EndIf
 	iWant_Widgets widgets = iBars.iWidgets
+	If !widgets || !iBars._getBarHideOnAlpha0(bar)
+		; without Skip Hidden Icons the draw places faded stages too
+		Return 1
+	EndIf
+	Int type = iBars._getBarType(bar)
 	Int perBar = iBars.ICONS_PER_STATUS_BAR
-	Int states = iBars.MAX_STATES_PER_ICON
+	Int[] icons = Utility.CreateIntArray(perBar, -1)
+	Int[] shown = Utility.CreateIntArray(perBar, -1)
+	Bool[] counts = Utility.CreateBoolArray(perBar, False)
+	; seats that count, on the line or the arc (an orbit's center is neither)
+	Int n = 0
 	Int seat = 0
 	While seat < perBar
 		Int icon = iBars._getBarIcon(bar, seat)
-		Int shown = -1
+		Int s = -1
 		If icon >= 0
-			shown = slw_bridge.GetIWantIconState(iBars, icon)
+			s = slw_bridge.GetIWantIconState(iBars, icon)
 		EndIf
-		If shown >= 0
-			Int s = 0
-			While s < states
-				Int w = -1
-				If s != shown
-					w = iBars._getIconWidget(icon, s)
+		If s >= 0
+			icons[seat] = icon
+			shown[seat] = s
+			If iBars._getIconWidget(icon, s) >= 0 && iBars._getIconAlpha(icon, s) > 0
+				counts[seat] = True
+				If type != 5 || seat > 0
+					n += 1
 				EndIf
-				If w >= 0
-					Int alpha = 0
-					If iBars._getIconAlpha(icon, s) > 0
-						alpha = 1
-					EndIf
-					widgets.setPos(w, 10000, 10000)
-					; a transition, not setTransparency: it replaces a fade still
-					; running, which would end at 0 and leave the stage unplaced
-					widgets.doTransition(w, alpha, 1)
-				EndIf
-				s += 1
-			EndWhile
-			; Another mod's icon may have changed stage on its own thread while
-			; this ran, and the stage it came up on was just parked: have iWant
-			; draw it and fade it in again.
-			Int now = slw_bridge.GetIWantIconState(iBars, icon)
-			If now >= 0 && now != shown
-				iBars._setIconStatusByID(icon, now)
 			EndIf
 		EndIf
 		seat += 1
 	EndWhile
+
+	Float x0 = iBars._getBarX(bar) As Float
+	Float y0 = iBars._getBarY(bar) As Float
+	Int size = iBars._getBarIconSize(bar)
+	Float dx = 0.0
+	Float dy = 0.0
+	Float radius = 0.0
+	Float start = 0.0
+	Float sweep = 360.0
+	If type < 4
+		Float step = slw_bridge.GetIWantIconStep(iBars)
+		If step <= 0.0
+			step = 1.5
+		EndIf
+		Float change = ((size As Float * step) As Int) As Float
+		If type == 0
+			dx = 0.0 - change
+		ElseIf type == 1
+			dx = change
+		ElseIf type == 2
+			dy = 0.0 - change
+		Else
+			dy = change
+		EndIf
+	ElseIf type <= 5
+		radius = ((size As Float * 2.0) As Int) As Float
+	Else
+		radius = ((size As Float * 3.0) As Int) As Float
+		sweep = 180.0
+		If type == 7
+			start = 180.0
+		ElseIf type == 8
+			start = 90.0
+		ElseIf type == 9
+			start = 270.0
+		EndIf
+	EndIf
+	Bool placeShown = _barFadedOut(bar)
+	Int states = iBars.MAX_STATES_PER_ICON
+
+	Int result = 1
+	; seats that count before this one
+	Int k = 0
+	seat = 0
+	While seat < perBar
+		Int icon = icons[seat]
+		If icon >= 0
+			If gen != _passGen || !iBars.isReady()
+				Return -1
+			EndIf
+			Float px = x0
+			Float py = y0
+			If type < 4
+				px = x0 + dx * k
+				py = y0 + dy * k
+			ElseIf type != 5 || seat > 0
+				Int total = n
+				If !counts[seat]
+					total = n + 1
+				EndIf
+				Float deg = sweep
+				If total > 1
+					If sweep == 360.0
+						deg = 360.0 / total
+					Else
+						deg = 180.0 / (total - 1)
+					EndIf
+				EndIf
+				Float angle = start + deg * k
+				px = x0 + radius * Math.Cos(angle)
+				py = y0 + radius * Math.Sin(angle)
+			EndIf
+			Int ix = Math.Floor(px + 0.5)
+			Int iy = Math.Floor(py + 0.5)
+			Int s = 0
+			While s < states
+				If s != shown[seat] || placeShown
+					Int w = iBars._getIconWidget(icon, s)
+					If w >= 0
+						If s != shown[seat]
+							widgets.setTransparency(w, 0)
+						EndIf
+						widgets.setPos(w, ix, iy)
+					EndIf
+				EndIf
+				s += 1
+			EndWhile
+			If slw_bridge.GetIWantIconState(iBars, icon) != shown[seat]
+				; It changed stage on another mod's thread, maybe onto a stage just
+				; set to alpha 0. iWant fades the stage it shows back in, read
+				; inside iWant, so a change after this read is not undone.
+				iBars._resetIconVisibility(icon)
+				result = 0
+			EndIf
+			If counts[seat] && (type != 5 || seat > 0)
+				k += 1
+			EndIf
+		EndIf
+		seat += 1
+	EndWhile
+	Return result
+EndFunction
+
+; An auto-hide bar whose icons have all faded: none changed for longer than its
+; hide time (iWant fades an icon that many seconds after its change), or the
+; last change is from an earlier session's clock.
+Bool Function _barFadedOut(Int bar)
+	If !iBars._getBarShowOnChange(bar) || !hasBarsAPI()
+		Return False
+	EndIf
+	Float since = Utility.GetCurrentRealTime() - iBars.getBarLastChangeTime(bar)
+	Return since < 0.0 || since > (iBars._getBarAutoHideTime(bar) + 1) As Float
 EndFunction
 
 Function editorSetBarPos(Int bar, Int x, Int y)
@@ -1846,7 +1957,6 @@ Function editorSetBarPos(Int bar, Int x, Int y)
 	iBars._setBarX(bar, x)
 	iBars._setBarY(bar, y)
 	iBars._drawBar(bar)
-	_oweIdleStagePark(bar)
 EndFunction
 
 ; Icon moves in the player bars, as iWant's own MCM makes them. iWant puts an
@@ -1886,7 +1996,6 @@ Function editorMoveIconInBar(Int bar, Int seat, Int icon, Int dir)
 	iBars._setBarIcon(bar, seat, other)
 	iBars._setBarIcon(bar, t, icon)
 	iBars._drawBar(bar)
-	_oweIdleStagePark(bar)
 EndFunction
 
 ; Moves the icon to the first free seat of another player bar
@@ -1904,9 +2013,6 @@ Function editorMoveIconToBar(Int bar, Int seat, Int icon, Int target)
 	iBars._setBarIcon(target, free, icon)
 	iBars._drawBar(bar)
 	iBars._drawBar(target)
-	; the icon and the ones after its old seat, which close up
-	_oweIdleStagePark(bar)
-	_oweIdleStagePark(target)
 EndFunction
 
 Function editorSetBarSize(Int bar, Int size)
@@ -1916,7 +2022,6 @@ Function editorSetBarSize(Int bar, Int size)
 	iBars._setBarIconSize(bar, size)
 	iBars._resizeBar(bar)
 	iBars._drawBar(bar)
-	_oweIdleStagePark(bar)
 EndFunction
 
 ; iWant's bar types, as its MCM applies them (the resize covers an orbit's
@@ -1928,7 +2033,6 @@ Function editorSetBarType(Int bar, Int type)
 	iBars._setBarType(bar, type)
 	iBars._resizeBar(bar)
 	iBars._drawBar(bar)
-	_oweIdleStagePark(bar)
 EndFunction
 
 Function editorSetNpcGroup(Int x, Int y)
@@ -1970,7 +2074,6 @@ Bool Function setIconSpacing(Int percent)
 		Return False
 	EndIf
 	iBars._drawAllBars()
-	_oweIdleStagePark(-1)
 	Return True
 EndFunction
 
@@ -2008,7 +2111,6 @@ Function presetSetBar(Int bar, Int x, Int y, Int size, Int type)
 	iBars._setBarType(bar, type)
 	iBars._resizeBar(bar)
 	iBars._drawBar(bar)
-	_oweIdleStagePark(bar)
 EndFunction
 
 ; Presets loaded or saved on the SKSE menu's Presets page. Loading one

@@ -12,9 +12,5 @@ namespace Natives
 	constexpr float kMinIconStep = 0.8f;  // keep in step with Layout::kMinIconSpacing
 	constexpr float kMaxIconStep = 3.0f;
 
-	// 3.4.2: the stage iWant shows for an icon (iconActiveStatus, private as well),
-	// which the scripts need to park an icon's other stages after a layout change
-	// (slw_widget_controller._parkIdleStages).
-
 	bool Register(RE::BSScript::IVirtualMachine* a_vm);
 }
