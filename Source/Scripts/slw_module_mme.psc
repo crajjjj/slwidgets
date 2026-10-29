@@ -8,6 +8,7 @@ Bool Property Module_Ready = false auto hidden
 Bool Property Plugin_SGO4 = false auto hidden
 Bool Property Plugin_MME = false auto hidden
 Bool Property Plugin_MAL = false auto hidden
+Bool Property Plugin_OMania = false auto hidden
 
 slw_config Property config Auto
 Actor Property PlayerRef Auto
@@ -27,7 +28,7 @@ float _mal_milk_max = 0.0
 
 ;override
 Bool Function isInterfaceActive()
-	Return Plugin_MME || Plugin_SGO4 || Plugin_MAL
+	Return Plugin_MME || Plugin_SGO4 || Plugin_MAL || Plugin_OMania
 EndFunction
 
 Function _ensurePrvArrays()
@@ -46,6 +47,7 @@ Function resetInterface()
 	Plugin_MME = false
 	Plugin_SGO4 = false
 	Plugin_MAL = false
+	Plugin_OMania = false
 	_mal_milk_cur = 0.0
 	_mal_milk_max = 0.0
 EndFunction
@@ -80,9 +82,18 @@ Function initInterface()
 		RegisterForModEvent("MAL_ReturnPlayerStoredMilk", "OnMALReturnPlayerStoredMilk")
 		RegisterForModEvent("MAL_ReturnPlayerMilkLimit", "OnMALReturnPlayerMilkLimit")
 	endif
+	; every load, so a save that kept the plugin but lost the DLL stops
+	; calling unbound natives
+	Bool om = isOManiaReady()
+	If om && !Plugin_OMania
+		WriteLog("ModuleMilk: OMania found")
+	ElseIf !om && Plugin_OMania
+		WriteLog("ModuleMilk: OMania no longer installed")
+	EndIf
+	Plugin_OMania = om
 
 	if isInterfaceActive()
-		WriteLog("ModuleMilk: active plugins - MME:" + Plugin_MME + " SGO4:" + Plugin_SGO4 + " MAL:" + Plugin_MAL)
+		WriteLog("ModuleMilk: active plugins - MME:" + Plugin_MME + " SGO4:" + Plugin_SGO4 + " MAL:" + Plugin_MAL + " OM:" + Plugin_OMania)
 	else
 		WriteLog("ModuleMilk: no milk mods detected")
 	endif
@@ -184,7 +195,16 @@ Int Function getMilkLevel(Actor a, Int slot)
 	if milkMax <= 0
 		milkMax = 1
 	endif
-	return percentToState9NotStrict(Math.Ceiling(milkCur/milkMax * 100))
+	Int percent = Math.Ceiling(milkCur/milkMax * 100)
+	; OMania reports a fill fraction, not an amount, so it cannot join the sum
+	; above: the fuller of the two shows (1.0 is full, past it overfull)
+	if Plugin_OMania && OMania.IsLactating(a)
+		Int omPercent = Math.Ceiling(OMania.GetPressure(a) * 100.0)
+		if omPercent > percent
+			percent = omPercent
+		endif
+	endif
+	return percentToState9NotStrict(percent)
 EndFunction
 
 Function _requestMALUpdate()

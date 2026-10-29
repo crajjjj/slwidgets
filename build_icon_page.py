@@ -112,7 +112,7 @@ stage_row("fhu_anal", "fhu/anal", "cum", 9, "Cum — anal pool")
 stage_row("fhu_oral", "fhu/oral", "cum", 9, "Cum — oral pool")
 
 h(3, "Milk — MME / SGO4 / MAL")
-para("*Requires MilkModNEW.esp, dse-soulgem-oven.esp, or Mammaries And Lactation.esp.*")
+para("*Requires MilkModNEW.esp, SGO4IF.esp, Mammaries And Lactation.esp, or OMania.esp.*")
 stage_row("mme_milk", "mme/milk", "milk", 9, "Milk")
 stage_row("mme_lact", "mme/lactacid", "lact", 9, "Lactacid", "MME only.")
 
@@ -157,7 +157,7 @@ h(3, "Pregnancy")
 para(
     "*Requires any supported pregnancy mod. SL Widgets shows whichever icon matches the "
     "current state reported by HentaiPregnancy, BeeingFemale, EggFactory, the Estrus mods, "
-    "Fertility Mode 3, Curse of Life, or SGO4.*"
+    "Fertility Mode 3, Curse of Life, SGO4, or OMania.*"
 )
 toggle_grid(
     [

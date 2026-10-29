@@ -141,7 +141,7 @@ Eye icon that fills as exposure / nudity rises.
 
 ### Milk — MME / SGO4 / MAL
 
-*Requires MilkModNEW.esp, dse-soulgem-oven.esp, or Mammaries And Lactation.esp.*
+*Requires MilkModNEW.esp, SGO4IF.esp, Mammaries And Lactation.esp, or OMania.esp.*
 
 
 #### Milk
@@ -424,7 +424,7 @@ Shown only while a disease is held: Infected, Worsening, Severe (stages 2 and 3 
 
 ### Pregnancy
 
-*Requires any supported pregnancy mod. SL Widgets shows whichever icon matches the current state reported by HentaiPregnancy, BeeingFemale, EggFactory, the Estrus mods, Fertility Mode 3, Curse of Life, or SGO4.*
+*Requires any supported pregnancy mod. SL Widgets shows whichever icon matches the current state reported by HentaiPregnancy, BeeingFemale, EggFactory, the Estrus mods, Fertility Mode 3, Curse of Life, SGO4, or OMania.*
 
 <div class="icon-grid" markdown>
 

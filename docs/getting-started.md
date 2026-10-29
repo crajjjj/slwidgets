@@ -68,6 +68,7 @@ None of these are required. SL Widgets detects them at runtime and silently skip
 - EstrusChaurus / EstrusSpider / EstrusDwemer, or Estrus Unified
 - Fertility Mode 3
 - Curse of Life
+- OMania (milk, pregnancy)
 - SexLab-Parasites
 - PAF / MiniNeeds / AlivePeeing SE / Private Needs - Orgasm
 - SLDefeat

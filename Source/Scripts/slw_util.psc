@@ -8,7 +8,7 @@ EndFunction
 
 ;SemVer support
 Int Function GetVersion() Global
-    Return 30402
+    Return 30403
     ; 1.0.0   -> 10000
     ; 1.1.0   -> 10100
     ; 1.1.1  -> 10101
@@ -17,7 +17,7 @@ Int Function GetVersion() Global
 EndFunction
 
 String Function GetVersionString() Global
-    Return "3.4.2"
+    Return "3.4.3"
 EndFunction
 
 String Function StringIfElse(Bool isTrue, String returnTrue, String returnFalse = "") Global
@@ -84,6 +84,13 @@ EndFunction
 ; its DLL (EstrusUnifiedAPI); slw_module_pregnancy reads that instead of form IDs
 Bool Function isEUReady() Global
 	Return isDependencyReady("EstrusUnified.esp")
+EndFunction
+
+; OMania (pregnancy and lactation) answers through OMania.dll, read by the
+; pregnancy and milk modules. With the plugin but not the DLL every native is
+; unbound, which GetVersion's empty answer tells
+Bool Function isOManiaReady() Global
+	Return isDependencyReady("OMania.esp") && OMania.GetVersion() != ""
 EndFunction
 
 Bool Function isBFReady() Global

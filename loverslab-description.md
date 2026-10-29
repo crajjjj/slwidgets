@@ -71,6 +71,7 @@ Soft dependencies — install only the ones you use
 - Private Needs - Orgasm
 - SLDefeat
 - Curse of Life (1.13.2+)
+- OMania 4.0.3+ (milk and pregnancy)
 - SLO VE 0.7.2+ (willpower shown as a bar with a brain icon, player only)
 - SunHelm Survival and SunHelm Diseases
 - Survival Mode (Creation Club), stock or Survival Mode Improved

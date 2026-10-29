@@ -61,20 +61,21 @@ Updates: on the update interval; for the player also within about a second of ev
 
 ### Milk — MME / SGO4 / MAL
 
-At least one of the three milk mods must be installed for milk icons to appear.
+At least one of the milk mods below must be installed for milk icons to appear.
 
 | Plugin | Notes |
 |--------|-------|
 | `MilkModNEW.esp` | Milk Mod Economy — NPC support |
 | `SGO4IF.esp` | Soul Gem Oven 4 Integration Fork 1.12+ — NPC support |
 | `Mammaries And Lactation.esp` | MAL — **player only** (event-based API) |
+| `OMania.esp` | OMania 4.0.3+ (with its `OMania.dll`): lactation pressure, overfilled shows as the top stage. NPC support. It reports a fill fraction rather than an amount, so beside another milk mod the fuller of the two shows |
 
 | Icon | Description |
 |------|-------------|
 | **Milk** | Milk carton icon, 9 stages tracking current milk level |
 | **Lactacid** | Potion icon, 9 stages tracking lactacid (MME only) |
 
-NPC support: **Milk icon** — Yes (via MME or SGO4 APIs, not MAL). **Lactacid icon** — Yes (MME only).
+NPC support: **Milk icon**: Yes (via MME, SGO4 or OMania, not MAL). **Lactacid icon**: Yes (MME only).
 
 ---
 
@@ -256,6 +257,7 @@ SL Widgets detects all installed pregnancy mods and shows the relevant icon set 
 | `Fertility Mode.esm` | Cycle and pregnancy states |
 | `CurseOfLife.esp` | Curse of Life pregnancy states |
 | `SGO4IF.esp` | SGO4 soul gem pregnancy states |
+| `OMania.esp` | OMania 4.0.3+ (with its `OMania.dll`): trimester 1/2/3 for a baby, chaurus eggs / spider eggs / dwemer spheres (dwarven oil) / eggs for an egg clutch, cum inflation. A pregnancy shows once OMania counts it as implanted; a male curse carrier shows nothing |
 
 NPC support: **Yes** for all pregnancy mods.
 
@@ -341,6 +343,7 @@ NPC support: **No** - the meters are for the player. NPCs keep their status icon
 | Fertility Mode 3 | — | Varies | Yes |
 | Curse of Life | — | Varies | Yes |
 | SGO4 (pregnancy) | — | Varies | Yes |
+| OMania (milk, pregnancy) | 1 | Varies | Yes |
 | SLDefeat | - | 1 | Player only |
 | SLO VE | a willpower bar, not an icon | - | Player only |
 

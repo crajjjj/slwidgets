@@ -78,6 +78,7 @@ Pre-release checklist. Each scenario should be verified in-game or by code inspe
 | 7.6 | P1 | Lactacid icon (MME only) | Lactacid toggle only active when `Plugin_MME` is true (not SGO4/MAL) | slw_module_mme |
 | 7.7 | P1 | SGO4 milk | `getMilkCur`/`getMilkMax` via interface, summed with other sources | slw_module_mme |
 | 7.8 | P2 | Division by zero guard | `milkMax <= 0` sets `milkMax = 1`, same for lactacid | slw_module_mme |
+| 7.9 | P1 | OMania milk | While `OMania.IsLactating`, `GetPressure` x 100 drives the milk icon (past 1.0 = the top stage), player and NPC slots; beside MME/SGO4/MAL the fuller of the two shows, never a sum; lactacid stays MME-only | slw_module_mme |
 
 ## 8. Module: Pregnancy
 
@@ -97,6 +98,8 @@ Pre-release checklist. Each scenario should be verified in-game or by code inspe
 | 8.12 | P2 | Pregnancy toggle off | `module_pregnancy_enabled = false` releases all pregnancy icons | slw_module_pregnancy |
 | 8.13 | P2 | Multiple pregnancy mods | FM3/HP/BF are mutually exclusive (`elseif` chain), Estrus/EggFactory/SGO4/COF are additive | slw_module_pregnancy |
 | 8.14 | P1 | Estrus Unified | `EstrusUnifiedAPI.GetPregnancyType` 1/2/3 shows chaurus eggs / spider eggs / spheres and 0 releases them, player and NPC slots; the legacy Estrus blocks stay off; `OnEstrusUnifiedPregnancyChanged` pulls the next pass forward; the Debug page lists it | slw_module_pregnancy, slw_menu |
+| 8.15 | P1 | OMania | Detected only with `OMania.dll` (`GetVersion` not empty; plugin without DLL = Not found, no per-pass unbound-native errors); a baby shows trimester 1/2/3 at progress thirds, a chaurus / spider / dwarven-oil clutch its own icon, any other clutch eggs, `IsInflated` cum inflation; nothing before implantation or for a male carrier; player and NPC slots; the Debug page lists it | slw_module_pregnancy, slw_menu |
+| 8.16 | P2 | OMania beside another pregnancy mod | With BF / FM / HP / Estrus / EggFactory / COF also installed, an icon OMania shows is not released by the other mod's "not pregnant" (`_releaseUnclaimed`), and OMania leaves the icons that mod drives to it, so no icon is dropped and reloaded every pass | slw_module_pregnancy |
 
 ## 9. Module: SexLab Parasites (SLP)
 
