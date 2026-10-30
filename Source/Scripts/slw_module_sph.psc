@@ -1,8 +1,10 @@
 Scriptname slw_module_sph extends slw_base_module
-{SPH - Skyrim Pubic Hair: the player's pubic and armpit hair length. SPH
-mirrors both stages into globals for its own menu conditions (pubic length
-0-5 with the shaving style folded in, armpit stage 0-6), so nothing is
-called into. Player only: SPH grows hair on no one else.}
+{SPH - Skyrim Pubic Hair: the player's pubic and armpit hair length, pubic
+0-5 with the shaving style folded in, armpit 0-6. Read from SPH's main quest
+script through slw_interface_sph. SPH also mirrors both into globals, but
+only when its shave and growth-cream menus open, so up to 3.4.3 the icons
+read those and never followed growth. The globals stay as the fallback when
+the quest cannot be cast. Player only: SPH's NPC hair is a separate add-on.}
 import slw_log
 import slw_util
 
@@ -13,6 +15,7 @@ Actor Property PlayerRef Auto
 
 GlobalVariable _pubicLength
 GlobalVariable _armpitStage
+Quest _sphMain
 
 String PUBIC_STATE = "SPH_Pubic"
 String ARMPIT_STATE = "SPH_Armpit"
@@ -35,16 +38,23 @@ EndFunction
 
 ;override
 Function initInterface()
-	If Module_Ready || !isSPHReady()
+	If !isSPHReady()
 		Return
 	EndIf
-	WriteLog("ModuleSPH: SPH - Skyrim Pubic Hair.esp found")
-	_pubicLength = Game.GetFormFromFile(0x000880, "SPH - Skyrim Pubic Hair.esp") as GlobalVariable
-	_armpitStage = Game.GetFormFromFile(0x000882, "SPH - Skyrim Pubic Hair.esp") as GlobalVariable
-	If _pubicLength && _armpitStage
-		Module_Ready = true
-	Else
-		WriteLog("ModuleSPH: SPH_GPubicLength / SPH_GArmpitStage not found (SPH 2.0 or newer is needed)", 2)
+	If !Module_Ready
+		WriteLog("ModuleSPH: SPH - Skyrim Pubic Hair.esp found")
+		_pubicLength = Game.GetFormFromFile(0x000880, "SPH - Skyrim Pubic Hair.esp") as GlobalVariable
+		_armpitStage = Game.GetFormFromFile(0x000882, "SPH - Skyrim Pubic Hair.esp") as GlobalVariable
+		If _pubicLength && _armpitStage
+			Module_Ready = true
+		Else
+			WriteLog("ModuleSPH: SPH_GPubicLength / SPH_GArmpitStage not found (SPH 2.0 or newer is needed)", 2)
+		EndIf
+	EndIf
+	; outside the first-detection block: a save from 3.4.3 or older is already
+	; Module_Ready without it
+	If Module_Ready && !_sphMain
+		_sphMain = Game.GetFormFromFile(0x000800, "SPH - Skyrim Pubic Hair.esp") as Quest
 	EndIf
 EndFunction
 
@@ -88,14 +98,22 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 		Return
 	EndIf
 	If config.isOn(config.module_sph_pubic)
-		Int pubicCurr = clampInt(_pubicLength.GetValue() as Int, 0, 5)
+		Int pubicCurr = slw_interface_sph.getPubicLength(_sphMain)
+		If pubicCurr < 0
+			pubicCurr = _pubicLength.GetValue() as Int
+		EndIf
+		pubicCurr = clampInt(pubicCurr, 0, 5)
 		If _pubic_prv == EMPTY || _pubic_prv != pubicCurr
 			iBars.setIconStatus(slwGetModName(), PUBIC_STATE, pubicCurr)
 			_pubic_prv = pubicCurr
 		EndIf
 	EndIf
 	If config.isOn(config.module_sph_armpit)
-		Int armpitCurr = clampInt(_armpitStage.GetValue() as Int, 0, 6)
+		Int armpitCurr = slw_interface_sph.getArmpitStage(_sphMain)
+		If armpitCurr < 0
+			armpitCurr = _armpitStage.GetValue() as Int
+		EndIf
+		armpitCurr = clampInt(armpitCurr, 0, 6)
 		If _armpit_prv == EMPTY || _armpit_prv != armpitCurr
 			iBars.setIconStatus(slwGetModName(), ARMPIT_STATE, armpitCurr)
 			_armpit_prv = armpitCurr
