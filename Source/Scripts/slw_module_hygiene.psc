@@ -35,8 +35,9 @@ blood icon. NPC blood is five ability effects by health (85, 65, 45, 25, 10
 percent), and a follower's the same effects from a potion it has them drink
 below 60 percent. An ability keeps its condition-failed effects on the actor
 flagged inactive, so those are read from the active ones only, through po3's
-GetActiveEffects (Dirt and Blood needs the Papyrus Extender anyway); the
-fifth level shares the icon's last stage.
+GetActiveEffects; without the Papyrus Extender (Dirt and Blood runs without
+it) an NPC's Dirt and Blood blood reads clean. The fifth level shares the
+icon's last stage.
 
 Wounds: Combat Wound puts each wound on as a SlaveTats tattoo of its own
 section and has Fade Tattoos take it off once faded (6 game hours by
@@ -402,6 +403,9 @@ EndFunction
 ; An NPC's Dirt and Blood blood, 0-4: the highest of its blood effects that
 ; is active
 Int Function _dnbNpcBloodStage(Actor target)
+	If !_po3
+		Return 0
+	EndIf
 	Return clampInt(_highestActive(target, _dnbNpcBlood), 0, 4)
 EndFunction
 

@@ -147,7 +147,7 @@ NPC support: **Yes**, off by default per slot.
 
 ### Dirt and Blood
 
-*Requires:* `Dirt and Blood - Dynamic Visuals.esp` (Dirt and Blood - Dynamic Visual Effects, 2.2 or newer, which brings the Papyrus Extender SL Widgets reads it through)
+*Requires:* `Dirt and Blood - Dynamic Visuals.esp` (Dirt and Blood - Dynamic Visual Effects, 2.2 or newer). An NPC's blood also needs powerofthree's Papyrus Extender
 
 Dirt and Blood shows on the same two icons as the mods above: where two mods run one icon, the worse of the two counts.
 

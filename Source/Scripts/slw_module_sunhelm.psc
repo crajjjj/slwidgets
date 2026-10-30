@@ -39,6 +39,8 @@ GlobalVariable _svEnabledShared
 GlobalVariable[] _svLevel
 GlobalVariable[] _svWorst
 GlobalVariable[] _svSwitch
+; SMI's current stage per need: -1 while its DLL has the need stopped
+GlobalVariable[] _svStage
 Quest[] _svQuest
 Float SV_WORST_DEFAULT = 800.0
 
@@ -102,40 +104,60 @@ Function initInterface()
 			WriteLog("ModuleSunHelm: a SunHelm need quest was not found (hunger " + _hungerQ + ", thirst " + _thirstQ + ", cold " + _coldQ + ", fatigue " + _fatigueQ + ")", 2)
 		EndIf
 	EndIf
-	If !Plugin_Survival && isSurvivalModeReady()
+	; every load: Survival Mode Improved can come or go mid-save, and a save
+	; from 3.4.3 or older lacks SMI's stage globals
+	If isSurvivalModeReady()
 		_initSurvival()
 	EndIf
 EndFunction
 
+; Runs on every load. Each list is filled in a local and assigned whole: an
+; update pass that wakes during the load reads the old list or the new one,
+; never one half filled
 Function _initSurvival()
+	Bool wasOn = Plugin_Survival
+	Bool wasImproved = Plugin_SurvivalImproved
 	String cc = "ccQDRSSE001-SurvivalMode.esl"
-	_svEnabled = Game.GetFormFromFile(0x000826, cc) as GlobalVariable                 ; Survival_ModeEnabled
-	_svEnabledShared = Game.GetFormFromFile(0x00314A, "Update.esm") as GlobalVariable ; Survival_ModeEnabledShared
-	_svLevel = new GlobalVariable[4]
-	_svLevel[0] = Game.GetFormFromFile(0x00081A, cc) as GlobalVariable   ; Survival_HungerNeedValue
-	_svLevel[2] = Game.GetFormFromFile(0x00081B, cc) as GlobalVariable   ; Survival_ColdNeedValue
-	_svLevel[3] = Game.GetFormFromFile(0x000816, cc) as GlobalVariable   ; Survival_ExhaustionNeedValue
-	_svQuest = new Quest[4]
-	_svQuest[0] = Game.GetFormFromFile(0x000894, cc) as Quest            ; Survival_NeedHungerQuest
-	_svQuest[2] = Game.GetFormFromFile(0x000896, cc) as Quest            ; Survival_NeedColdQuest
-	_svQuest[3] = Game.GetFormFromFile(0x000899, cc) as Quest            ; Survival_NeedExhaustionQuest
-	_svWorst = new GlobalVariable[4]
-	_svSwitch = new GlobalVariable[4]
-	; the stock scripts set hunger's stages from this global's value too
-	_svWorst[0] = Game.GetFormFromFile(0x000805, cc) as GlobalVariable   ; Survival_HungerStage5Value
-	Plugin_SurvivalImproved = isSurvivalModeImprovedReady()
-	If Plugin_SurvivalImproved
+	GlobalVariable enabled = Game.GetFormFromFile(0x000826, cc) as GlobalVariable   ; Survival_ModeEnabled
+	GlobalVariable[] level = new GlobalVariable[4]
+	level[0] = Game.GetFormFromFile(0x00081A, cc) as GlobalVariable   ; Survival_HungerNeedValue
+	level[2] = Game.GetFormFromFile(0x00081B, cc) as GlobalVariable   ; Survival_ColdNeedValue
+	level[3] = Game.GetFormFromFile(0x000816, cc) as GlobalVariable   ; Survival_ExhaustionNeedValue
+	Quest[] needQuest = new Quest[4]
+	needQuest[0] = Game.GetFormFromFile(0x000894, cc) as Quest        ; Survival_NeedHungerQuest
+	needQuest[2] = Game.GetFormFromFile(0x000896, cc) as Quest        ; Survival_NeedColdQuest
+	needQuest[3] = Game.GetFormFromFile(0x000899, cc) as Quest        ; Survival_NeedExhaustionQuest
+	GlobalVariable[] worst = new GlobalVariable[4]
+	GlobalVariable[] switches = new GlobalVariable[4]
+	GlobalVariable[] stage = None
+	; the stock scripts hard-code 770 for the worst hunger stage, which this
+	; global also holds; SMI overrides it (360) and reads it
+	worst[0] = Game.GetFormFromFile(0x000805, cc) as GlobalVariable   ; Survival_HungerStage5Value
+	Bool improved = isSurvivalModeImprovedReady()
+	If improved
 		String smi = "SurvivalModeImproved.esp"
-		_svWorst[2] = Game.GetFormFromFile(0x000D24, smi) as GlobalVariable   ; Survival_ColdStage5Value
-		_svWorst[3] = Game.GetFormFromFile(0x000A1B, smi) as GlobalVariable   ; Survival_ExhaustionStage5Value
-		_svSwitch[0] = Game.GetFormFromFile(0x000F27, smi) as GlobalVariable  ; SMI_HungerShouldBeEnabled
-		_svSwitch[2] = Game.GetFormFromFile(0x000F28, smi) as GlobalVariable  ; SMI_ColdShouldBeEnabled
-		_svSwitch[3] = Game.GetFormFromFile(0x000F29, smi) as GlobalVariable  ; SMI_ExhaustionShouldBeEnabled
+		worst[2] = Game.GetFormFromFile(0x000D24, smi) as GlobalVariable    ; Survival_ColdStage5Value
+		worst[3] = Game.GetFormFromFile(0x000A1B, smi) as GlobalVariable    ; Survival_ExhaustionStage5Value
+		switches[0] = Game.GetFormFromFile(0x000F27, smi) as GlobalVariable   ; SMI_HungerShouldBeEnabled
+		switches[2] = Game.GetFormFromFile(0x000F28, smi) as GlobalVariable   ; SMI_ColdShouldBeEnabled
+		switches[3] = Game.GetFormFromFile(0x000F29, smi) as GlobalVariable   ; SMI_ExhaustionShouldBeEnabled
+		stage = new GlobalVariable[4]
+		stage[0] = Game.GetFormFromFile(0x000A14, smi) as GlobalVariable    ; SMI_CurrentHungerStage
+		stage[2] = Game.GetFormFromFile(0x000D1E, smi) as GlobalVariable    ; SMI_CurrentColdStage
+		stage[3] = Game.GetFormFromFile(0x000A1C, smi) as GlobalVariable    ; SMI_CurrentExhaustionStage
 	EndIf
-	Plugin_Survival = _svEnabled && _svLevel[0] && _svLevel[2] && _svLevel[3]
-	If Plugin_Survival
-		WriteLog("ModuleSunHelm: Survival Mode found (Survival Mode Improved: " + Plugin_SurvivalImproved + ")")
-	Else
+	_svEnabled = enabled
+	_svEnabledShared = Game.GetFormFromFile(0x00314A, "Update.esm") as GlobalVariable ; Survival_ModeEnabledShared
+	_svQuest = needQuest
+	_svWorst = worst
+	_svSwitch = switches
+	_svStage = stage
+	_svLevel = level
+	Plugin_SurvivalImproved = improved
+	Plugin_Survival = enabled && level[0] && level[2] && level[3]
+	If Plugin_Survival && (!wasOn || wasImproved != improved)
+		WriteLog("ModuleSunHelm: Survival Mode found (Survival Mode Improved: " + improved + ")")
+	ElseIf !Plugin_Survival
 		WriteLog("ModuleSunHelm: a Survival Mode need global was not found", 2)
 	EndIf
 EndFunction
@@ -190,7 +212,13 @@ Bool Function _survivalRuns(Int need)
 	EndIf
 	If Plugin_SurvivalImproved
 		; its DLL runs the needs, the quests have no scripts left to stop
-		Return !_svSwitch[need] || _svSwitch[need].GetValue() >= 1.0
+		If _svSwitch[need] && _svSwitch[need].GetValue() < 1.0
+			Return false
+		EndIf
+		; it also stops a need whose switch is on (a vampire's hunger by its
+		; ini, a race without needs, Oblivion, jail) and leaves the value
+		; frozen; a stopped need's stage is -1, a running one's 0-5
+		Return !_svStage || !_svStage[need] || _svStage[need].GetValue() >= 0.0
 	EndIf
 	Quest q = _svQuest[need]
 	Return q && q.IsRunning()

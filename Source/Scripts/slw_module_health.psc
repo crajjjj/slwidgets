@@ -67,7 +67,10 @@ Function initInterface()
 			WriteLog("ModuleHealth: the Blade and Blunt injury spells were not found (4.0 or newer is needed)", 2)
 		EndIf
 	EndIf
-	If !_disease1
+	; again when SunHelm Diseases came or went since the lists were built: its
+	; stage 2 and 3 replace the vanilla spell, so a list without them loses a
+	; disease once it worsens
+	If !_disease1 || Plugin_SunHelmDiseases != isSunHelmDiseasesReady()
 		_resolveDiseases()
 	EndIf
 EndFunction
