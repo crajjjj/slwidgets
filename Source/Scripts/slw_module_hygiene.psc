@@ -7,8 +7,10 @@ The wound switch sits
 with the health icons on the Toggles page; it lives here because this module
 already tracks NPCs.
 
-Dirt: Renewed stores the player's dirt percent in a global and an NPC's in a
-StorageUtil float on the actor.
+Dirt: Renewed stores the player's dirt in a global and an NPC's in a
+StorageUtil float on the actor, both as a fraction from 0 to 1 (its tiers and
+its overlay alpha are on that scale), despite the global's name
+mzinDirtinessPercentage.
 
 Wetness is on the mods' own scale, 0 up to a cap (10 by default), with 1
 the level below which an actor counts as dry. The icon shows the part above
@@ -334,6 +336,8 @@ EndEvent
 ; Dirt 0-100. Renewed's own GetActorDirtPercent has no return on its NPC
 ; branch (2.7.10), so the two stores are read directly: the player's global,
 ; and the float Renewed writes on every actor it tracks (0 for the rest).
+; Both hold 0-1; read as a percent, as before 3.4.4, every value under 1.0
+; truncated to 0 and the icon never left Clean.
 Int Function getDirtPercentFor(Actor target)
 	If !Plugin_Bathing
 		Return 0
@@ -344,7 +348,7 @@ Int Function getDirtPercentFor(Actor target)
 	Else
 		pct = StorageUtil.GetFloatValue(target, "BiS_Dirtiness", 0.0)
 	EndIf
-	Return clampInt(pct as Int, 0, 100)
+	Return clampInt((pct * 100.0) as Int, 0, 100)
 EndFunction
 
 ; Wetness 0-100: (wetness - dry) / (cap - dry). NG exposes the cap but not the
