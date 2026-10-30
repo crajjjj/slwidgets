@@ -15,8 +15,11 @@ Survival Mode keeps each need's level in a global. Its own scripts stop a
 need's quest to turn the need off and hard-code the stage thresholds (the
 worst stage at hunger 770, cold 800, exhaustion 800). Survival Mode Improved
 strips those scripts and runs the needs in its DLL: there a need is on while
-the mode is and its SMI_<need>ShouldBeEnabled global is set, and its worst
-stage is its Survival_<need>Stage5Value global.}
+the mode is, its SMI_<need>ShouldBeEnabled global is set and its
+SMI_Current<need>Stage global is not -1 (the DLL also stops a need with its
+switch on: a vampire's hunger by its ini, a race without needs, Oblivion,
+jail, and leaves the level frozen), and its worst stage is its
+Survival_<need>Stage5Value global.}
 import slw_log
 import slw_util
 
@@ -108,6 +111,12 @@ Function initInterface()
 	; from 3.4.3 or older lacks SMI's stage globals
 	If isSurvivalModeReady()
 		_initSurvival()
+	ElseIf Plugin_Survival
+		; the plugin left the load order: its forms read None from now on
+		WriteLog("ModuleSunHelm: Survival Mode no longer installed")
+		Plugin_Survival = false
+		Plugin_SurvivalImproved = false
+		_svLevel = None
 	EndIf
 EndFunction
 
@@ -119,6 +128,7 @@ Function _initSurvival()
 	Bool wasImproved = Plugin_SurvivalImproved
 	String cc = "ccQDRSSE001-SurvivalMode.esl"
 	GlobalVariable enabled = Game.GetFormFromFile(0x000826, cc) as GlobalVariable   ; Survival_ModeEnabled
+	GlobalVariable enabledShared = Game.GetFormFromFile(0x00314A, "Update.esm") as GlobalVariable ; Survival_ModeEnabledShared
 	GlobalVariable[] level = new GlobalVariable[4]
 	level[0] = Game.GetFormFromFile(0x00081A, cc) as GlobalVariable   ; Survival_HungerNeedValue
 	level[2] = Game.GetFormFromFile(0x00081B, cc) as GlobalVariable   ; Survival_ColdNeedValue
@@ -147,7 +157,7 @@ Function _initSurvival()
 		stage[3] = Game.GetFormFromFile(0x000A1C, smi) as GlobalVariable    ; SMI_CurrentExhaustionStage
 	EndIf
 	_svEnabled = enabled
-	_svEnabledShared = Game.GetFormFromFile(0x00314A, "Update.esm") as GlobalVariable ; Survival_ModeEnabledShared
+	_svEnabledShared = enabledShared
 	_svQuest = needQuest
 	_svWorst = worst
 	_svSwitch = switches

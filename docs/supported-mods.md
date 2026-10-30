@@ -120,7 +120,7 @@ A need you switch off in SunHelm's own MCM drops its icon. NPC support: **No** -
 
 *Requires:* the Creation Club Survival Mode (`ccQDRSSE001-SurvivalMode.esl`, part of the Anniversary upgrade), switched on in game. Survival Mode Improved (`SurvivalModeImproved.esp`, the SKSE rewrite) works too.
 
-Survival Mode's hunger, cold and exhaustion show on the SunHelm **Food**, **Cold** and **Fatigue** icons, under the same switches; it has no thirst. Each is the need's level as a share of where its worst stage starts, as SunHelm's are: 770 hunger, 800 cold and 800 exhaustion with the stock scripts, Survival Mode Improved's own stage 5 values with it. An icon shows while the mode is on and runs that need: with the stock scripts while the need's quest runs, with Survival Mode Improved while its `SMI_<need>ShouldBeEnabled` setting is on. If SunHelm runs a need too, the icon shows SunHelm's.
+Survival Mode's hunger, cold and exhaustion show on the SunHelm **Food**, **Cold** and **Fatigue** icons, under the same switches; it has no thirst. Each is the need's level as a share of where its worst stage starts, as SunHelm's are: 770 hunger, 800 cold and 800 exhaustion with the stock scripts, Survival Mode Improved's own stage 5 values with it. An icon shows while the mode is on and runs that need: with the stock scripts while the need's quest runs, with Survival Mode Improved while its `SMI_<need>ShouldBeEnabled` setting is on and it runs the need: Survival Mode Improved also pauses a need with that setting on (a vampire's hunger with its default ini, a race without needs, Oblivion, jail), and the icon is hidden meanwhile. If SunHelm runs a need too, the icon shows SunHelm's.
 
 NPC support: **No** - Survival Mode tracks the player only.
 

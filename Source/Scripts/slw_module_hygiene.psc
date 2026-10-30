@@ -212,8 +212,10 @@ Bool Function _wetOn(Int slot)
 	Return Plugin_WetFunction && config.isOnForSlot(config.module_wetness, slot, config.MOD_WET)
 EndFunction
 
+; Dirt and Blood's NPC blood is read through the Papyrus Extender only, so
+; without it an NPC slot with Dirt and Blood alone gets no icon at all
 Bool Function _bloodOn(Int slot)
-	Return (Plugin_JustBlood || Plugin_DirtAndBlood) && config.isOnForSlot(config.module_blood, slot, config.MOD_BLOOD)
+	Return (Plugin_JustBlood || (Plugin_DirtAndBlood && (slot == 0 || _po3))) && config.isOnForSlot(config.module_blood, slot, config.MOD_BLOOD)
 EndFunction
 
 Bool Function _woundsOn(Int slot)
@@ -403,15 +405,15 @@ EndFunction
 ; An NPC's Dirt and Blood blood, 0-4: the highest of its blood effects that
 ; is active
 Int Function _dnbNpcBloodStage(Actor target)
-	If !_po3
-		Return 0
-	EndIf
 	Return clampInt(_highestActive(target, _dnbNpcBlood), 0, 4)
 EndFunction
 
 ; 1 + the index of the last effect in the list that is active on the actor,
-; 0 for none
+; 0 for none, and always 0 without the Papyrus Extender
 Int Function _highestActive(Actor target, MagicEffect[] effects)
+	If !_po3
+		Return 0
+	EndIf
 	MagicEffect[] active = PO3_SKSEFunctions.GetActiveEffects(target, false)
 	If !active
 		Return 0

@@ -16,6 +16,7 @@ Actor Property PlayerRef Auto
 GlobalVariable _pubicLength
 GlobalVariable _armpitStage
 Quest _sphMain
+Bool _sphFallbackLogged = false
 
 String PUBIC_STATE = "SPH_Pubic"
 String ARMPIT_STATE = "SPH_Armpit"
@@ -39,6 +40,12 @@ EndFunction
 ;override
 Function initInterface()
 	If !isSPHReady()
+		If Module_Ready
+			; the plugin left the load order: its forms read None from now on
+			WriteLog("ModuleSPH: SPH no longer installed")
+			Module_Ready = false
+			_sphMain = None
+		EndIf
 		Return
 	EndIf
 	If !Module_Ready
@@ -100,6 +107,7 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	If config.isOn(config.module_sph_pubic)
 		Int pubicCurr = slw_interface_sph.getPubicLength(_sphMain)
 		If pubicCurr < 0
+			_logFallback()
 			pubicCurr = _pubicLength.GetValue() as Int
 		EndIf
 		pubicCurr = clampInt(pubicCurr, 0, 5)
@@ -111,6 +119,7 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	If config.isOn(config.module_sph_armpit)
 		Int armpitCurr = slw_interface_sph.getArmpitStage(_sphMain)
 		If armpitCurr < 0
+			_logFallback()
 			armpitCurr = _armpitStage.GetValue() as Int
 		EndIf
 		armpitCurr = clampInt(armpitCurr, 0, 6)
@@ -120,6 +129,15 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 		EndIf
 	EndIf
 EndEvent
+
+; The globals change only when SPH's menus open, so a fallback to them is a
+; frozen icon: worth one line in the log
+Function _logFallback()
+	If !_sphFallbackLogged
+		_sphFallbackLogged = true
+		WriteLog("ModuleSPH: SPH_Main (quest 0x800) could not be read; the icons follow SPH's menu globals, which change only when its menus open", 1)
+	EndIf
+EndFunction
 
 Function _loadPubicIcon(iWant_Status_Bars iBars)
 	; SPH's own stage names

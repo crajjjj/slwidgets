@@ -75,9 +75,10 @@ Function initInterface()
 	EndIf
 EndFunction
 
-; The disease lists, built once: 15 vanilla spells (7 diseases incl.
-; Sanguinare Vampiris, their trap variants, Dragonborn's Droops), then
-; SunHelm Diseases when it is loaded.
+; The disease lists, built on the first load and again whenever SunHelm
+; Diseases comes or goes: 15 vanilla spells (7 diseases incl. Sanguinare
+; Vampiris, their trap variants, Dragonborn's Droops), then SunHelm Diseases
+; when it is loaded. A stage cached from the old lists is dropped.
 Function _resolveDiseases()
 	Spell[] s1 = new Spell[24]
 	Spell[] s2 = new Spell[14]
@@ -146,6 +147,7 @@ Function _resolveDiseases()
 	_disease1 = s1
 	_disease2 = s2
 	_disease3 = s3
+	_diseaseCheckedAt = -1.0
 	WriteLog("ModuleHealth: " + n1 + " disease spells resolved")
 EndFunction
 

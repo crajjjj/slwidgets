@@ -1,11 +1,11 @@
 Scriptname slw_interface_sph Hidden
-{SPH reads. slw_module_sph keeps SPH's main quest as a plain Quest, and only
-these global functions cast it to SPH_Main (stubbed in Source/ApiHeaders),
-the same pattern as slw_interface_sunhelm. SPH's globals are not the live
+{SPH's live hair stages, from its main quest passed as a plain Quest and
+cast to SPH_Main (stubbed in Source/ApiHeaders) only inside these global
+functions, so nothing that merely holds the quest needs SPH's script to
+resolve. SPH's globals SPH_GPubicLength / SPH_GArmpitStage are not the live
 state: it writes them only when its shave and growth-cream menus open (they
-exist to condition those menus' buttons), so natural growth and a finished
-shave never reach them. Both return -1 when the cast fails, and the caller
-then falls back to the global.}
+exist to condition those menus' buttons). Both return -1 when the cast
+fails.}
 
 Int Function getPubicLength(Quest q) Global
 	SPH_Main sph = q as SPH_Main
