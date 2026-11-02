@@ -6,7 +6,7 @@ Since 3.3 every SL Widgets setting lives in the [SKSE Menu Framework](https://ww
 
 ## Requirements
 
-- **SKSE Menu Framework 3.8 or newer: required.** SL Widgets starts disabled on a new game, and it is switched on here. Without the framework the mod cannot be enabled or set up in game; the MCM's General page says so.
+- **SKSE Menu Framework 3.8 or newer: required for every setting.** SL Widgets switches itself on the first time it runs (once iWant Status Bars is up), so the icons come without it, but without the framework nothing can be set up or switched off in game; the MCM's General page says so.
 - The pages themselves, `SLWidgetsMenu.dll`, ship in the SL Widgets archive under `SKSE/Plugins`. They read and write the settings the scripts hold, nothing else.
 
 ---
@@ -25,7 +25,7 @@ The game freezes while the menu is open, but the widgets keep updating, so a cha
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| **Mod enabled** | Off | Starts or stops SL Widgets. Stopping removes every icon and stops the update script; starting loads the icons switched on. A new game starts with the mod off, and the switch waits until iWant Status Bars is up (a few seconds after a load) |
+| **Mod enabled** | On (set by the mod itself the first time it runs) | Starts or stops SL Widgets. Stopping removes every icon and stops the update script; starting loads the icons switched on. On its first run the mod switches itself on once iWant Status Bars is up, and the switch waits for the same moment (a few seconds after a load) |
 | **Update interval** | 5 | Seconds between status checks (1-60). Changes that SLA, Fill Her Up or Apropos2 SE 1.0020+ report (see [Supported Mods](supported-mods.md)) are checked within a second or two whatever the interval |
 | **Color Preset** | Default | The icon colour scheme: the `.json` files in `SKSE/Plugins/SlWidgets/IconPresets/` (see [Color presets](customization.md#color-presets)) |
 

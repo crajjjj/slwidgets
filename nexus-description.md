@@ -36,8 +36,8 @@ A plugin for [b]iWant Status Bars[/b] that adds adult-mod status widgets — aro
 
 [size=5][b]🖱️ Setup[/b][/size]
 
-[b]Step 1: enable the mod[/b]
-Open the SKSE Menu Framework menu (its hotkey) → section [b]SL Widgets[/b] → [b]General[/b] → switch on [b]Mod enabled[/b]. A new game starts with the mod off. The SLWidgets MCM's General page shows [b]Enabled[/b] from then on, and says so if SKSE Menu Framework is missing.
+[b]Step 1: let it switch itself on[/b]
+The mod switches itself on the first time it runs (a new game, or the mod added to a save), once iWant Status Bars is up, with the Default settings preset. The SLWidgets MCM's General page shows [b]Enabled[/b] from then on, and says so if SKSE Menu Framework is missing. To switch it off or on later: the SKSE Menu Framework menu (its hotkey) → section [b]SL Widgets[/b] → [b]General[/b] → [b]Mod enabled[/b].
 
 [b]Step 2: place the icons[/b]
 The [b]Positions[/b] page moves and resizes iWant's bars, reorders their icons and moves icons between bars while you watch the HUD; iWant Status Bars' own MCM does the same and more.

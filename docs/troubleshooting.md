@@ -13,7 +13,7 @@
 ## Icons not appearing at all
 
 === "Check 1: mod enabled"
-    MCM → **General** must show **Enabled**. If not, switch on **Mod enabled** on the SKSE menu's [General](position-editor.md#general) page. If the MCM says SKSE Menu Framework is missing, install it: without it the mod cannot be enabled.
+    MCM → **General** must show **Enabled**. The mod switches itself on the first time it runs, once iWant Status Bars is up; if it says **Disabled**, switch on **Mod enabled** on the SKSE menu's [General](position-editor.md#general) page. If the MCM says SKSE Menu Framework is missing, install it: without it the mod cannot be set up or switched back on.
 
 === "Check 2: iWant ready"
     MCM → **Maintenance** → Dependency Check should show iWant Status Bars as **OK**. If not, confirm iWant Status Bars and iWant Widgets are installed and active, and that load order is `iwidgets → ibars → slwidgets`.

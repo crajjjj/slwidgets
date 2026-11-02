@@ -43,7 +43,7 @@ Every SexLab / pregnancy / needs integration is **optional** — install only th
 
 ## Installation
 
-Install with any mod manager (the SE build is ESL-flagged; the LE plugin also works on SE), keep the load order above, then enable and configure the mod in the SKSE Menu Framework menu, section SL Widgets. The installer asks which icon style you want, the ring set, the classic icons or the diamond badges; reinstall to switch. Step-by-step instructions: [Getting Started](https://crajjjj.github.io/slwidgets/getting-started/).
+Install with any mod manager (the SE build is ESL-flagged; the LE plugin also works on SE), keep the load order above; the mod switches itself on once iWant Status Bars is up, and its settings are in the SKSE Menu Framework menu, section SL Widgets. The installer asks which icon style you want, the ring set, the classic icons or the diamond badges; reinstall to switch. Step-by-step instructions: [Getting Started](https://crajjjj.github.io/slwidgets/getting-started/).
 
 Custom icon packs (optional `.dds`-only downloads) install the same way — see [Custom Icon Packs](https://crajjjj.github.io/slwidgets/custom-packs/).
 

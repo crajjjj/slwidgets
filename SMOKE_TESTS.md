@@ -379,3 +379,16 @@ Added in 2.3.0, never run in game when written. Set the update interval to 60 s 
 | 25.5 | P1 | Pregnancy trimester 1 / 2 / 3 | A full edge; the belly fills a third, two thirds, whole | build_diamond (glyph_frac) |
 | 25.6 | P2 | HideEmpty colour preset | Stage 0 hidden, the rest as Default | art/diamond/presets |
 | 25.7 | P1 | Reinstall with the Ring option over a Diamond install | After a game load every icon is a ring again (iWant reads the art when it makes the widgets) | build_release.ALT_STYLES |
+
+## 26. First-run auto enable (3.4.5)
+
+| # | P | Scenario | Expected | Scripts |
+|---|---|----------|----------|---------|
+| 26.1 | P0 | New game, SKSE menu never opened | A few seconds after the HUD is up the icons appear; the MCM's General page shows Enabled; the log has "first run, switching on with the Default settings preset" | slw_config.OnInit, autoEnableIfPending, slw_widget_controller.OniWantStatusBarsReady |
+| 26.2 | P0 | Mod added to a save that never had it | Same as 26.1 on that first load | slw_config.OnInit |
+| 26.3 | P0 | A save from 3.4.5 or older with the mod switched OFF by hand | Stays off after the update; no icons | _autoEnablePending stays False (no OnInit) |
+| 26.4 | P1 | Switch the mod off in the SKSE menu, save, load | Stays off: the flag is spent | _editorSetEnabled clears the flag |
+| 26.5 | P1 | SettingsPresets/Default.json removed, new game | One log line about the missing preset; the mod still switches on with its code defaults | applySettingsPreset, loadSettingsPreset |
+| 26.6 | P2 | New game without SKSE Menu Framework | The mod switches on all the same; the MCM says the framework is missing; no way to change settings | autoEnableIfPending |
+| 26.7 | P2 | iWant Status Bars not installed, new game | Nothing happens: the poll gives up after about three minutes without a log line; installing it later switches the mod on at the next load | slw_config.OnUpdate, OniWantStatusBarsReady |
+| 26.8 | P1 | The ready event missed on the first run (no way to force it; look for the log line) | Within 10 s of the bars being ready the poll adopts them by form (log "iBars adopted by form") and the mod switches on; when the event did arrive the poll logs nothing and stops | adoptBarsIfReady, slw_config.OnUpdate |

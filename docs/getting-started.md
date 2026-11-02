@@ -42,9 +42,9 @@ Open MCM → **SL Widgets** → **Maintenance** page. The dependency checklist s
 
 SL Widgets places icons into iWant Status Bars. Move and resize the bars, reorder their icons or move an icon to another bar on the SKSE menu's [Positions](position-editor.md#positions) page; iWant Status Bars' own MCM does the same and more.
 
-### 3. Enable the mod
+### 3. Let it switch itself on
 
-A new game starts with the mod disabled. On the SKSE menu's [General](position-editor.md#general) page switch on **Mod enabled**. Icons appear after the next update tick (default: 5 seconds); the MCM's General page shows **Enabled** from then on.
+Since 3.4.5 the mod switches itself on the first time it runs, on a new game or when it is added to a save, once iWant Status Bars is up (a few seconds in), with the shipped Default settings preset. Icons appear after the next update tick (default: 5 seconds); the MCM's General page shows **Enabled** from then on. To switch it off or on later, use **Mod enabled** on the SKSE menu's [General](position-editor.md#general) page.
 
 ### 4. Set up NPC tracking (optional)
 

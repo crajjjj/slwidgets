@@ -139,6 +139,27 @@ bool Function isLoaded()
 	return controller_initialised && iBars && iBars.isReady()
 EndFunction
 
+; The bars without their ready event: the script sits on quest 0x800 of
+; iWant Status Bars.esp (ESL-flagged), the very object the event's sender is.
+; Only the first-run poll uses it, for the case the event was processed before
+; this script's OnInit registered for it, or its sender did not cast; the
+; event stays the normal way in, since it also re-probes the API and restores
+; the labels and icons. True when the bars are ready, however they came.
+Bool Function adoptBarsIfReady()
+	If isLoaded()
+		Return True
+	EndIf
+	iWant_Status_Bars bars = Game.GetFormFromFile(0x000800, "iWant Status Bars.esp") As iWant_Status_Bars
+	If !bars || !bars.isReady()
+		Return False
+	EndIf
+	iBars = bars
+	_iBarsApiProbed = False
+	_iBarsApiOk = False
+	WriteLog("WidgetController: iBars adopted by form, the ready event did not deliver them")
+	Return True
+EndFunction
+
 ; True when iWant Status Bars exposes the 2.10 API (GetAPIVersion 4). The
 ; NPC-tracking layer needs getBarVisible and getBarLastChangeTime, and it
 ; needs 2.10's _findBarOfIcon fix: 2.09 and older return the wrong bar
@@ -220,6 +241,7 @@ Event OniWantStatusBarsReady(String eventName, String strArg, Float numArg, Form
 			config.loadPreset(config.activePreset)
 			_restoreNpcLabelsAndIcons()
 			_reloadIconsOnce()
+			config.autoEnableIfPending()
 		else
 			WriteLog("WidgetController: iBars cast failed from sender", 2)
 		endif

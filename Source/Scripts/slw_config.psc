@@ -138,6 +138,37 @@ Event OnInit()
 	If npcHotkey >= 0
 		RegisterForKey(npcHotkey)
 	EndIf
+	; A fresh install (a new game, or the mod added to a save): switch on once
+	; iWant Status Bars is up, see autoEnableIfPending. A save that already has
+	; this script never runs OnInit again, so one switched off by hand stays off.
+	_autoEnablePending = True
+	_autoEnablePolls = 0
+	RegisterForSingleUpdate(AUTO_ENABLE_POLL_S)
+EndEvent
+
+; The poll behind the first run: the ready event is the normal trigger, but
+; on a starved VM it can be processed before this mod's OnInit registered for
+; it, and iWant never re-sends it within a session. So for about three
+; minutes after OnInit the bars are also looked for by form
+; (adoptBarsIfReady), and whichever comes first switches the mod on; the
+; other finds the flag spent. Gives up quietly when iWant is not installed;
+; the event covers the next load then.
+Float Property AUTO_ENABLE_POLL_S = 10.0 AutoReadOnly Hidden
+Int Property AUTO_ENABLE_POLLS = 18 AutoReadOnly Hidden
+Int _autoEnablePolls = 0
+
+Event OnUpdate()
+	If !_autoEnablePending || !slw_stopped
+		Return
+	EndIf
+	If widget_controller.adoptBarsIfReady()
+		autoEnableIfPending()
+		Return
+	EndIf
+	_autoEnablePolls += 1
+	If _autoEnablePolls < AUTO_ENABLE_POLLS
+		RegisterForSingleUpdate(AUTO_ENABLE_POLL_S)
+	EndIf
 EndEvent
 
 Function _ensureSlotToggles()
@@ -1737,11 +1768,35 @@ Function _editorRequestEnabled(Bool enable)
 	_enableBusy = False
 EndFunction
 
+; The first time the mod runs (OnInit set the flag: a new game, or the mod
+; added to a save) it switches itself on here, called when iWant Status Bars
+; announces it is up: icons registered before that are lost for the session,
+; which is why the menu's switch waits for the same event. The shipped Default
+; settings preset is applied first, stored only while the mod is stopped, and
+; the enable flow sets the modules up from it. A missing preset file changes
+; nothing (loadSettingsPreset logs it) and the mod still switches on.
+Bool _autoEnablePending = False
+
+Function autoEnableIfPending()
+	If !_autoEnablePending
+		Return
+	EndIf
+	_autoEnablePending = False
+	If !slw_stopped
+		Return
+	EndIf
+	WriteLog("SLWidgets: first run, switching on with the Default settings preset")
+	applySettingsPreset("Default")
+	_editorRequestEnabled(True)
+EndFunction
+
 ; The MCM's enable and disable flows. Enabling runs while no pass does (the
 ; loop starts at the end); disabling sets slw_stopped first, so no new pass
 ; starts, as the MCM's flow did.
 Function _editorSetEnabled(Bool enable)
 	slw_widget_controller wc = widget_controller
+	; a switch by hand supersedes the first-run one
+	_autoEnablePending = False
 	slw_stopped = !enable
 	If enable
 		moduleReset()

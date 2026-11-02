@@ -36,8 +36,8 @@ Notes:
 
 🖱️ Setup
 
-Step 1: enable the mod
-Open the SKSE Menu Framework menu (its hotkey) → section SL Widgets → General → switch on Mod enabled. A new game starts with the mod off. The SLWidgets MCM's General page shows Enabled from then on, and says so if SKSE Menu Framework is missing.
+Step 1: let it switch itself on
+The mod switches itself on the first time it runs (a new game, or the mod added to a save), once iWant Status Bars is up, with the Default settings preset. The SLWidgets MCM's General page shows Enabled from then on, and says so if SKSE Menu Framework is missing. To switch it off or on later: the SKSE Menu Framework menu (its hotkey) → section SL Widgets → General → Mod enabled.
 
 Step 2: place the icons
 The Positions page moves and resizes iWant's bars, reorders their icons and moves icons between bars while you watch the HUD; iWant Status Bars' own MCM does the same and more.

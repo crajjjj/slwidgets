@@ -123,8 +123,25 @@ user, 2026-10-27: "make it informational only"). It shows General (the
 enabled state, whether SKSE Menu Framework and this DLL are loaded, through
 `SKSE.GetPluginVersion` of `SKSEMenuFramework` / `SLWidgetsMenu`) and
 Maintenance (the dependency check). The mod starts disabled
-(`slw_stopped = True`), so SKSE Menu Framework is a HARD requirement: without
-it nothing can be enabled. A setting that moves leaves the MCM in the same
+(`slw_stopped = True`) and, since 3.4.5, switches itself on ONCE per install:
+`slw_config.OnInit` (a new game, or the mod added to a save; a save that has
+the script never runs it again, so one switched off by hand stays off) sets
+`_autoEnablePending`, and the controller's `OniWantStatusBarsReady` handler
+calls `config.autoEnableIfPending()`, which applies the shipped Default
+settings preset (stored only, the mod still stopped) and runs the menu's
+enable flow (`_editorRequestEnabled(True)`). It hangs off the ready event
+because icons registered before iWant is up are lost for the session, the
+same reason the menu's switch waits for it, and `iBars` is only ever set
+from that event (iWant re-sends it on every load, so a missed one costs a
+load, not the install); a switch by hand clears the flag. A poll backs the
+event for the first run only: `OnInit` also starts `slw_config.OnUpdate`
+(10 s, 18 tries), which asks `slw_widget_controller.adoptBarsIfReady()` to
+resolve the bars by form (quest 0x800 of `iWant Status Bars.esp`, ESL, the
+object the event's sender is) when the event has not delivered them, since
+a starved VM can process the event before this mod's `OnInit` registered
+and iWant never re-sends it within a session. So SKSE Menu
+Framework is required for every SETTING and for switching the mod off or
+back on, but a fresh install shows its icons without it. A setting that moves leaves the MCM in the same
 release ("no deferred work"). `OnConfigOpen` rebuilds `Pages` on every open,
 so a changed page list needs no save migration. Pages, in menu order:
 
