@@ -50,6 +50,22 @@ fully visible. Reinstall to switch styles.
               </typeDescriptor>
             </plugin>
 
+            <plugin name="Diamond icons">
+              <description>
+Every icon as a HUD badge: the glyph, drawn solid, on a translucent diamond
+whose edge fills clockwise from the top corner as the value worsens, in the
+same white-to-red tint as the ring set (it ships the same Default and
+HideEmpty colour presets). Drawn for every set. Reinstall to switch styles.
+              </description>
+              <image path="fomod\diamond.png" />
+              <files>
+                <folder source="03 Diamond Icons" destination="" priority="1" />
+              </files>
+              <typeDescriptor>
+                <type name="Optional" />
+              </typeDescriptor>
+            </plugin>
+
           </plugins>
         </group>
       </optionalFileGroups>

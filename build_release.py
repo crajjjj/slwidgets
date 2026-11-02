@@ -13,10 +13,13 @@ build_icons.py. The version comes from slw_util.GetVersionString(). It writes
     01 Ring Icons/     the ring library and the ring Default / HideEmpty presets
     02 Classic Icons/  art/classic: the hand-drawn classic art, the sets
                        build_icons.py draws in the classic look, the classic presets
+    03 Diamond Icons/  art/diamond: the diamond style build_icons.py draws for every
+                       set, with its copy of the ring presets (ALT_STYLES lists these)
 
-Either option installs a COMPLETE library (nothing is overlaid any more), so
-the classic library must hold exactly the ring library's files; the packager
-refuses otherwise. Until 3.3.0 the classic icons were a separate overlay zip.
+Every option installs a COMPLETE library (nothing is overlaid any more), so
+each other style's library must hold exactly the ring library's files; the
+packager refuses otherwise. Until 3.3.0 the classic icons were a separate
+overlay zip.
 """
 import os
 import re
@@ -29,7 +32,13 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 LIB_REL = "Interface/exported/widgets/iwant/widgets/library"
 PRESETS_REL = "SKSE/Plugins/SlWidgets/IconPresets"
 STYLE_PRESETS = ("Default.json", "HideEmpty.json")  # the presets an icon style owns
-CLASSIC = os.path.join(ROOT, "art", "classic")
+RING_FOLDER = "01 Ring Icons"
+# the other icon styles: (folder in the archive, source under art/ holding
+# library/ and presets/); ModuleConfig.xml names the archive folders
+ALT_STYLES = (
+    ("02 Classic Icons", os.path.join(ROOT, "art", "classic")),
+    ("03 Diamond Icons", os.path.join(ROOT, "art", "diamond")),
+)
 FOMOD = os.path.join(ROOT, "fomod")
 
 
@@ -83,8 +92,8 @@ def check_dds_headers():
     """Every shipped texture must carry a spec header (savedds.py says which
     fields and why): the 3.0.0 / 3.0.1 icons did not and drew as streaks in
     the Flash iWant Widgets."""
-    bad = savedds.off_spec([os.path.join(ROOT, LIB_REL.replace("/", os.sep)),
-                            os.path.join(CLASSIC, "library")])
+    bad = savedds.off_spec([os.path.join(ROOT, LIB_REL.replace("/", os.sep))] +
+                           [os.path.join(src, "library") for _, src in ALT_STYLES])
     if bad:
         raise SystemExit(f"{len(bad)} .dds files have an off-spec header (e.g. "
                          f"{os.path.relpath(bad[0], ROOT)}): python savedds.py --fix <folder>")
@@ -124,16 +133,20 @@ def library_files(root):
     return out
 
 
-def check_classic_complete():
-    """The installer's Classic option replaces the ring library outright, so the
-    classic library must hold the same files: a missing one would be a missing
+def check_styles_complete():
+    """An installer option replaces the ring library outright, so every other
+    style's library must hold the same files: a missing one would be a missing
     icon, not a fallback to the ring art (build_icons.py draws the generated sets)."""
     ring = library_files(os.path.join(ROOT, LIB_REL.replace("/", os.sep)))
-    classic = library_files(os.path.join(CLASSIC, "library"))
-    missing, extra = sorted(ring - classic), sorted(classic - ring)
-    if missing or extra:
-        raise SystemExit(f"classic library: {len(missing)} files missing (e.g. {missing[:3]}), "
-                         f"{len(extra)} not in the ring library (e.g. {extra[:3]}): run build_icons.py")
+    for folder, src in ALT_STYLES:
+        other = library_files(os.path.join(src, "library"))
+        missing, extra = sorted(ring - other), sorted(other - ring)
+        if missing or extra:
+            raise SystemExit(f"{folder}: {len(missing)} files missing (e.g. {missing[:3]}), "
+                             f"{len(extra)} not in the ring library (e.g. {extra[:3]}): run build_icons.py")
+        for n in STYLE_PRESETS:
+            if not os.path.exists(os.path.join(src, "presets", n)):
+                raise SystemExit(f"{folder}: no presets/{n}: run build_icons.py")
 
 
 def stamped_info_xml(ver):
@@ -160,12 +173,13 @@ def write_fomod(pyro_zip, ver, out):
                 continue
             name = info.filename.replace("\\", "/")
             style = (name.startswith(lib_prefix) and not name.startswith(lib_prefix + "misc/")) or name in style_presets
-            z.writestr(("01 Ring Icons/" if style else "00 Core/") + name, src.read(info))
-        lib = os.path.join(CLASSIC, "library")
-        for p in walk(lib):
-            z.write(p, "02 Classic Icons/" + LIB_REL + "/" + os.path.relpath(p, lib).replace(os.sep, "/"))
-        for n in STYLE_PRESETS:
-            z.write(os.path.join(CLASSIC, "presets", n), f"02 Classic Icons/{PRESETS_REL}/{n}")
+            z.writestr((RING_FOLDER + "/" if style else "00 Core/") + name, src.read(info))
+        for folder, src_dir in ALT_STYLES:
+            lib = os.path.join(src_dir, "library")
+            for p in walk(lib):
+                z.write(p, f"{folder}/{LIB_REL}/" + os.path.relpath(p, lib).replace(os.sep, "/"))
+            for n in STYLE_PRESETS:
+                z.write(os.path.join(src_dir, "presets", n), f"{folder}/{PRESETS_REL}/{n}")
         z.writestr("fomod/info.xml", stamped_info_xml(ver))
         for fn in sorted(os.listdir(FOMOD)):
             if fn != "info.xml":
@@ -175,7 +189,8 @@ def write_fomod(pyro_zip, ver, out):
 
 def check_fomod(path):
     """Every folder and image ModuleConfig.xml names is in the archive, Core
-    holds no icon textures, and the two style folders hold the same file set."""
+    holds no icon textures, every style folder ModuleConfig.xml offers is one
+    this packager wrote, and the style folders hold the same file set."""
     with zipfile.ZipFile(path) as z:
         names = [n.replace("\\", "/") for n in z.namelist()]
         root = ET.fromstring(z.read("fomod/ModuleConfig.xml"))
@@ -189,18 +204,26 @@ def check_fomod(path):
     core = [n for n in names if n.startswith("00 Core/")]
     if any(n.startswith("00 Core/" + LIB_REL + "/") and "/misc/" not in n for n in core):
         raise SystemExit("00 Core holds icon textures; the style folders should")
-    ring = {n.split("/", 1)[1] for n in names if n.startswith("01 Ring Icons/") and n.endswith(".dds")}
-    classic = {n.split("/", 1)[1] for n in names if n.startswith("02 Classic Icons/") and n.endswith(".dds")}
-    if ring != classic:
-        raise SystemExit("the two icon style folders hold different texture sets")
-    print(f"fomod ok: {len(core)} core files, {len(ring)} textures per style")
+    styles = [RING_FOLDER] + [folder for folder, _ in ALT_STYLES]
+    offered = {el.get("source") for el in root.iter("folder")} - {"00 Core"}
+    if offered != set(styles):
+        raise SystemExit(f"ModuleConfig.xml offers {sorted(offered)}, the packager wrote {styles}")
+
+    def textures(folder):
+        return {n.split("/", 1)[1] for n in names if n.startswith(folder + "/") and n.endswith(".dds")}
+
+    ring = textures(RING_FOLDER)
+    for folder in styles[1:]:
+        if textures(folder) != ring:
+            raise SystemExit(f"{folder} holds a different texture set than {RING_FOLDER}")
+    print(f"fomod ok: {len(core)} core files, {len(ring)} textures per style, {len(styles)} styles")
 
 
 def main():
     ver = version()
     check_dds_headers()
     check_translations()
-    check_classic_complete()
+    check_styles_complete()
     out_dir = os.path.join(ROOT, "Build")
     os.makedirs(out_dir, exist_ok=True)
     pyro_zip = os.path.join(out_dir, "SLWidgets.zip")

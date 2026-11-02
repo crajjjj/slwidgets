@@ -32,6 +32,13 @@ produces a `.pex` that mismatches at runtime with no compile-time warning:
   real Fertility Mode variant (3.0.1 and Reloaded) ships `float[]`. A Fertility
   Mode source folder must be imported BEFORE `fmPlus`, or `hasFMSperm()` throws
   "Mismatched types" on every widget update for FM3 users.
+- **BeeingFemale NG**: the ppj imports the BF NG repo's `dist\Core\source\scripts`
+  (live, not a release extract), and `slw_interface_bf` compiles against its
+  `FWController`, which pulls `FWSystem`. Since BF 3.6 that references
+  `SexlabRegistry` (SexLab P+), so a P+ `Source\Scripts` folder must be
+  imported AFTER classic SexLab (classic keeps winning the shared script
+  names, as before); without it Pyro fails with "variable SexLabRegistry is
+  undefined" in FWSystem.psc (3.4.5 build).
 
 ### Release archive (3.4.0+: one FOMOD)
 
@@ -40,14 +47,16 @@ a flat tree; run the plugin build first, since the zip packs the DLL) into
 `Build/SLWidgets <version>.zip`, a FOMOD whose one choice is the icon style:
 `00 Core` (everything but the icon library and the Default / HideEmpty
 presets), `01 Ring Icons`, `02 Classic Icons` (`art/classic/library` +
-`art/classic/presets`). The installer XML and the two preview images live in
-`fomod/` (`build_icons.py --sheet` draws the images; the packager stamps the
-version into `info.xml`, the tracked file included). Either option installs a
-COMPLETE library, so the packager refuses a classic library that does not
-mirror the ring one file for file. It also checks the DLL version, every DDS
-header and the translation files. The user asked for the FOMOD on 2026-10-27
-(having turned one down for 3.0.0); until 3.3.0 the classic icons were a
-separate overlay zip.
+`art/classic/presets`) and, since 3.4.5, `03 Diamond Icons` (`art/diamond`,
+the same layout; `build_release.ALT_STYLES` lists the non-ring styles). The
+installer XML and the preview images live in `fomod/` (`build_icons.py
+--sheet` draws the images; the packager stamps the version into `info.xml`,
+the tracked file included). Every option installs a COMPLETE library, so the
+packager refuses a style library that does not mirror the ring one file for
+file, and a `ModuleConfig.xml` that offers a folder it did not write. It also
+checks the DLL version, every DDS header and the translation files. The user
+asked for the FOMOD on 2026-10-27 (having turned one down for 3.0.0); until
+3.3.0 the classic icons were a separate overlay zip.
 ### Icons (3.0.0+)
 
 `python build_icons.py` (Pillow 11.2+ and resvg-py) draws every set under
@@ -69,6 +78,23 @@ ring sweeps (`build(..., glyph_frac=1.0)`; `sunhelm/cold` also has a glyph list
 but keeps the bottom-up fill). `fillStageColors` in `slw_util` is the same ramp as the code default of
 every 3.0.0 icon. `build_willpower_icon.py` now writes the classic brain into
 `art/classic`.
+
+The **diamond style** (3.4.5, the user's ask from a HUD screenshot of status
+effects in diamonds with their values above: "this style as a third option")
+is `build_diamond` in the same script, drawn for EVERY set into
+`art/diamond/library` from the same glyphs: the glyph solid on a translucent
+diamond plate whose edge sweeps clockwise from the top corner with the stage
+(round caps, no arrowhead); toggle icons keep a full edge and fill the glyph
+as the ring does (trimesters, gems); a badge (FHU vaginal / anal / oral) sits
+under a smaller main glyph, centred, since a diamond has no room at a corner.
+The reference's DARK plate is impossible: iWant colours a widget with Flash
+`ColorTransform.rgb` (one flat colour over every opaque pixel, `setColor` in
+`iWantWidgets.as`; the Prisma renderer reproduces it), so only the alpha
+channel distinguishes plate from glyph and the plate is the tint at
+`DIAMOND_PLATE_A` (100/255). The values above the icons were NOT built: they
+would be per-icon text widgets following iWant's seats (the `_placeIdleStages`
+geometry could place them) fed with percents only some modules have. The
+style ships the ring's two presets as its own copy (`art/diamond/presets`).
 
 Every `.dds` is written through `savedds.save_dxt5`, never `Image.save`:
 Pillow's DDS writer puts `(width + 3) * 4` in `dwPitchOrLinearSize` and 32 in
@@ -362,12 +388,12 @@ Script properties filled via the Creation Kit (CK) in the ESP/ESM must NOT be re
 | `Source/Scripts/slw_module_stress.psc` | 3.0.0: Stress and Fear stress global + phobia count, player only; its toggles are `module_saf_stress` / `module_saf_fear` because `module_stress` is the module object property |
 | `Source/Scripts/slw_module_health.psc` | 3.0.0: Blade and Blunt injury spells (4 stages) + worst disease stage over vanilla (Sanguinare included) and SunHelm Diseases spells, player only. `isInterfaceActive()` is always true (vanilla diseases), so the disease icon shows only while a disease is held, and its 50-spell scan is cached 20 s (the phobia count in `slw_module_stress` 15 s) |
 | `Source/ApiHeaders/*.psc` | Compile-only headers, imported by the ppj but never built into `Scripts`: stubs for foreign script types cast at runtime (SGO4, SunHelm: only the members SL Widgets reads, `extends Quest`; the cast resolves by script name in game) and the global-native APIs of DLL mods (Estrus Unified, WetFunction NG, OMania: `Hidden` scripts of `Global Native` functions, signatures byte-identical to the mod's own source). The real mods ship these scripts, so a stub must never reach `Scripts` or the zip |
-| `build_icons.py` | 3.0.0: draws the whole icon set into `Interface/.../library/` from `art/ring/glyphs/*.svg` (needs `pip install pillow resvg-py`), the classic look of the sets new in 3.0.0 into `art/classic/library` (3.4.0), the shipped Default / HideEmpty presets from its ramp; adds the new keys to the white presets and to the classic presets; `--sheet` renders the overviews `docs/assets/ring-style.png` and `classic-style.png` (the classic set, tinted with the classic Default preset but shown in full) and the `fomod/` preview images |
+| `build_icons.py` | 3.0.0: draws the whole icon set into `Interface/.../library/` from `art/ring/glyphs/*.svg` (needs `pip install pillow resvg-py`), the classic look of the sets new in 3.0.0 into `art/classic/library` (3.4.0), the diamond style of every set into `art/diamond/library` (3.4.5), the shipped Default / HideEmpty presets from its ramp (the diamond's copy too); adds the new keys to the white presets and to the classic presets; `--sheet` renders the overviews `docs/assets/ring-style.png`, `classic-style.png` (the classic set, tinted with the classic Default preset but shown in full) and `diamond-style.png`, and the `fomod/` preview images |
 | `art/ring/draw_custom_glyphs.py` | Writes the hand-drawn glyphs (vulva, anus, ovum, belly, sperm, sun, snowflake) into `art/ring/glyphs/`; the rest are game-icons.net files (CC BY 3.0, credits in `art/ring/glyphs/CREDITS.md`) |
 | `plugin/` | 3.1.0+: `SLWidgetsMenu.dll`, the SKSE menu pages (xmake + CommonLibSSE-NG, SKSE Menu Framework). `SettingsPage.cpp` (General, Meters, NPC Tracking) / `TogglesPage.cpp` / `PositionsPage.cpp` / `PresetsPage.cpp` the pages, `Layout.cpp` the layout string's model, `Translations.cpp` the MCM strings, `Bridge.cpp` the Papyrus calls, `Env.cpp` the export probe |
 | `Source/Scripts/slw_bridge.psc` | 3.1.0: the global functions the DLL calls; forwards to the `editor*` functions at the end of `slw_widget_controller`. Signatures are an interface |
-| `build_release.py` | 3.4.0: builds the FOMOD `Build/SLWidgets <version>.zip` from Pyro's zip + `art/classic` + `fomod/`, after checking the DLL version, the DDS headers, the translation files and that the classic library mirrors the ring one; run after the plugin and Papyrus builds |
-| `fomod/` | 3.4.0: `info.xml` (version stamped by the packager), `ModuleConfig.xml` (Core + the icon style choice), `ring.png` / `classic.png` previews |
+| `build_release.py` | 3.4.0: builds the FOMOD `Build/SLWidgets <version>.zip` from Pyro's zip + the `ALT_STYLES` folders (`art/classic`, `art/diamond`) + `fomod/`, after checking the DLL version, the DDS headers, the translation files and that every style library mirrors the ring one; run after the plugin and Papyrus builds |
+| `fomod/` | 3.4.0: `info.xml` (version stamped by the packager), `ModuleConfig.xml` (Core + the icon style choice), `ring.png` / `classic.png` / `diamond.png` previews |
 | `tools/esp/SlwEsp/` | Mutagen (dotnet 9) tool that registers module scripts in `SLWidgets.esp` (script on the modules quest + object property on `slw_config`); idempotent, keeps a `.bak` |
 | `build_willpower_icon.py` | Draws the classic brain icon of the willpower bar into `art/classic/library/slove/`; the shipped one comes from `build_icons.py` |
 | `Interface/Translations/SLWidgets_*.txt` | MCM translation strings (10 languages) |

@@ -58,10 +58,15 @@ def stock_img(rel):
 
 
 CLASSIC_LIB = os.path.join(ROOT, "art", "classic", "library")
+DIAMOND_LIB = os.path.join(ROOT, "art", "diamond", "library")
 
 
 def classic_img(rel):
     return Image.open(os.path.join(CLASSIC_LIB, rel.replace("/", os.sep)))
+
+
+def diamond_img(rel):
+    return Image.open(os.path.join(DIAMOND_LIB, rel.replace("/", os.sep)))
 
 
 def variant_img(v, rel, suffix_rel):
@@ -69,6 +74,8 @@ def variant_img(v, rel, suffix_rel):
         return stock_img(rel)
     if v["src"] == "classic":
         return classic_img(rel)
+    if v["src"] == "diamond":
+        return diamond_img(rel)
     return pack_img(v["zip"], suffix_rel)
 
 
@@ -98,6 +105,8 @@ def fig(fn, alt, caption):
 def variant_heading(v):
     if v.get("file"):
         w(f"### {v['label']}: `{v['file']}`\n")
+    elif v.get("option"):
+        w(f"### {v['label']}: the installer's {v['option']} option\n")
     else:
         w(f"### {v['label']}: built in (default)\n")
     bits = []
@@ -155,11 +164,12 @@ w(
     "Download the file named in each heading below.\n"
 )
 w(
-    "!!! note \"Built-in and classic icons\"\n"
+    "!!! note \"Built-in, classic and diamond icons\"\n"
     "    Since 3.0.0 the built-in icons are one drawn ring set (see "
     "[Icon styles](customization.md#icon-styles)). The icons from before 3.0.0 are the "
-    "**SLWidgets Classic Icons** download, shown below as the classic option of each set. "
-    "A pack replaces the same files either way, so it lays over both.\n"
+    "**Classic icons** option of the installer, and since 3.4.5 the **Diamond icons** are its third "
+    "option; both are shown below for each set. A pack replaces the same files whichever style is "
+    "installed, so it lays over all three.\n"
 )
 w(
     "!!! note \"Installing a pack\"\n"
@@ -179,10 +189,11 @@ stage_group(
     [
         {"key": "stock", "label": "Ring heart", "src": "stock",
          "desc": "The arousal icon SL Widgets ships since 3.0.0."},
-        {"key": "classic", "label": "Classic heart", "src": "classic",
-         "file": "SLWidgets Classic Icons",
+        {"key": "classic", "label": "Classic heart", "src": "classic", "option": "Classic",
          "desc": "The icon from before 3.0.0. The heart alone is also the file "
                  "SLW_Custom_Pack_Alternative_arousalHeart."},
+        {"key": "diamond", "label": "Diamond heart", "src": "diamond", "option": "Diamond",
+         "desc": "The heart on a diamond badge (3.4.5)."},
         {"key": "face", "label": "Face", "src": "zip",
          "file": "SLW_Custom_Pack_Arousal_face",
          "zip": find_zip("SLW_Custom_Pack_Arousal_face*.zip"), "suffix": "sla/arousal/aroused"},
@@ -201,7 +212,8 @@ stage_group(
     9,
     [
         {"key": "stock", "label": "Ring", "src": "stock"},
-        {"key": "classic", "label": "Classic", "src": "classic", "file": "SLWidgets Classic Icons"},
+        {"key": "classic", "label": "Classic", "src": "classic", "option": "Classic"},
+        {"key": "diamond", "label": "Diamond", "src": "diamond", "option": "Diamond"},
         {"key": "alt", "label": "Alternative", "src": "zip",
          "file": "SLW_Custom_Pack_Alternative_FHU_total",
          "desc": "Also bundles an alternative cum-inflation (pregnancy) icon.",
@@ -226,7 +238,8 @@ toggle_group(
     ],
     [
         {"key": "stock", "label": "Ring", "src": "stock"},
-        {"key": "classic", "label": "Classic", "src": "classic", "file": "SLWidgets Classic Icons"},
+        {"key": "classic", "label": "Classic", "src": "classic", "option": "Classic"},
+        {"key": "diamond", "label": "Diamond", "src": "diamond", "option": "Diamond"},
         {"key": "alt", "label": "Alternative", "src": "zip",
          "file": "SLWidgets_Alternative_Pregnancy_Widgets",
          "zip": find_zip("SLWidgets_Alternative_Pregnancy_Widgets*.zip")},

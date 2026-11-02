@@ -1,7 +1,7 @@
 # Icon Gallery
 
 
-The icons SL Widgets can display, grouped by source mod. **Stage icons** fill through their steps (most have 9: 0 = empty, 8 = full) as a value rises; only a few representative steps are shown here. **Toggle icons** simply appear when their condition is active and vanish when it clears. Since 3.0.0 the whole set is drawn in one ring style; the classic icons are an optional download.
+The icons SL Widgets can display, grouped by source mod. **Stage icons** fill through their steps (most have 9: 0 = empty, 8 = full) as a value rises; only a few representative steps are shown here. **Toggle icons** simply appear when their condition is active and vanish when it clears. Since 3.0.0 the whole set is drawn in one ring style; the installer also offers the classic icons and, since 3.4.5, the diamond icons.
 
 
 !!! note
@@ -471,8 +471,10 @@ Progression as soul gems mature.
 
 ## The whole set
 
-Since 3.0.0 every icon is drawn in one style: a progress ring around a glyph, tinted white to red as the value worsens (milk and lactacid keep one colour). The icons from before 3.0.0 are the installer's **Classic icons** option, and since 3.4.0 they cover every set. See [Icon styles](customization.md#icon-styles).
+Since 3.0.0 every icon is drawn in one style: a progress ring around a glyph, tinted white to red as the value worsens (milk and lactacid keep one colour). The icons from before 3.0.0 are the installer's **Classic icons** option, and since 3.4.0 they cover every set; since 3.4.5 the installer also offers the **Diamond icons**, every icon as a badge on a diamond. See [Icon styles](customization.md#icon-styles).
 
 ![The ring icon set](assets/ring-style.png)
 
 ![The classic icon set](assets/classic-style.png)
+
+![The diamond icon set](assets/diamond-style.png)

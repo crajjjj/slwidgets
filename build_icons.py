@@ -1,8 +1,10 @@
-"""Draw the SL Widgets icon set (the "ring" style) and the presets that go with it.
+"""Draw the SL Widgets icon set (the "ring" style), the diamond style, and the
+presets that go with them.
 
     python build_icons.py            # writes every .dds, plus the colour presets
-    python build_icons.py --sheet    # also the overviews docs/assets/ring-style.png and
-                                     # classic-style.png, and the fomod/ preview images
+    python build_icons.py --sheet    # also the overviews docs/assets/ring-style.png,
+                                     # classic-style.png and diamond-style.png, and
+                                     # the fomod/ preview images
 
 One icon = a progress ring around a glyph. The ring sweeps clockwise from
 12 o'clock as the stage rises and ends in an arrowhead; the glyph is an
@@ -13,6 +15,11 @@ tint (the colour presets) does the colouring. The ramp the set is drawn for,
 white -> ice blue -> violet -> magenta -> red (palette A, 3.4.0), becomes the
 shipped Default colour preset; the classic style keeps the 3.0 ramp.
 
+The diamond style (3.4.5, the installer's third option) is drawn from the same
+glyphs for every set: the glyph solid on a translucent diamond plate whose edge
+sweeps with the stage; see the DIAMOND_* constants for why the plate is
+translucent rather than dark.
+
 Where things go:
   art/ring/glyphs/*.svg        the glyphs (game-icons.net + hand-drawn, see CREDITS.md)
   Interface/.../library/...    the icons the mod ships, every set
@@ -21,6 +28,8 @@ Where things go:
   art/classic/presets/         the classic Default / HideEmpty presets (packed by
                                build_release.py with art/classic/library) gain the
                                3.0.0 icons' keys with the classic alphas
+  art/diamond/library/         the diamond icons, every set, and in art/diamond/presets
+                               the ring's Default / HideEmpty again (the style's own copy)
 
 The classic art under art/classic/library is not touched by this script.
 Needs Pillow 11.2+ (DXT5 writer) and resvg-py:  pip install pillow resvg-py
@@ -63,6 +72,20 @@ CLASSIC_GLYPH = 0.86 * S
 CLASSIC_OUTLINE_W = 0.06 * S
 CLASSIC_LIB = os.path.join(ROOT, "art", "classic", "library")
 FOMOD = os.path.join(ROOT, "fomod")
+# the diamond look (3.4.5), the installer's third style, generated for every set:
+# the glyph drawn solid on a translucent diamond plate whose edge sweeps
+# clockwise from the top corner as the stage rises (the ring's progress on a
+# square set on its corner). iWant paints a widget ONE flat colour (Flash
+# ColorTransform.rgb, which the Prisma renderer reproduces), so the plate
+# cannot be the dark backing a HUD badge usually has: it is the tint at
+# DIAMOND_PLATE_A over the game, the glyph and the swept edge the tint in full.
+DIAMOND_R = 0.47 * S             # centre to corner
+DIAMOND_W = 0.042 * S            # edge stroke
+DIAMOND_PLATE_A = 100            # alpha of the plate, 0-255
+DIAMOND_GLYPH = 1.02 * DIAMOND_R  # glyph box; a square's corners just clear the edge
+DIAMOND_BADGE = 0.52 * DIAMOND_R
+DIAMOND_LIB = os.path.join(ROOT, "art", "diamond", "library")
+DIAMOND_PRESETS = os.path.join(ROOT, "art", "diamond", "presets")
 
 # the tint the set is drawn for, per stage 0..8: r, g, b, and iWant alpha 0-100
 # palette A (3.4.0): white > ice blue > violet > magenta > red, picked so the set
@@ -187,6 +210,79 @@ def build(glyph, frac, badge=None, full_ring=False, classic=False, glyph_frac=No
     a = ImageChops.lighter(ring, lay).resize((FINAL, FINAL), Image.LANCZOS)
     icon = Image.new("RGBA", (FINAL, FINAL), (255, 255, 255, 0))
     icon.putalpha(a)
+    return icon
+
+
+# ---- the diamond look -----------------------------------------------------------
+def diamond_points(r, c=S / 2):
+    return [(c, c - r), (c + r, c), (c, c + r), (c - r, c)]
+
+
+def diamond_edge_layer(frac, full_edge):
+    """The diamond's edge: the track at TRACK_A, the swept part in full from the
+    top corner clockwise, round caps (the ring's arrowhead reads badly on a
+    straight edge)."""
+    lay = Image.new("L", (S, S), 0)
+    d = ImageDraw.Draw(lay)
+    pts = diamond_points(DIAMOND_R)
+    closed = pts + [pts[0]]
+    w = int(DIAMOND_W)
+    if full_edge or frac >= 1.0:
+        d.line(closed, fill=255, width=w, joint="curve")
+        return lay
+    d.line(closed, fill=TRACK_A, width=w, joint="curve")
+    if frac <= 0:
+        return lay
+    left = frac * 4 * DIAMOND_R * math.sqrt(2)
+    path = [pts[0]]
+    for a, b in zip(closed, closed[1:]):
+        seg = math.dist(a, b)
+        if left >= seg:
+            path.append(b)
+            left -= seg
+        else:
+            t = left / seg
+            path.append((a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t))
+            break
+    d.line(path, fill=255, width=w, joint="curve")
+    hw = DIAMOND_W / 2
+    for x, y in (path[0], path[-1]):
+        d.ellipse((x - hw, y - hw, x + hw, y + hw), fill=255)
+    return lay
+
+
+def diamond_plate_layer():
+    lay = Image.new("L", (S, S), 0)
+    inset = DIAMOND_R - DIAMOND_W * math.sqrt(2) / 2   # up to the stroke's inner side
+    ImageDraw.Draw(lay).polygon(diamond_points(inset), fill=DIAMOND_PLATE_A)
+    return lay
+
+
+def build_diamond(glyph, frac, badge=None, full_edge=False, glyph_frac=1.0):
+    """One diamond icon as RGBA FINALxFINAL, white on transparent.
+
+    frac: the edge's sweep. glyph_frac: the glyph's fill, 1.0 = solid (every
+    stage set), below that the ring style's outline filled from the bottom (the
+    toggle icons that grow: trimesters, gems). badge: a second glyph, smaller,
+    under the first (the ring style's "<" for a left badge is accepted: the
+    diamond has room only at the centre).
+    """
+    if badge and badge.startswith("<"):
+        badge = badge[1:]
+    gsize = DIAMOND_GLYPH * (0.78 if badge else 1.0)
+    mask = glyph_mask(glyph, gsize)
+    g = mask if glyph_frac >= 1.0 else glyph_layer(mask, glyph_frac)
+    lay = Image.new("L", (S, S), 0)
+    off = int((S - gsize) / 2)
+    lay.paste(g, (off, off - (int(DIAMOND_R * 0.18) if badge else 0)))
+    if badge:
+        bl = Image.new("L", (S, S), 0)
+        bl.paste(glyph_mask(badge, DIAMOND_BADGE),
+                 (int(S / 2 - DIAMOND_BADGE / 2), int(S / 2 + DIAMOND_R * 0.26)))
+        lay = ImageChops.lighter(lay, bl)
+    a = ImageChops.lighter(ImageChops.lighter(diamond_plate_layer(), diamond_edge_layer(frac, full_edge)), lay)
+    icon = Image.new("RGBA", (FINAL, FINAL), (255, 255, 255, 0))
+    icon.putalpha(a.resize((FINAL, FINAL), Image.LANCZOS))
     return icon
 
 
@@ -335,13 +431,17 @@ DEFAULT_A = [100] * 9
 
 
 def write_presets():
-    # the shipped Default and HideEmpty are the ring ramp, in full
+    # the shipped Default and HideEmpty are the ring ramp, in full; the diamond
+    # style is drawn for the same ramp and ships the same two files (the
+    # installer's options each carry a complete set of the presets a style owns)
     ramp_a = [c[3] for c in RAMP]
     hide_a = [0] + ramp_a[1:]
     ring = {k: colours(v, alphas=DEFAULT_A) for k, v in RING_PRESET.items()}
-    open(os.path.join(PRESETS, "Default.json"), "w", encoding="utf-8").write(dump_preset(ring))
     ring_hide = {k: colours(v, alphas=hide_a) for k, v in RING_PRESET.items()}
-    open(os.path.join(PRESETS, "HideEmpty.json"), "w", encoding="utf-8").write(dump_preset(ring_hide))
+    for folder in (PRESETS, DIAMOND_PRESETS):
+        os.makedirs(folder, exist_ok=True)
+        open(os.path.join(folder, "Default.json"), "w", encoding="utf-8").write(dump_preset(ring))
+        open(os.path.join(folder, "HideEmpty.json"), "w", encoding="utf-8").write(dump_preset(ring_hide))
     # the white presets and the classic pack's presets keep their colours and
     # only gain the icons new in 3.0.0, with the classic alphas
     classic_hide = [0] + CLASSIC_A[1:]
@@ -412,8 +512,10 @@ SHEET_KEYS = {
 CLASSIC_SHEET = os.path.join(ROOT, "docs", "assets", "classic-style.png")
 
 
-def write_sheet(icons):
-    """The ring overview: icons as built by main(), the Default preset's ramp."""
+def write_sheet(icons, out=SHEET, what="the icon set",
+                how="The ring sweeps with the stage, the glyph fills from the bottom, "):
+    """The ring overview: icons as built by main(), the Default preset's ramp.
+    The diamond sheet is the same overview of the diamond icons (same ramp)."""
     def tint(folder, i, n):
         ri = ramp_index(i, n) if n > 1 else 8
         col = RAMP[ri][:3] + (100,)  # the Default preset: fully visible
@@ -422,11 +524,19 @@ def write_sheet(icons):
         return col
 
     _draw_sheet(lambda folder, stem: icons[(folder, stem)], tint,
-                "SL Widgets 3.4  -  the icon set, fine to worst",
-                "Stage counts are the mod's real ones. The ring sweeps with the stage, the glyph fills from the bottom, "
+                f"SL Widgets 3.4  -  {what}, fine to worst",
+                "Stage counts are the mod's real ones. " + how +
                 "the colour is the per-stage tint of the Default colour preset; milk and lactacid keep one colour. "
                 "Glyphs: game-icons.net (CC BY 3.0) and hand-drawn, see art/ring/glyphs/CREDITS.md.",
-                SHEET)
+                out)
+
+
+DIAMOND_SHEET = os.path.join(ROOT, "docs", "assets", "diamond-style.png")
+
+
+def write_diamond_sheet(diamond_icons):
+    write_sheet(diamond_icons, DIAMOND_SHEET, "the diamond icons",
+                "The diamond's edge sweeps with the stage, the glyph is solid, ")
 
 
 def write_classic_sheet(classic_icons):
@@ -511,7 +621,7 @@ def _draw_sheet(lookup, tint, title, foot, out, tone_ramp=None):
     print("wrote", out)
 
 
-# ---- the installer's preview images (fomod/ring.png, fomod/classic.png) ---------
+# ---- the installer's preview images (fomod/ring.png, classic.png, diamond.png) ----
 # (folder, preset key): ten sets, each at its middle and its last stage, tinted
 # with the style's own Default preset
 FOMOD_SETS = [
@@ -521,9 +631,9 @@ FOMOD_SETS = [
 ]
 
 
-def write_fomod_images(icons, classic_icons):
-    """icons / classic_icons: {(folder, stem): image} as built by main(); the
-    hand-drawn classic sets are read from art/classic/library."""
+def write_fomod_images(icons, classic_icons, diamond_icons):
+    """icons / classic_icons / diamond_icons: {(folder, stem): image} as built by
+    main(); the hand-drawn classic sets are read from art/classic/library."""
     stems = {}
     for where, folder, s, glyph, badge, fills in SETS:
         stems.setdefault(folder, s)
@@ -541,6 +651,7 @@ def write_fomod_images(icons, classic_icons):
     styles = (
         ("ring", lambda folder, stem: icons[(folder, stem)], os.path.join(PRESETS, "Default.json")),
         ("classic", classic_lookup, os.path.join(CLASSIC_PRESETS, "Default.json")),
+        ("diamond", lambda folder, stem: diamond_icons[(folder, stem)], os.path.join(DIAMOND_PRESETS, "Default.json")),
     )
     os.makedirs(FOMOD, exist_ok=True)
     for name, lookup, preset_path in styles:
@@ -599,11 +710,29 @@ def main():
             save_dxt5(icon, os.path.join(dest, stem + ".dds"))
             classic_icons[(folder, stem)] = icon
     print("wrote", len(classic_icons), "classic icons")
+    # the diamond style is generated for every set, so its library mirrors the
+    # ring one by construction (build_release.py checks it all the same)
+    diamond_icons = {}
+    for where, folder, stems, glyph, badge, fills in SETS:
+        dest = os.path.join(DIAMOND_LIB, folder.replace("/", os.sep))
+        os.makedirs(dest, exist_ok=True)
+        n = len(stems)
+        for i, stem in enumerate(stems):
+            g = glyph[i] if isinstance(glyph, list) else glyph
+            b = badge[i] if isinstance(badge, list) else badge
+            if fills is None or fills == "full":
+                icon = build_diamond(g, i / (n - 1), badge=b)
+            else:
+                icon = build_diamond(g, 1.0, badge=b, full_edge=True, glyph_frac=fills[i])
+            save_dxt5(icon, os.path.join(dest, stem + ".dds"))
+            diamond_icons[(folder, stem)] = icon
+    print("wrote", len(diamond_icons), "diamond icons")
     write_presets()
     if args.sheet:
         write_sheet(icons)
         write_classic_sheet(classic_icons)
-        write_fomod_images(icons, classic_icons)
+        write_diamond_sheet(diamond_icons)
+        write_fomod_images(icons, classic_icons, diamond_icons)
 
 
 if __name__ == "__main__":

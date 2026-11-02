@@ -367,3 +367,15 @@ Added in 2.3.0, never run in game when written. Set the update interval to 60 s 
 | 24.13 | P1 | Type a custom label, close the menu without Enter | The label is written anyway | FlushText |
 | 24.14 | P2 | Framework older than 3.8 | No pages; the MCM's General says the framework is too old | SetMenuReport, _skseMenuState |
 | 24.15 | P2 | Positions page with every Icons list closed | No icon read is asked for (only the layout) | ServeIcons |
+
+## 25. Diamond icon style (3.4.5)
+
+| # | P | Scenario | Expected | Scripts |
+|---|---|----------|----------|---------|
+| 25.1 | P0 | Install with the installer's Diamond icons option, iWantWidgetsPrisma DISABLED (the stock Flash widgets) | Every icon a diamond badge: a translucent diamond in the stage's colour, the glyph solid, the edge filled from the top corner as far as the stage; no streaks (the DDS headers) | build_icons.build_diamond, savedds |
+| 25.2 | P0 | The same with iWantWidgetsPrisma enabled | The same icons; the plate shows through at the same strength | build_icons.DIAMOND_PLATE_A |
+| 25.3 | P1 | Arousal from 0 to 100 at bar size 40-60 | The edge sweep grows clockwise from the top corner and the tint walks white to red; the two hearts of stage 0 and 1 differ in colour and sweep | build_diamond |
+| 25.4 | P1 | FHU vaginal / anal / oral icons | The goo glyph above a smaller vulva / ring / lips badge, both inside the diamond | build_diamond (badge) |
+| 25.5 | P1 | Pregnancy trimester 1 / 2 / 3 | A full edge; the belly fills a third, two thirds, whole | build_diamond (glyph_frac) |
+| 25.6 | P2 | HideEmpty colour preset | Stage 0 hidden, the rest as Default | art/diamond/presets |
+| 25.7 | P1 | Reinstall with the Ring option over a Diamond install | After a game load every icon is a ring again (iWant reads the art when it makes the widgets) | build_release.ALT_STYLES |

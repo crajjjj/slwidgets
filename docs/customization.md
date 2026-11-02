@@ -55,7 +55,7 @@ Pick a preset with **Color Preset** on the SKSE menu's [General](position-editor
 | `AllWhite` | all white | faint | the first step faint, then fully visible |
 | `AllWhite_HideEmpty` | all white | hidden | the first step faint, then fully visible |
 
-A hidden empty stage is an icon at alpha 0. With iWant's **Skip Hidden Icons** on for the bar (iWant's default), the bar closes up around it; with it off, the icon keeps an empty slot. The optional Classic Icons download brings its own `Default` and `HideEmpty`, the colours SL Widgets used before 3.0.0.
+A hidden empty stage is an icon at alpha 0. With iWant's **Skip Hidden Icons** on for the bar (iWant's default), the bar closes up around it; with it off, the icon keeps an empty slot. The installer's Classic icons option brings its own `Default` and `HideEmpty`, the colours SL Widgets used before 3.0.0; the Diamond icons option ships the ring set's two.
 
 ### File format
 
@@ -100,13 +100,21 @@ A preset saved before 3.2 holds no bar or NPC cluster layout, and loading it lea
 
 Since 3.0.0 the mod ships one icon set: every icon drawn in the same style, a progress ring around a glyph that fills from the bottom, tinted from white through ice blue and violet to magenta and red as the value worsens (since 3.4.0; 3.0 used white through gold and orange to red). Milk and lactacid keep one colour. The `Default` colour preset is that ramp, fully visible at every stage; `HideEmpty` is the same ramp with the empty stage hidden (see [Shipped presets](#shipped-presets)).
 
-The icons SL Widgets shipped before 3.0.0 are the **Classic icons** option of the installer. Since 3.4.0 it covers every set: the hand-drawn art for the sets that existed before 3.0.0, and the newer sets drawn in the same manner (a big outline that fills from the bottom, no ring), together with the classic Default and HideEmpty colour presets, whose empty stages are faint. Reinstall the mod to switch styles; custom packs install on top of either.
+The icons SL Widgets shipped before 3.0.0 are the **Classic icons** option of the installer. Since 3.4.0 it covers every set: the hand-drawn art for the sets that existed before 3.0.0, and the newer sets drawn in the same manner (a big outline that fills from the bottom, no ring), together with the classic Default and HideEmpty colour presets, whose empty stages are faint.
+
+Since 3.4.5 the installer has a third option, the **Diamond icons**: every icon as a HUD badge, the glyph drawn solid on a translucent diamond whose edge fills clockwise from the top corner as the value worsens, in the same tint as the ring set (it ships the ring's Default and HideEmpty presets). The diamond is the icon's own colour at part strength rather than a dark backing: iWant paints a whole icon one flat colour, so a texture cannot hold a dark plate under a light glyph.
+
+Reinstall the mod to switch styles; custom packs install on top of any of the three.
 
 ![The icon set](assets/ring-style.png)
 
 The classic icons, the same sets:
 
 ![The classic icon set](assets/classic-style.png)
+
+The diamond icons, the same sets:
+
+![The diamond icon set](assets/diamond-style.png)
 
 ---
 

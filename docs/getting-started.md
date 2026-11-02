@@ -24,7 +24,7 @@ These must be installed and working before SL Widgets will function at all.
 ## Installation
 
 1. Install all hard requirements first and confirm iWant Status Bars is displaying correctly.
-2. Install SL Widgets via your mod manager. The installer asks which icon style you want: the ring set or the classic icons (see [Icon styles](customization.md#icon-styles)); reinstall to switch.
+2. Install SL Widgets via your mod manager. The installer asks which icon style you want: the ring set, the classic icons or the diamond badges (see [Icon styles](customization.md#icon-styles)); reinstall to switch.
 3. The ESP is **ESL-flagged** — it will not consume a load order slot on SE.
 4. Launch the game, open the SKSE Menu Framework menu with its hotkey, and pick the **SL Widgets** section.
 

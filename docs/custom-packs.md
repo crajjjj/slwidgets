@@ -5,8 +5,8 @@ Community-made alternative icons for SL Widgets. Each pack restyles one icon set
 !!! info "Where to get them"
     All packs are **Optional Files** on the [SL Widgets Nexus page](https://www.nexusmods.com/skyrimspecialedition/mods/164162?tab=files). Download the file named in each heading below.
 
-!!! note "Built-in and classic icons"
-    Since 3.0.0 the built-in icons are one drawn ring set (see [Icon styles](customization.md#icon-styles)). The icons from before 3.0.0 are the **Classic icons** option of the installer, shown below as the classic option of each set. A pack replaces the same files either way, so it lays over both.
+!!! note "Built-in, classic and diamond icons"
+    Since 3.0.0 the built-in icons are one drawn ring set (see [Icon styles](customization.md#icon-styles)). The icons from before 3.0.0 are the **Classic icons** option of the installer, and since 3.4.5 the **Diamond icons** are its third option; both are shown below for each set. A pack replaces the same files whichever style is installed, so it lays over all three.
 
 !!! note "Installing a pack"
     Install the downloaded archive with your mod manager and let it **overwrite SL     Widgets'** files (or drop its `Interface/...` folder into `Data/`). Packs only     replace `.dds` textures — no plugin, no new requirements. To revert, reinstall SL     Widgets or remove the pack.
@@ -40,6 +40,17 @@ Community-made alternative icons for SL Widgets. Each pack restyles one icon set
 <figure class="icon-cell"><img src="../assets/packs/arousal_classic_3.png" alt="Classic heart stage 3"><figcaption>3</figcaption></figure>
 <figure class="icon-cell"><img src="../assets/packs/arousal_classic_5.png" alt="Classic heart stage 5"><figcaption>5</figcaption></figure>
 <figure class="icon-cell"><img src="../assets/packs/arousal_classic_8.png" alt="Classic heart stage 8"><figcaption>8</figcaption></figure>
+</div>
+
+### Diamond heart: the installer's Diamond option
+
+*The heart on a diamond badge (3.4.5).*
+
+<div class="icon-grid" markdown>
+<figure class="icon-cell"><img src="../assets/packs/arousal_diamond_0.png" alt="Diamond heart stage 0"><figcaption>0</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/packs/arousal_diamond_3.png" alt="Diamond heart stage 3"><figcaption>3</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/packs/arousal_diamond_5.png" alt="Diamond heart stage 5"><figcaption>5</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/packs/arousal_diamond_8.png" alt="Diamond heart stage 8"><figcaption>8</figcaption></figure>
 </div>
 
 ### Face: `SLW_Custom_Pack_Arousal_face`
@@ -87,6 +98,15 @@ Community-made alternative icons for SL Widgets. Each pack restyles one icon set
 <figure class="icon-cell"><img src="../assets/packs/fhu_classic_3.png" alt="Classic stage 3"><figcaption>3</figcaption></figure>
 <figure class="icon-cell"><img src="../assets/packs/fhu_classic_5.png" alt="Classic stage 5"><figcaption>5</figcaption></figure>
 <figure class="icon-cell"><img src="../assets/packs/fhu_classic_8.png" alt="Classic stage 8"><figcaption>8</figcaption></figure>
+</div>
+
+### Diamond: the installer's Diamond option
+
+<div class="icon-grid" markdown>
+<figure class="icon-cell"><img src="../assets/packs/fhu_diamond_0.png" alt="Diamond stage 0"><figcaption>0</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/packs/fhu_diamond_3.png" alt="Diamond stage 3"><figcaption>3</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/packs/fhu_diamond_5.png" alt="Diamond stage 5"><figcaption>5</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/packs/fhu_diamond_8.png" alt="Diamond stage 8"><figcaption>8</figcaption></figure>
 </div>
 
 ### Alternative: `SLW_Custom_Pack_Alternative_FHU_total`
@@ -138,6 +158,16 @@ Community-made alternative icons for SL Widgets. Each pack restyles one icon set
 <figure class="icon-cell"><img src="../assets/packs/preg_classic_fetus.png" alt="Classic Fetus"><figcaption>Fetus</figcaption></figure>
 <figure class="icon-cell"><img src="../assets/packs/preg_classic_chaurusEggs.png" alt="Classic Chaurus eggs"><figcaption>Chaurus eggs</figcaption></figure>
 <figure class="icon-cell"><img src="../assets/packs/preg_classic_spiderEggs.png" alt="Classic Spider eggs"><figcaption>Spider eggs</figcaption></figure>
+</div>
+
+### Diamond: the installer's Diamond option
+
+<div class="icon-grid" markdown>
+<figure class="icon-cell"><img src="../assets/packs/preg_diamond_cum.png" alt="Diamond Cum inflation"><figcaption>Cum inflation</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/packs/preg_diamond_ovulation.png" alt="Diamond Ovulation"><figcaption>Ovulation</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/packs/preg_diamond_fetus.png" alt="Diamond Fetus"><figcaption>Fetus</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/packs/preg_diamond_chaurusEggs.png" alt="Diamond Chaurus eggs"><figcaption>Chaurus eggs</figcaption></figure>
+<figure class="icon-cell"><img src="../assets/packs/preg_diamond_spiderEggs.png" alt="Diamond Spider eggs"><figcaption>Spider eggs</figcaption></figure>
 </div>
 
 ### Alternative: `SLWidgets_Alternative_Pregnancy_Widgets`
