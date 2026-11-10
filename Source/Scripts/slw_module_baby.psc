@@ -100,7 +100,7 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	EndIf
 	Int babyCurr = percentToState9NotStrict(100 - getBabyHealthFor(target))
 	If baby_state_prv[slot] == EMPTY || baby_state_prv[slot] != babyCurr
-		iBars.setIconStatus(slwGetModName(), getIconNameForSlot(BABY_STATE, slot), babyCurr)
+		setIconStatus(iBars, getIconNameForSlot(BABY_STATE, slot), babyCurr)
 		baby_state_prv[slot] = babyCurr
 	EndIf
 EndEvent

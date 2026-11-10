@@ -106,14 +106,14 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	if (config.isOnForSlot(config.module_sla_arousal, slot, config.MOD_SLA_AROUSAL) && isInterfaceActive())
 		int arousal_state_curr = getArousalLevel(pArousalFaction, sla, target)
 		if arousal_state_prv[slot] == EMPTY || arousal_state_prv[slot] != arousal_state_curr
-			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(AROUSAL_STATE, slot), arousal_state_curr )
+			setIconStatus(iBars, getIconNameForSlot(AROUSAL_STATE, slot), arousal_state_curr )
 			arousal_state_prv[slot] = arousal_state_curr
 		endif
 	endIf
 	if (config.isOnForSlot(config.module_sla_exposure, slot, config.MOD_SLA_EXPOSURE) && isInterfaceActive())
 		int exposure_state_curr = getExposureLevel(pExposureFaction, sla, target)
 		if exposure_state_prv[slot] == EMPTY || exposure_state_prv[slot] != exposure_state_curr
-			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(EXPOSURE_STATE, slot), exposure_state_curr )
+			setIconStatus(iBars, getIconNameForSlot(EXPOSURE_STATE, slot), exposure_state_curr )
 			exposure_state_prv[slot] = exposure_state_curr
 		endif
 	endIf

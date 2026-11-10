@@ -142,28 +142,28 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	if config.isOnForSlot(config.module_fhu_cum, slot, config.MOD_FHU_CUM)
 		int cum_state_curr = GetCumAmount(target, FhuInflateQuest)
 		if cum_state_prv[slot] == EMPTY || cum_state_prv[slot] != cum_state_curr
-			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(CUM_STATE, slot), cum_state_curr)
+			setIconStatus(iBars, getIconNameForSlot(CUM_STATE, slot), cum_state_curr)
 			cum_state_prv[slot] = cum_state_curr
 		endif
 	endIf
 	if config.isOnForSlot(config.module_fhu_cum_anal, slot, config.MOD_FHU_ANAL)
 		int cum_anal_state_curr = GetCumAmountAnal(target, FhuInflateQuest)
 		if cum_anal_state_prv[slot] == EMPTY || cum_anal_state_prv[slot] != cum_anal_state_curr
-			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(CUM_ANAL_STATE, slot), cum_anal_state_curr)
+			setIconStatus(iBars, getIconNameForSlot(CUM_ANAL_STATE, slot), cum_anal_state_curr)
 			cum_anal_state_prv[slot] = cum_anal_state_curr
 		endif
 	endIf
 	if config.isOnForSlot(config.module_fhu_cum_vaginal, slot, config.MOD_FHU_VAGINAL)
 		int cum_vag_state_curr = GetCumAmountVag(target, FhuInflateQuest)
 		if cum_vaginal_state_prv[slot] == EMPTY || cum_vaginal_state_prv[slot] != cum_vag_state_curr
-			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(CUM_VAGINAL_STATE, slot), cum_vag_state_curr)
+			setIconStatus(iBars, getIconNameForSlot(CUM_VAGINAL_STATE, slot), cum_vag_state_curr)
 			cum_vaginal_state_prv[slot] = cum_vag_state_curr
 		endif
 	endIf
 	if config.isOnForSlot(config.module_fhu_cum_oral, slot, config.MOD_FHU_ORAL)
 		int cum_oral_state_curr = GetCumAmountOral(target, FhuInflateQuest)
 		if cum_oral_state_prv[slot] == EMPTY || cum_oral_state_prv[slot] != cum_oral_state_curr
-			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(CUM_ORAL_STATE, slot), cum_oral_state_curr)
+			setIconStatus(iBars, getIconNameForSlot(CUM_ORAL_STATE, slot), cum_oral_state_curr)
 			cum_oral_state_prv[slot] = cum_oral_state_curr
 		endif
 	endIf

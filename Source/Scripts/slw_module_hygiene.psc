@@ -298,14 +298,14 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 			dirtCurr = (dnb % 10) * 2
 		EndIf
 		If dirt_state_prv[slot] == EMPTY || dirt_state_prv[slot] != dirtCurr
-			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(DIRT_STATE, slot), dirtCurr)
+			setIconStatus(iBars, getIconNameForSlot(DIRT_STATE, slot), dirtCurr)
 			dirt_state_prv[slot] = dirtCurr
 		EndIf
 	EndIf
 	If _wetOn(slot)
 		Int wetCurr = percentToState9NotStrict(getWetPercentFor(target))
 		If wet_state_prv[slot] == EMPTY || wet_state_prv[slot] != wetCurr
-			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(WET_STATE, slot), wetCurr)
+			setIconStatus(iBars, getIconNameForSlot(WET_STATE, slot), wetCurr)
 			wet_state_prv[slot] = wetCurr
 		EndIf
 	EndIf
@@ -323,14 +323,14 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 			bloodCurr = dnbBlood
 		EndIf
 		If blood_state_prv[slot] == EMPTY || blood_state_prv[slot] != bloodCurr
-			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(BLOOD_STATE, slot), bloodCurr)
+			setIconStatus(iBars, getIconNameForSlot(BLOOD_STATE, slot), bloodCurr)
 			blood_state_prv[slot] = bloodCurr
 		EndIf
 	EndIf
 	If _woundsOn(slot)
 		Int woundCurr = clampInt(getWoundCount(target), 0, 4)
 		If wound_state_prv[slot] == EMPTY || wound_state_prv[slot] != woundCurr
-			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(WOUND_STATE, slot), woundCurr)
+			setIconStatus(iBars, getIconNameForSlot(WOUND_STATE, slot), woundCurr)
 			wound_state_prv[slot] = woundCurr
 		EndIf
 	EndIf

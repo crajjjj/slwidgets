@@ -49,7 +49,7 @@ Custom icon packs (optional `.dds`-only downloads) install the same way — see 
 
 ## Compatibility
 
-Works alongside common UI overhauls. Mods that heavily alter `hudmenu.gfx`/`hudmenu.swf` can stop the icons from drawing. In very heavy script loads icons may overlap — disable, save/load, then re-enable. More fixes on the [Troubleshooting](https://crajjjj.github.io/slwidgets/troubleshooting/) page.
+Works alongside common UI overhauls. Mods that heavily alter `hudmenu.gfx`/`hudmenu.swf` can stop the icons from drawing. More fixes on the [Troubleshooting](https://crajjjj.github.io/slwidgets/troubleshooting/) page.
 
 ## Documentation
 

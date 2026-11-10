@@ -49,11 +49,11 @@ This does not affect the Prisma renderer itself — it reads no persisted widget
 
 ---
 
-## Icons overlapping or in the wrong bar
+## Icons on top of each other, or in the wrong bar
 
-This happens on heavy script-load mod lists where iWant Bar events fire out of order.
+Icons landing on top of each other is fixed in 3.4.6. iWant Status Bars draws a bar before it fades the changed icon's new stage in, and with its **Skip Hidden Icons** setting on (the default) a stage still at alpha 0 gets no seat: the icons after it close up, and the stage then fades in on top of its neighbour. It happened on every return to a stage the icon had shown before (dirt back to clean, arousal down a step), whatever the script load, and lasted until the next change in any bar. Since 3.4.6 the mod gives a stage its alpha before the change, and redraws the bars a moment after another mod's icon changes.
 
-**Fix:** Disable the mod (SKSE menu → General → **Mod enabled** off), save, reload (or fast-travel and back), re-enable.
+On an older version: disable the mod (SKSE menu → General → **Mod enabled** off), save, reload, re-enable. That clears it until the next such return.
 
 If **NPC icons are appearing in the player bar**, press **Reset NPC layout** on the SKSE menu's Positions page. This forces a reconciliation pass that moves NPC icons to their dedicated bars.
 

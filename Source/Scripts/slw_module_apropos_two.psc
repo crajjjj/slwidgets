@@ -126,17 +126,17 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 		int[] states = _readWearStates(target)
 		int oral_curr = states[2]
 		if oral_prv[slot] == EMPTY || oral_curr != oral_prv[slot]
-			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(ORAL_STATE, slot), oral_curr)
+			setIconStatus(iBars, getIconNameForSlot(ORAL_STATE, slot), oral_curr)
 			oral_prv[slot] = oral_curr
 		endif
 		int anal_curr = states[1]
 		if anal_prv[slot] == EMPTY || anal_curr != anal_prv[slot]
-			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(ANAL_STATE, slot), anal_curr)
+			setIconStatus(iBars, getIconNameForSlot(ANAL_STATE, slot), anal_curr)
 			anal_prv[slot] = anal_curr
 		endif
 		int vag_curr = states[0]
 		if vag_prv[slot] == EMPTY || vag_curr != vag_prv[slot]
-			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(VAG_STATE, slot), vag_curr)
+			setIconStatus(iBars, getIconNameForSlot(VAG_STATE, slot), vag_curr)
 			vag_prv[slot] = vag_curr
 		endif
 	endIf

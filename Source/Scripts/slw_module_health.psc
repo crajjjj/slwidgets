@@ -210,7 +210,7 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	If _injuryOn()
 		Int injuryCurr = getInjuryStage(target)
 		If _injury_prv == EMPTY || _injury_prv != injuryCurr
-			iBars.setIconStatus(slwGetModName(), INJURY_STATE, injuryCurr)
+			setIconStatus(iBars, INJURY_STATE, injuryCurr)
 			_injury_prv = injuryCurr
 		EndIf
 	EndIf
@@ -227,7 +227,7 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 				_loadDiseaseIcon(iBars)
 			EndIf
 			If _disease_prv == EMPTY || _disease_prv != diseaseCurr
-				iBars.setIconStatus(slwGetModName(), DISEASE_STATE, diseaseCurr)
+				setIconStatus(iBars, DISEASE_STATE, diseaseCurr)
 				_disease_prv = diseaseCurr
 			EndIf
 		EndIf

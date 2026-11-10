@@ -112,7 +112,7 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 		EndIf
 		pubicCurr = clampInt(pubicCurr, 0, 5)
 		If _pubic_prv == EMPTY || _pubic_prv != pubicCurr
-			iBars.setIconStatus(slwGetModName(), PUBIC_STATE, pubicCurr)
+			setIconStatus(iBars, PUBIC_STATE, pubicCurr)
 			_pubic_prv = pubicCurr
 		EndIf
 	EndIf
@@ -124,7 +124,7 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 		EndIf
 		armpitCurr = clampInt(armpitCurr, 0, 6)
 		If _armpit_prv == EMPTY || _armpit_prv != armpitCurr
-			iBars.setIconStatus(slwGetModName(), ARMPIT_STATE, armpitCurr)
+			setIconStatus(iBars, ARMPIT_STATE, armpitCurr)
 			_armpit_prv = armpitCurr
 		EndIf
 	EndIf

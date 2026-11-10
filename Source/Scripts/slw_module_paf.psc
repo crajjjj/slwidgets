@@ -134,14 +134,14 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	if (config.isOn(config.module_paf_pee) && isInterfaceActive())
 		int pee_state_curr = getPeeLevel()
 		if pee_state_prv[slot] == EMPTY || pee_state_prv[slot] != pee_state_curr
-			iBars.setIconStatus(slwGetModName(), PEE_STATE, pee_state_curr )
+			setIconStatus(iBars, PEE_STATE, pee_state_curr )
 			pee_state_prv[slot] = pee_state_curr
 		endif
 	endIf
 	if (config.isOn(config.module_paf_poo) && isInterfaceActive())
 		int poop_state_curr = getPoopLevel()
 		if poop_state_prv[slot] == EMPTY || poop_state_prv[slot] != poop_state_curr
-			iBars.setIconStatus(slwGetModName(), POOP_STATE, poop_state_curr )
+			setIconStatus(iBars, POOP_STATE, poop_state_curr )
 			poop_state_prv[slot] = poop_state_curr
 		endif
 	endIf

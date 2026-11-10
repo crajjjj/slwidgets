@@ -707,9 +707,9 @@ Function handleSGO4(iWant_Status_Bars iBars, Actor target, Int slot)
 			iBars.releaseIcon(slwGetModName(), getIconNameForSlot(Pregnancy_Gems, slot))
 			_loadGemsIcon(iBars, slot, GemTotalPercent)
 			if gems_state_curr >= 6
-				iBars.setIconStatus(slwGetModName(), getIconNameForSlot(Pregnancy_Gems, slot), 5)
+				setIconStatus(iBars, getIconNameForSlot(Pregnancy_Gems, slot), 5)
 			else
-				iBars.setIconStatus(slwGetModName(), getIconNameForSlot(Pregnancy_Gems, slot), gems_state_curr - 1)
+				setIconStatus(iBars, getIconNameForSlot(Pregnancy_Gems, slot), gems_state_curr - 1)
 			endif
 			gems_state_prv[slot] = gems_state_curr
 			GemPrePercent[slot] = GemTotalPercent

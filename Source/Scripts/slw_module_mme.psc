@@ -166,7 +166,7 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	if (config.isOnForSlot(config.module_mme_milk, slot, config.MOD_MME_MILK) && isInterfaceActive())
 		int milk_state_curr = getMilkLevel(target, slot)
 		if milk_state_prv[slot] == EMPTY || milk_state_prv[slot] != milk_state_curr
-			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(MILK_STATE, slot), milk_state_curr )
+			setIconStatus(iBars, getIconNameForSlot(MILK_STATE, slot), milk_state_curr )
 			milk_state_prv[slot] = milk_state_curr
 		endif
 	endIf
@@ -174,7 +174,7 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	if (config.isOnForSlot(config.module_mme_lactacid, slot, config.MOD_MME_LACTACID) && Plugin_MME)
 		int lactacid_state_curr = getLactacidLevel(target)
 		if lactacid_state_prv[slot] == EMPTY || lactacid_state_prv[slot] != lactacid_state_curr
-			iBars.setIconStatus(slwGetModName(), getIconNameForSlot(LACTACID_STATE, slot), lactacid_state_curr )
+			setIconStatus(iBars, getIconNameForSlot(LACTACID_STATE, slot), lactacid_state_curr )
 			lactacid_state_prv[slot] = lactacid_state_curr
 		endif
 	endIf

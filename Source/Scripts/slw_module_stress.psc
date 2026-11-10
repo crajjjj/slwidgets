@@ -137,14 +137,14 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 	If config.isOn(config.module_saf_stress)
 		Int stressCurr = percentToState9NotStrict(getStressPercent())
 		If _stress_prv == EMPTY || _stress_prv != stressCurr
-			iBars.setIconStatus(slwGetModName(), STRESS_STATE, stressCurr)
+			setIconStatus(iBars, STRESS_STATE, stressCurr)
 			_stress_prv = stressCurr
 		EndIf
 	EndIf
 	If config.isOn(config.module_saf_fear)
 		Int fearCurr = clampInt(_cachedPhobiaCount(target), 0, 8)
 		If _fear_prv == EMPTY || _fear_prv != fearCurr
-			iBars.setIconStatus(slwGetModName(), FEAR_STATE, fearCurr)
+			setIconStatus(iBars, FEAR_STATE, fearCurr)
 			_fear_prv = fearCurr
 		EndIf
 	EndIf

@@ -338,7 +338,7 @@ Event onWidgetStatusUpdate(iWant_Status_Bars iBars, Actor target, Int slot)
 		If src > 0 && _loaded[need]
 			Int stage = percentToState9NotStrict(_percent(need, src))
 			If _prv[need] == EMPTY || _prv[need] != stage
-				iBars.setIconStatus(slwGetModName(), _iconName(need), stage)
+				setIconStatus(iBars, _iconName(need), stage)
 				_prv[need] = stage
 			EndIf
 		EndIf

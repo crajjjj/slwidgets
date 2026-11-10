@@ -336,6 +336,9 @@ Function _registerRefreshEvents()
 	RegisterForModEvent("slaModArousalEffect", "OnSlaModArousalEffect")
 	RegisterForModEvent("slaOrgasm", "OnSlaOrgasm")
 	RegisterForModEvent("SexLabOrgasm", "OnSexLabOrgasm")
+	; iWant's own, on every stage change of an icon in a bar: a draw a
+	; moment later, see OniWantIconStatusChange
+	RegisterForModEvent("iWantStatusBarsIconStatusChange", "OniWantIconStatusChange")
 EndFunction
 
 Function _unregisterRefreshEvents()
@@ -347,6 +350,7 @@ Function _unregisterRefreshEvents()
 	UnregisterForModEvent("slaModArousalEffect")
 	UnregisterForModEvent("slaOrgasm")
 	UnregisterForModEvent("SexLabOrgasm")
+	UnregisterForModEvent("iWantStatusBarsIconStatusChange")
 EndFunction
 
 Event OnFhuPlayerCumUpdate(Float current, Bool isAnal)
@@ -391,6 +395,31 @@ Event OnSexLabOrgasm(Form who, Int enjoyment, Int orgasms)
 	If _isShown(who as Actor)
 		_refreshSoon(REFRESH_AFTER_SLA)
 	EndIf
+EndEvent
+
+; iWant's own event, sent on every stage change of an icon in a bar, after
+; its draw of the bars. That draw gives a seat only to a widget with an
+; alpha, and the new stage gets its fade-in after the draw, so a stage shown
+; before (faded to 0 when it left) comes up where it last sat, on top of the
+; neighbour that closed up into its seat. For this mod's icons the base
+; module raises the stage first (slw_base_module.setIconStatus); any other
+; mod's icon, and iWant's own _resetIconVisibility, still come up that way.
+; One more draw a moment after the last change of a burst seats them: by
+; then the fade-in has begun under Flash (one second), and Prisma set the
+; alpha at once. Every change starts a wait; only the newest one draws. A
+; property, not a variable: one added to a script a save holds can come up 0.
+Float Property REDRAW_AFTER_CHANGE = 0.3 AutoReadOnly Hidden
+Int _redrawSeq = 0
+
+Event OniWantIconStatusChange(String eventName, String strArg, Float numArg, Form sender)
+	_redrawSeq += 1
+	Int seq = _redrawSeq
+	Int gen = _passGen
+	Utility.Wait(REDRAW_AFTER_CHANGE)
+	If seq != _redrawSeq || gen != _passGen || config.slw_stopped || !iBars || !iBars.isReady()
+		Return
+	EndIf
+	iBars._drawAllBars()
 EndEvent
 
 ; The player or an actor in an NPC slot: anyone else's change shows nowhere.

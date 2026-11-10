@@ -392,3 +392,15 @@ Added in 2.3.0, never run in game when written. Set the update interval to 60 s 
 | 26.6 | P2 | New game without SKSE Menu Framework | The mod switches on all the same; the MCM says the framework is missing; no way to change settings | autoEnableIfPending |
 | 26.7 | P2 | iWant Status Bars not installed, new game | Nothing happens: the poll gives up after about three minutes without a log line; installing it later switches the mod on at the next load | slw_config.OnUpdate, OniWantStatusBarsReady |
 | 26.8 | P1 | The ready event missed on the first run (no way to force it; look for the log line) | Within 10 s of the bars being ready the poll adopts them by form (log "iBars adopted by form") and the mod switches on; when the event did arrive the poll logs nothing and stops | adoptBarsIfReady, slw_config.OnUpdate |
+
+## 27. Stages seated on their return (3.4.6)
+
+| # | P | Scenario | Expected | Scripts |
+|---|---|----------|----------|---------|
+| 27.1 | P0 | A line bar with three or more icons, stock Flash widgets; one icon goes up a stage and back (dirt 0-1-0 by `set BiS_Dirtiness` or a bath, arousal down a step) | The returning stage fades in at its own seat; the icons after it never move; nothing lands on a neighbour | slw_base_module.setIconStatus |
+| 27.2 | P0 | The same with iWantWidgetsPrisma | The same, with the snap instead of the fade | slw_base_module.setIconStatus |
+| 27.3 | P1 | The HideEmpty colour preset, an icon back to stage 0 | The bar closes up over it (its alpha is 0, iWant's Skip Hidden Icons); the next stage up opens the seat again | setIconStatus (alpha 0 skip) |
+| 27.4 | P1 | Another mod's iWant icon back to a stage it showed before (iWant's own example script, or any mod on the bars) | Comes up on its neighbour for about 0.3 s, then the bars redraw and it sits in its seat | slw_widget_controller.OniWantIconStatusChange |
+| 27.5 | P1 | An auto-hide bar (iWant's Show on change) with Skip Hidden Icons on | The changed icon shows at the bar's anchor at once, no jump 0.3 s later | setIconStatus, OniWantIconStatusChange |
+| 27.6 | P2 | The 3.4.1 DLL with the 3.4.6 scripts | 27.1 still holds (the raise runs without the stage read) | slw_bridge.hasLayoutNatives |
+| 27.7 | P2 | Mod disabled in the SKSE menu | Another mod's icon changes draw nothing extra (no redraw while stopped); enabling registers the event again | stopUpdates, _registerRefreshEvents |

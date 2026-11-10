@@ -236,6 +236,26 @@ so a changed page list needs no save migration. Pages, in menu order:
   closing up when a shown stage turns hidden (no seat changes, so no
   signature change), and a third-party icon changing between an edit and the
   next pass.
+- **Stages raised before they show** (3.4.6, reported as icons stacking on
+  one another): the same draw, on every stage change. iWant draws the bars
+  before it fades the new stage in, so a stage the icon showed before (at
+  alpha 0 since it left) gets no seat, its neighbours close up, and it fades
+  in on top of the one that took its seat, until the next change in any bar
+  draws again; a bar whose last change was such a return stays that way for
+  a whole tick. Nothing to do with script load (the README and the
+  troubleshooting page said so until 3.4.6). `slw_base_module.setIconStatus`
+  is the one way a module sets a stage: it raises the stage's widget to
+  alpha 1 first (iWant's own 2.10 trick for a fresh widget, applied to every
+  turn), so the draw seats it and iWant fades it from 1. The raise is
+  skipped for a stage at alpha 0 and, with the 3.4.2 DLL, for the stage
+  shown already (an auto-hide bar would leave it at 1). Icons of other mods,
+  and iWant's own `_resetIconVisibility`, still come up on a neighbour: the
+  controller listens to iWant's `iWantStatusBarsIconStatusChange` and draws
+  the bars 0.3 s after the last change of a burst (`OniWantIconStatusChange`,
+  one waiting thread per change, only the newest draws), by when the fade-in
+  has begun under Flash and Prisma has set the alpha. Flash `drawLine` and
+  Prisma's both advance the cursor only for a widget they draw (checked in
+  `iWantWidgets.as` and Prisma's `index.html`).
 - **Presets** (3.2.0, `PresetsPage.cpp`): the settings presets, load, save over,
   save as new.
 
@@ -422,7 +442,7 @@ All modules extend `slw_base_module` and override:
 - `resetInterface()` — clear all plugin flags and state
 - `onWidgetReload(iBars, target, slot)` — load/release icons for the given slot+target, reset `_*_prv[slot]`
 - `onWidgetToggleUpdate(iBars, target, slot)` — react to MCM toggle changes for the slot
-- `onWidgetStatusUpdate(iBars, target, slot)` — read current value from `target`, call `iBars.setIconStatus()` only on change
+- `onWidgetStatusUpdate(iBars, target, slot)`: read current value from `target`, call the base module's `setIconStatus(iBars, name, status)` only on change (never iWant's own: the base helper raises the stage first, see the 3.4.6 note under the SKSE menu plugin)
 
 State change tracking pattern: store previous state in `int[] _foo_prv` (sized N_SLOTS=4, EMPTY=-1 sentinel), update icon only when `prv[slot] == EMPTY || prv[slot] != curr`. Initialize lazily via `_ensurePrvArrays()` helper called at the top of each event handler.
 
